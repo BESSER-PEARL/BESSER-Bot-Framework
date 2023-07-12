@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 from keras import Sequential
 from keras.layers import Embedding, GlobalAveragePooling1D, Dense
@@ -54,7 +55,9 @@ class SimpleIntentClassifier:
                                                  padding='post', truncating='post',
                                                  maxlen=self.nlp_engine.configuration.input_max_num_tokens)
 
-        self.model.compile(loss=SparseCategoricalCrossentropy(), optimizer='adam', metrics=['accuracy'])
+        self.model.compile(loss=SparseCategoricalCrossentropy(),
+                           optimizer=tf.keras.optimizers.Adam(learning_rate=self.nlp_engine.configuration.lr),
+                           metrics=['accuracy'])
 
         # print("Model summary: ")
         # model.summary()
