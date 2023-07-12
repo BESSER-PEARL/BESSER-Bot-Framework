@@ -1,3 +1,4 @@
+from besser.bot.core.State import State
 from besser.bot.core.intent.Intent import Intent
 from besser.bot.core.intent.IntentParameter import IntentParameter
 from besser.bot.core.entity.Entity import Entity
@@ -82,12 +83,12 @@ class SimpleNER:
         self.nlp_engine = nlp_engine
         self.bot = bot
 
-    def predict(self, message: str) -> tuple[dict[Intent, list[MatchedParameter]], dict[str, list[Intent]]]:
+    def predict(self, state: State, message: str) -> tuple[dict[Intent, list[MatchedParameter]], dict[str, list[Intent]]]:
 
         ner_result: dict[Intent, list[MatchedParameter]] = {}
         intent_sentences: dict[str, list[Intent]] = {}
 
-        for intent in self.bot.current_state.intents:
+        for intent in state.intents:
             intent_matches: list[MatchedParameter] = []
             ner_message: str = message
             # Match custom entities

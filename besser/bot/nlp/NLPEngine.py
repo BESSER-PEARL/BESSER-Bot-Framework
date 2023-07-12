@@ -19,7 +19,8 @@ class NLPEngine:
 
     def initialize(self):
         for state in self.bot.states:
-            self.intent_classifiers[state] = SimpleIntentClassifier(self, state)
+            if state not in self.intent_classifiers and state.intents:
+                self.intent_classifiers[state] = SimpleIntentClassifier(self, state)
 
     def train(self):
         for entity in self.bot.entities:
@@ -32,17 +33,17 @@ class NLPEngine:
                 intent_classifier.train()
                 logging.info(f"Intent classifier in {state.name} successfully trained.")
 
-    def predict_intent(self):
-        message = self.bot.session.get_message()
+    def predict_intent(self, session):
+        message = session.get_message()
         message = preprocess_text(message, self.configuration)
-        intent_classifier = self.intent_classifiers[self.bot.current_state]
+        intent_classifier = self.intent_classifiers[session.current_state]
         intent_classifier_predictions: list[IntentClassifierPrediction] = intent_classifier.predict(message)
-        best_intent_prediction = self.get_best_intent_prediction(intent_classifier_predictions)
+        best_intent_prediction = self.get_best_intent_prediction(session, intent_classifier_predictions)
 
         return best_intent_prediction
 
-    def get_best_intent_prediction(self, intent_classifier_predictions: list[IntentClassifierPrediction]):
-        fallback = fallback_intent_prediction(self.bot.session.get_message())
+    def get_best_intent_prediction(self, session, intent_classifier_predictions: list[IntentClassifierPrediction]):
+        fallback = fallback_intent_prediction(session.get_message())
         best_intent_prediction: IntentClassifierPrediction
         if not intent_classifier_predictions:
             best_intent_prediction = fallback

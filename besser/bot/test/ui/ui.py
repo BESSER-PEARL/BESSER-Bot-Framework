@@ -1,7 +1,8 @@
+import uuid
+
 import streamlit as st
 from streamlit_chat import message
 import requests
-
 
 st.set_page_config(
     page_title="Streamlit Chat - Demo",
@@ -21,8 +22,13 @@ st.markdown("[Github](https://github.com/BESSER-PEARL/bot-framework)")
 text_container = st.container()
 response_container = st.container()
 
-if 'messages' not in st.session_state:
-    st.session_state['messages'] = []
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
+
+if 'user_id' not in st.session_state:
+    st.session_state['user_id'] = str(uuid.uuid4())
+    output = requests.post(SERVER_URL + 'new_session', json={'user_id': st.session_state['user_id']}, headers=headers).json()
+    st.session_state.history.extend([(m, 0) for m in output["answer"]])
 
 
 def reset_bot():
@@ -35,7 +41,7 @@ def reset_bot():
 
 def get_history():
     try:
-        response = requests.post(SERVER_URL + 'history', json={}, headers=headers)
+        response = requests.post(SERVER_URL + 'history', json={'user_id': st.session_state['user_id']}, headers=headers)
         return response.json()
     except Exception as e:
         return {'history': [(str(e), 0)]}
@@ -57,18 +63,16 @@ with text_container:
 
 if reset_button:
     output = reset_bot()
-
+    st.session_state.history = output['history']
 elif submit_button and user_input:
     text_container.empty()
-    output = query({'message': user_input})
-    st.session_state.messages.append((user_input, 1))
-    st.session_state.messages.extend([(m, 0) for m in output["answer"]])
-else:
-    output = get_history()
-
-history = output['history']
+    output = query({
+        'user_id': st.session_state['user_id'],
+        'message': user_input})
+    st.session_state.history.append((user_input, 1))
+    st.session_state.history.extend([(m, 0) for m in output["answer"]])
 
 
-for i in range(len(history)-1, -1, -1):
-    m = history[i]
+for i in range(len(st.session_state.history)-1, -1, -1):
+    m = st.session_state.history[i]
     message(m[0], is_user=m[1], avatar_style=avatar_style[m[1]], seed="Aneka", key=str(i))

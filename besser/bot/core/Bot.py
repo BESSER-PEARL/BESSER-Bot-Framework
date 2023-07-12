@@ -20,8 +20,7 @@ class Bot:
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
         self.request_dispatcher: RequestDispatcher = RequestDispatcher(self)
-        self.session: Session = Session()
-        self.current_state: State = None  # TODO: MOVE TO SESSION
+        self.sessions: dict[str, Session] = {}
         self.nlp_engine = NLPEngine(self)
 
     def load_properties(self, path: str):
@@ -79,26 +78,30 @@ class Bot:
         self.nlp_engine.initialize()
         logging.info(f'{self.name} training started')
         self.train()
-        self.current_state = self.initial_state()
         self.request_dispatcher.run()  # Runs in another thread
-        self.current_state.run()
-        self.session.update_history()
         logging.info(f'{self.name} deployed and ready to use')
 
-    def reset(self):
-        self.session = Session()
-        self.current_state = self.initial_state()
-        self.current_state.run()
-        self.session.update_history()
+    def reset(self, user_id):
+        # TODO: CHECK SESSION ALREADY EXISTS?
+        session = Session(user_id, self.initial_state())
+        self.sessions[user_id] = session
+        session.current_state.run(session)
+        session.update_history()
+        return session
 
-    def receive_message(self):
-        self.session.set_predicted_intent(self.nlp_engine.predict_intent())
-        self.current_state.receive_intent()
+    def receive_message(self, user_id, message):
+        session = self.get_session(user_id)
+        session.clear_answer()
+        session.set_message(message)
+        session.set_predicted_intent(self.nlp_engine.predict_intent(session))
+        session.current_state.receive_intent(session)
+        session.update_history()
+        return session
 
-    def move(self, transition):
+    def move(self, session, transition):
         logging.info(transition.log())
-        self.current_state = transition.dest
-        self.current_state.run()
+        session.current_state = transition.dest
+        session.current_state.run(session)
 
     def set_global_fallback_body(self, body):
         for state in self.states:
@@ -106,3 +109,20 @@ class Bot:
 
     def train(self):
         self.nlp_engine.train()
+
+    def get_session(self, user_id):
+        if user_id in self.sessions:
+            return self.sessions[user_id]
+        else:
+            return None
+
+    def new_session(self, user_id):
+        if user_id not in self.sessions:
+            session = Session(user_id, self.initial_state())
+            self.sessions[user_id] = session
+            session.current_state.run(session)
+            session.update_history()
+            return session
+        else:
+            pass
+            # TODO: HANDLE EXCEPTION

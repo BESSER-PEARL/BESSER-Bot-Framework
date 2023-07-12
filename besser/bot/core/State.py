@@ -31,12 +31,6 @@ class State:
     def __hash__(self):
         return hash((self.name, self.bot.name))
 
-    def get_intent(self, name: str):
-        for intent in self.intents:
-            if intent.name == name:
-                return intent
-        return None
-
     def t_name(self):
         self.transition_counter += 1
         return f"t_{self.transition_counter}"
@@ -82,44 +76,44 @@ class State:
         self.transitions.append(Transition(name=self.t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
 
-    def receive_intent(self):
-        classification = self.bot.session.get_predicted_intent()
+    def receive_intent(self, session):
+        classification = session.get_predicted_intent()
         if classification is None:
-            self.bot.session.put_answer("Something went wrong, no intent was predicted")
+            logging.error("Something went wrong, no intent was predicted")
             return
         auto_transition = None
         for transition in self.transitions:
             if transition.is_intent_matched(classification.intent):
-                self.bot.move(transition)
+                self.bot.move(session, transition)
                 return
             if transition.is_auto():
                 auto_transition = transition
         if auto_transition:
             # When no intent is matched, but there is an auto transition, move through it
-            self.bot.move(auto_transition)
+            self.bot.move(session, auto_transition)
             return
         if classification.intent == fallback_intent:
             logging.info(f"[{self.name}] Running fallback body {self.fallback_body.__name__}")
             try:
-                self.fallback_body(self.bot.session)
+                self.fallback_body(session)
             except Exception as _:
                 logging.error(f"An error occurred while executing '{self.body.__name__}' of state '{self.name}' in bot "
                               f"'{self.bot.name}'. See the attached exception:")
                 traceback.print_exc()
         return
 
-    def check_next_transition(self):
+    def check_next_transition(self, session):
         # TODO: Check conditional transitions
         for transition in self.transitions:
             if transition.event == auto:
-                self.bot.move(transition)
+                self.bot.move(session, transition)
                 return
 
-    def run(self):
+    def run(self, session):
         logging.info(f"[{self.name}] Running body {self.body.__name__}")
         try:
-            self.body(self.bot.session)
+            self.body(session)
         except Exception as _:
             logging.error(f"An error occurred while executing '{self.body.__name__}' of state '{self.name}' in bot '{self.bot.name}'. See the attached exception:")
             traceback.print_exc()
-        self.check_next_transition()
+        self.check_next_transition(session)

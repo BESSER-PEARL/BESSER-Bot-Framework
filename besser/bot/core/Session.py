@@ -5,8 +5,9 @@ from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentCl
 
 class Session:
 
-    def __init__(self):
-        self.user_id = 1
+    def __init__(self, user_id, current_state):
+        self.user_id = user_id
+        self.current_state = current_state
         self.dictionary = {}
         self.predicted_intent = None
         self.message = None

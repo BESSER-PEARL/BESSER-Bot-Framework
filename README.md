@@ -15,6 +15,10 @@ pip install -r requirements.txt
 
 - [ui.py (streamlit)](besser/bot/test/ui/ui.py)
 
+```bash
+streamlit run besser/bot/test/ui/ui.py
+```
+
 ### Example bots
 
 - [GreetingsBot](besser/bot/test/examples/GreetingsBot.py)

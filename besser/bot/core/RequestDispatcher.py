@@ -11,25 +11,31 @@ class RequestDispatcher:
     def __init__(self, bot):
         self.bot = bot
         self.app = Flask(__name__)
+        self.app.add_url_rule('/new_session', view_func=self.new_session, methods=['POST'])
         self.app.add_url_rule('/message', view_func=self.receive_message, methods=['POST'])
-        self.app.add_url_rule('/history', view_func=self.history, methods=['POST'])
+        self.app.add_url_rule('/session', view_func=self.session, methods=['POST'])
         self.app.add_url_rule('/reset', view_func=self.reset, methods=['POST'])
 
     def run(self):
         client_thread = threading.Thread(target=self.app.run)
         client_thread.start()
 
+    def new_session(self):
+        user_id = request.json.get('user_id')
+        session = self.bot.new_session(user_id)
+        return json.dumps(session, cls=SessionEncoder)
+
     def receive_message(self):
         message = request.json.get('message')
-        self.bot.session.set_message(message)
-        self.bot.session.clear_answer()
-        self.bot.receive_message()
-        self.bot.session.update_history()
-        return json.dumps(self.bot.session, cls=SessionEncoder)
+        user_id = request.json.get('user_id')
+        session = self.bot.receive_message(user_id, message)
+        return json.dumps(session, cls=SessionEncoder)
 
-    def history(self):
-        return json.dumps(self.bot.session, cls=SessionEncoder)
+    def session(self):
+        user_id = request.json.get('user_id')
+        return json.dumps(self.bot.get_session(user_id), cls=SessionEncoder)
 
     def reset(self):
-        self.bot.reset()
-        return json.dumps(self.bot.session, cls=SessionEncoder)
+        user_id = request.json.get('user_id')
+        session = self.bot.reset(user_id)
+        return json.dumps(session, cls=SessionEncoder)

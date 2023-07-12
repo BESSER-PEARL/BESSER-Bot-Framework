@@ -73,7 +73,7 @@ class SimpleIntentClassifier:
         intent_sentences: dict[str, list[Intent]] = {}
 
         # We try to replace all potential entity value with the corresponding entity name
-        ner_result, intent_sentences = self.state.bot.nlp_engine.ner.predict(message)
+        ner_result, intent_sentences = self.state.bot.nlp_engine.ner.predict(self.state, message)
 
         for (ner_sentence, intents) in intent_sentences.items():
             # DOUBLE STEMMING AVOIDED
