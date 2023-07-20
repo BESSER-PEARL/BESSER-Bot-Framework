@@ -1,9 +1,8 @@
-import stanza
-
+from nltk.tokenize import word_tokenize
 from besser.bot.core.intent.Intent import Intent
 from besser.bot.nlp.NLPConfiguration import NLPConfiguration
 from besser.bot.core.entity.Entity import Entity
-from besser.bot.nlp.preprocessing.pipelines import stemmer_lang_map, create_or_get_stemmer, create_or_get_tokenizer
+from besser.bot.nlp.preprocessing.pipelines import lang_map, create_or_get_stemmer
 from besser.bot.nlp.utils import replace_value_in_sentence
 
 
@@ -11,6 +10,7 @@ def preprocess_text(text: str, configuration: NLPConfiguration) -> str:
     preprocessed_sentence: str = text
     preprocessed_sentence = preprocessed_sentence.replace('_', ' ')
     if configuration.stemmer:
+        # TODO: remove punctuation signs
         preprocessed_sentence = stem_text(preprocessed_sentence, configuration)
     return preprocessed_sentence
 
@@ -44,11 +44,11 @@ def replace_ner_in_training_sentence(sentence: str, intent: Intent, configuratio
 
 
 def stem_text(text: str, configuration: NLPConfiguration) -> str:
-    tokens: list[str] = tokenize_text(text, configuration)
+    tokens: list[str] = word_tokenize(text, language='english')
     # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
     stemmer_language: str = 'en'
-    if configuration.country in stemmer_lang_map:
-        stemmer_language = stemmer_lang_map[configuration.country]
+    if configuration.country in lang_map:
+        stemmer_language = lang_map[configuration.country]
 
     stemmer = create_or_get_stemmer(stemmer_language)
     stemmed_sentence: list[str] = []
@@ -57,7 +57,7 @@ def stem_text(text: str, configuration: NLPConfiguration) -> str:
     for word in tokens:
         stemmed_word: str = word
         if not word.isupper():
-            stemmed_word = stemmer.stemWord(word)
+            stemmed_word = stemmer.stem(word)
         stemmed_sentence.append(stemmed_word)
 
     # stemmed_sentence: list[str] = stemmer.stemWords(tokens)
@@ -65,13 +65,3 @@ def stem_text(text: str, configuration: NLPConfiguration) -> str:
     # print(stemmed_sentence)
     joined_string = ' '.join([str(item) for item in stemmed_sentence])
     return joined_string
-
-
-def tokenize_text(sentence: str, configuration: NLPConfiguration) -> list[str]:
-    tokenizer = create_or_get_tokenizer(configuration.country)
-    tokenizer_result: stanza.models.common.doc.Document = tokenizer(sentence)
-    token_sentence: stanza.models.common.doc.Sentence = tokenizer_result.sentences[0]
-    tokens: list[str] = []
-    for token in token_sentence.tokens:
-        tokens.append(token.text)
-    return tokens

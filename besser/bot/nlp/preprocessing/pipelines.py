@@ -1,7 +1,9 @@
-import stanza
-import Stemmer
+import logging
 
-stemmer_lang_map = {
+import nltk
+from nltk.stem import SnowballStemmer
+
+lang_map = {
     'en': 'english',
     'es': 'spanish',
     'fr': 'french',
@@ -12,24 +14,19 @@ stemmer_lang_map = {
     'ca': 'catalan'
 }
 
-tokenizers: dict[str, stanza.pipeline.core.Pipeline] = {}
-stemmers: dict[str, Stemmer.Stemmer] = {}
+stemmers: dict[str, SnowballStemmer] = {}
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    # "punkt" is not installed, download it
+    nltk.download('punkt')
 
 
-def create_or_get_tokenizer(lang: str = 'en') -> stanza.pipeline.core.Pipeline:
-    if lang in tokenizers:
-        return tokenizers[lang]
-    tokenizer: stanza.pipeline.core.Pipeline = stanza.Pipeline(lang=lang, processors='tokenize',
-                                                               tokenize_no_ssplit=True, logging_level='ERROR')
-    tokenizers[lang] = tokenizer
-    # logging.info(f'tokenizer added: {stemmer_lang_map[lang]}')
-    return tokenizer
-
-
-def create_or_get_stemmer(lang: str = 'english') -> Stemmer.Stemmer:
+def create_or_get_stemmer(lang: str = 'english') -> SnowballStemmer:
     if lang in stemmers:
         return stemmers[lang]
-    stemmer = Stemmer.Stemmer(lang)
+    stemmer = SnowballStemmer(lang)
     stemmers[lang] = stemmer
-    # logging.info(f'stemmer added: {lang}')
+    logging.info(f'Stemmer added: {lang}')
     return stemmer
