@@ -1,19 +1,19 @@
+import logging
 import random
 
 from besser.bot.core.Bot import Bot
 from besser.bot.core.Session import Session
 from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentClassifierPrediction
-import logging
 
 # Configure the logging module
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
 
 bot = Bot('greetings-bot')
-bot.load_properties('bot.properties')  # Not implemented
+bot.load_properties('config.properties')
 
 
 def global_fallback_body(session: Session):
-    session.put_answer("Greetings from global fallback")
+    session.reply("Greetings from global fallback")
 
 
 # Assigned to all bot states (overriding all currently assigned fallback bodies).
@@ -63,7 +63,7 @@ count_bye = 0
 
 
 def s0_body(session: Session):
-    session.put_answer('Waiting...')
+    session.reply('Waiting...')
 
 
 s0.set_body(s0_body)
@@ -76,12 +76,12 @@ s0.when_intent_matched_go_to(weather_intent, weather_state)
 def hello_body(session: Session):
     global count_hello
     count_hello = count_hello + 1
-    session.put_answer('You said hello ' + str(count_hello) + ' times')
+    session.reply('You said hello ' + str(count_hello) + ' times')
 
 
 # Custom fallback for hello_state
 def hello_fallback_body(session: Session):
-    session.put_answer("Greetings from hello fallback")
+    session.reply("Greetings from hello fallback")
 
 
 hello_state.set_body(hello_body)
@@ -94,7 +94,7 @@ hello_state.when_intent_matched_go_to(bye_intent, bye_state)
 def bye_body(session: Session):
     global count_bye
     count_bye = count_bye + 1
-    session.put_answer('You said bye ' + str(count_bye) + ' times')
+    session.reply('You said bye ' + str(count_bye) + ' times')
 
 
 bye_state.set_body(bye_body)
@@ -105,9 +105,9 @@ def weather_body(session: Session):
     predicted_intent: IntentClassifierPrediction = session.get_predicted_intent()
     city = predicted_intent.get_parameter('city1')
     if city.value is None:
-        session.put_answer("Sorry, I didn't get the city")
+        session.reply("Sorry, I didn't get the city")
     else:
-        session.put_answer(f"The weather in {city.value} is {random.uniform(0, 30)}")
+        session.reply(f"The weather in {city.value} is {random.uniform(0, 30)}")
 
 
 weather_state.set_body(weather_body)
@@ -116,4 +116,4 @@ weather_state.go_to(s0)
 # RUN APPLICATION
 
 if __name__ == '__main__':
-    bot.run()
+    bot.run(use_ui=True)

@@ -6,4 +6,4 @@ def body_template(session: Session):
 
 
 def default_fallback_body(session: Session):
-    session.put_answer("Greetings from default fallback")
+    session.reply("Greetings from default fallback")

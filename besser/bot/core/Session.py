@@ -1,39 +1,31 @@
 import json
 
+from pandas import DataFrame
+from websockets.sync.server import ServerConnection
+
+from besser.bot.server.Payload import Payload, PayloadEncoder
 from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentClassifierPrediction
 
 
 class Session:
 
-    def __init__(self, user_id, current_state):
-        self.user_id = user_id
+    def __init__(self, conn, current_state):
+        self.conn: ServerConnection = conn
         self.current_state = current_state
         self.dictionary = {}
         self.predicted_intent = None
         self.message = None
         self.answer = []
-        self.history = []
+        self.chat_history = []
 
     def set(self, key, value):
         self.dictionary[key] = value
-
-    def put_answer(self, value):
-        self.answer.append(value)
-
-    def clear_answer(self):
-        self.answer = []
 
     def get(self, key):
         return self.dictionary[key]
 
     def delete(self, key):
         del self.dictionary[key]
-
-    def update_history(self):
-        last_message = self.get_message()
-        if last_message is not None:
-            self.history.append((last_message, 1))
-        self.history.extend([(m, 0) for m in self.answer])
 
     def set_predicted_intent(self, prediction: IntentClassifierPrediction):
         self.predicted_intent = prediction
@@ -42,22 +34,21 @@ class Session:
         return self.predicted_intent
 
     def set_message(self, message: str):
+        self.chat_history.append((message, 1))
         self.message = message
 
     def get_message(self):
         return self.message
 
+    def reply(self, message: str):
+        self.chat_history.append((message, 0))
+        payload = Payload(action=Payload.BOT_REPLY_STR,
+                          message=message)
+        self.conn.send(json.dumps(payload, cls=PayloadEncoder))
 
-class SessionEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Session):
-            # Convert the Session object to a dictionary
-            session_dict = {
-                'dictionary': obj.dictionary,
-                'user_id': obj.user_id,
-                'message': obj.message,
-                'answer': obj.answer,
-                'history': obj.history
-            }
-            return session_dict
-        return super().default(obj)
+    def reply_dataframe(self, df: DataFrame):
+        message = df.to_json()
+        self.chat_history.append((message, 0))
+        payload = Payload(action=Payload.BOT_REPLY_DF,
+                          message=message)
+        self.conn.send(json.dumps(payload, cls=PayloadEncoder))
