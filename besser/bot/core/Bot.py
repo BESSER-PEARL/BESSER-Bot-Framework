@@ -137,3 +137,6 @@ class Bot:
         else:
             pass
             # TODO: HANDLE EXCEPTION
+
+    def delete_session(self, session):
+        del self.sessions[session.conn.id]
