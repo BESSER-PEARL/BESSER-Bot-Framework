@@ -16,7 +16,7 @@ class Transition:
             return f"{self.event.__name__} ({self.event_params['intent'].name}): [{self.source.name}] --> " \
                    f"[{self.dest.name}]"
         elif self.event == auto:
-            return f"Auto: [{self.source.name}] --> [{self.dest.name}]"
+            return f"{self.event.__name__}: [{self.source.name}] --> [{self.dest.name}]"
 
     def is_intent_matched(self, intent: Intent):
         if self.event == intent_matched:
