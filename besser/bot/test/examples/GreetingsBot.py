@@ -1,14 +1,13 @@
 import logging
-import random
 
 from besser.bot.core.Bot import Bot
 from besser.bot.core.Session import Session
-from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentClassifierPrediction
 
 # Configure the logging module
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
 
 bot = Bot('greetings-bot')
+# Store bot properties in a dedicated file
 bot.load_properties('config.properties')
 
 
@@ -25,21 +24,13 @@ bot.set_global_fallback_body(global_fallback_body)
 s0 = bot.new_state('s0', initial=True)
 hello_state = bot.new_state('hello_state')
 bye_state = bot.new_state('bye_state')
-weather_state = bot.new_state('weather_state')
-
-# ENTITIES
-
-city_entity = bot.new_entity('city_entity', entries={
-    'Barcelona': ['BCN', 'barna'],
-    'Madrid': ['MAD']
-})
+howareyou_state = bot.new_state('howareyou_state')
 
 # INTENTS
 
 hello_intent = bot.new_intent('hello_intent', [
     'hello',
-    'hi',
-    'how are you?'
+    'hi'
 ])
 
 bye_intent = bot.new_intent('bye_intent', [
@@ -48,11 +39,10 @@ bye_intent = bot.new_intent('bye_intent', [
     'see you'
 ])
 
-weather_intent = bot.new_intent('weather_intent', [
-    'weather',
-    'weather in CITY',
+howareyou_intent = bot.new_intent('howareyou_intent', [
+    'how are you?',
+    'how r u',
 ])
-weather_intent.parameter('city1', 'CITY1', city_entity)
 
 # GLOBAL VARIABLES
 
@@ -67,16 +57,14 @@ def s0_body(session: Session):
 
 
 s0.set_body(s0_body)
-
 s0.when_intent_matched_go_to(hello_intent, hello_state)
-s0.when_intent_matched_go_to(bye_intent, bye_state)
-s0.when_intent_matched_go_to(weather_intent, weather_state)
+s0.when_intent_matched_go_to(howareyou_intent, howareyou_state)
 
 
 def hello_body(session: Session):
     global count_hello
     count_hello = count_hello + 1
-    session.reply('You said hello ' + str(count_hello) + ' times')
+    session.reply(f'You said hello {count_hello} times')
 
 
 # Custom fallback for hello_state
@@ -86,7 +74,6 @@ def hello_fallback_body(session: Session):
 
 hello_state.set_body(hello_body)
 hello_state.set_fallback_body(hello_fallback_body)
-
 hello_state.when_intent_matched_go_to(bye_intent, bye_state)
 # hello_state.go_to(s0)  # This transition will be triggered when no intent is detected, replacing the fallback scenario
 
@@ -94,24 +81,19 @@ hello_state.when_intent_matched_go_to(bye_intent, bye_state)
 def bye_body(session: Session):
     global count_bye
     count_bye = count_bye + 1
-    session.reply('You said bye ' + str(count_bye) + ' times')
+    session.reply(f'You said bye {count_bye} times')
 
 
 bye_state.set_body(bye_body)
 bye_state.go_to(s0)
 
 
-def weather_body(session: Session):
-    predicted_intent: IntentClassifierPrediction = session.get_predicted_intent()
-    city = predicted_intent.get_parameter('city1')
-    if city.value is None:
-        session.reply("Sorry, I didn't get the city")
-    else:
-        session.reply(f"The weather in {city.value} is {random.uniform(0, 30)}")
+def howareyou_body(session: Session):
+    session.reply(f'I am fine, thanks!')
 
 
-weather_state.set_body(weather_body)
-weather_state.go_to(s0)
+howareyou_state.set_body(howareyou_body)
+howareyou_state.go_to(s0)
 
 # RUN APPLICATION
 
