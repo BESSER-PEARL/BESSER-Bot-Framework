@@ -11,14 +11,8 @@
 pip install -r requirements.txt
 ```
 
-### User Interface (chat box) for bot testing
-
-- [ui.py (streamlit)](besser/bot/test/ui/ui.py)
-
-```bash
-streamlit run besser/bot/test/ui/ui.py
-```
-
 ### Example bots
 
-- [GreetingsBot](besser/bot/test/examples/GreetingsBot.py)
+- [GreetingsBot](besser/bot/test/examples/GreetingsBot.py): Very simple bot for the first contact with the framework
+- [WeatherBot](besser/bot/test/examples/WeatherBot.py): Introducing entities
+- [TelegramBot](besser/bot/test/examples/TelegramBot.py): Introducing the [TelegramPlatform](besser/bot/test/examples/TelegramBot.py)

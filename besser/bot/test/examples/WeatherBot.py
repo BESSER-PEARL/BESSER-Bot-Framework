@@ -8,9 +8,11 @@ from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentCl
 # Configure the logging module
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
 
-bot = Bot('weather-bot')
-# Store bot properties in a dedicated file
-bot.load_properties('config.properties')
+bot = Bot('Weather_bot')
+# Load bot properties stored in a dedicated file
+bot.load_properties('config.ini')
+# Define the platform your chatbot will use
+websocket_platform = bot.use_websocket_platform(use_ui=True)
 
 # STATES
 
@@ -20,7 +22,7 @@ weather_state = bot.new_state('weather_state')
 # ENTITIES
 
 city_entity = bot.new_entity('city_entity', entries={
-    'Barcelona': ['BCN'],
+    'Barcelona': ['BCN', 'barna'],
     'Madrid': [],
     'Luxembourg': ['LUX']
 })
@@ -32,11 +34,6 @@ weather_intent = bot.new_intent('weather_intent', [
     'weather in CITY',
 ])
 weather_intent.parameter('city1', 'CITY', city_entity)
-
-# GLOBAL VARIABLES
-
-count_hello = 0
-count_bye = 0
 
 # STATES BODIES' DEFINITION + TRANSITIONS
 
@@ -50,7 +47,7 @@ s0.when_intent_matched_go_to(weather_intent, weather_state)
 
 
 def weather_body(session: Session):
-    predicted_intent: IntentClassifierPrediction = session.get_predicted_intent()
+    predicted_intent: IntentClassifierPrediction = session.predicted_intent
     city = predicted_intent.get_parameter('city1')
     temperature = round(random.uniform(0, 30), 2)
     if city.value is None:
@@ -69,4 +66,4 @@ weather_state.go_to(s0)
 # RUN APPLICATION
 
 if __name__ == '__main__':
-    bot.run(use_ui=True)
+    bot.run()
