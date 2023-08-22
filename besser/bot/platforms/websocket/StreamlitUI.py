@@ -12,7 +12,7 @@ from streamlit.runtime.app_session import AppSession
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 from streamlit.web import cli as stcli
 
-from besser.bot.server.Payload import Payload, PayloadEncoder
+from besser.bot.platforms.Payload import Payload, PayloadEncoder
 
 
 def get_streamlit_session() -> AppSession or None:
@@ -97,7 +97,7 @@ def main():
         st.session_state['websocket'] = ws
 
     if 'session_monitoring' not in st.session_state:
-        session_monitoring_thread = threading.Thread(target=session_monitoring, kwargs={'interval': 60})
+        session_monitoring_thread = threading.Thread(target=session_monitoring, kwargs={'interval': 10})
         add_script_run_ctx(session_monitoring_thread)
         session_monitoring_thread.start()
         st.session_state['session_monitoring'] = session_monitoring_thread

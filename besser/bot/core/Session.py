@@ -1,16 +1,13 @@
-import json
-
-from pandas import DataFrame
-from websockets.sync.server import ServerConnection
-
-from besser.bot.server.Payload import Payload, PayloadEncoder
 from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentClassifierPrediction
+from besser.bot.platforms.Platform import Platform
 
 
 class Session:
 
-    def __init__(self, conn, current_state):
-        self.conn: ServerConnection = conn
+    def __init__(self, session_id, bot, platform, current_state):
+        self.id = session_id
+        self.bot = bot
+        self.platform: Platform = platform
         self.current_state = current_state
         self.dictionary = {}
         self.predicted_intent = None
@@ -41,14 +38,5 @@ class Session:
         return self.message
 
     def reply(self, message: str):
-        self.chat_history.append((message, 0))
-        payload = Payload(action=Payload.BOT_REPLY_STR,
-                          message=message)
-        self.conn.send(json.dumps(payload, cls=PayloadEncoder))
-
-    def reply_dataframe(self, df: DataFrame):
-        message = df.to_json()
-        self.chat_history.append((message, 0))
-        payload = Payload(action=Payload.BOT_REPLY_DF,
-                          message=message)
-        self.conn.send(json.dumps(payload, cls=PayloadEncoder))
+        # Multi-platform
+        self.platform.reply(self, message)

@@ -7,7 +7,7 @@ from besser.bot.exceptions.exceptions import BodySignatureError, DuplicatedInten
     StateNotFound, IntentNotFound, DuplicatedAutoTransitionError
 from besser.bot.core.Transition import Transition
 from besser.bot.library.intent.IntentLibrary import fallback_intent
-from besser.bot.library.state.StateLibrary import default_fallback_body, body_template
+from besser.bot.library.state.StateLibrary import default_fallback_body, default_body
 
 
 class State:
@@ -16,7 +16,7 @@ class State:
         self.bot = bot
         self.name = name
         self.initial = initial
-        self.body = None
+        self.body = default_body
         self.intents = []
         self.transitions = []
         self.transition_counter = 0
@@ -37,7 +37,7 @@ class State:
 
     def set_body(self, body):
         body_signature = inspect.signature(body)
-        body_template_signature = inspect.signature(body_template)
+        body_template_signature = inspect.signature(default_body)
         if body_signature.parameters != body_template_signature.parameters:
             raise BodySignatureError(self.bot, self, body, body_template_signature, body_signature)
         self.body = body

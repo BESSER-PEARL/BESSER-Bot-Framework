@@ -1,18 +1,17 @@
-import inspect
 import logging
-import os
-import subprocess
 import threading
+from uuid import UUID
 
 from besser.bot.core.entity.Entity import Entity
 from besser.bot.core.intent.Intent import Intent
 from besser.bot.exceptions.exceptions import DuplicatedStateError, DuplicatedIntentError, DuplicatedEntityError, \
     DuplicatedInitialStateError, InitialStateNotFound
-from besser.bot.server.Server import Server
+from besser.bot.platforms.Platform import Platform
 from besser.bot.core.Session import Session
 from besser.bot.core.State import State
 from besser.bot.nlp.NLPEngine import NLPEngine
-from besser.bot.test.ui import ui
+from besser.bot.platforms.telegram.TelegramPlatform import TelegramPlatform
+from besser.bot.platforms.websocket.WebSocketPlatform import WebSocketPlatform
 
 from configparser import ConfigParser
 
@@ -26,7 +25,7 @@ class Bot:
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
-        self.server: Server = Server(self)
+        self.platforms: list[Platform] = []
         self.nlp_engine = NLPEngine(self)
         self.config: ConfigParser = ConfigParser()
 
@@ -78,34 +77,30 @@ class Bot:
                 return state
         return None
 
-    def run(self, use_ui: bool = True):
+    def run(self):
         if not self.initial_state():
             raise InitialStateNotFound(self)
         self.nlp_engine.initialize()
-        self.server.initialize()
         logging.info(f'{self.name} training started')
         self.train()
         logging.info(f'{self.name} training finished')
-        if use_ui:
-            def run_streamlit():
-                subprocess.run(["streamlit", "run", os.path.abspath(inspect.getfile(ui)),
-                                "--server.address", self.config.get('ui', 'host', fallback='localhost'),
-                                "--server.port", self.config.get('ui', 'port', fallback='5000')])
-            thread = threading.Thread(target=run_streamlit)
-            logging.info(f'Running Streamlit UI in another thread')
+        for server in self.platforms:
+            thread = threading.Thread(target=server.run)
             thread.start()
-        logging.info(f'{self.name} server starting at ws://{self.server.host}:{self.server.port}')
-        self.server.run()
+        idle = threading.Event()
+        idle.wait()
 
-    def reset(self, session):
+    def reset(self, session_id):
+        session = self.sessions[session_id]
         # TODO: CHECK SESSION ALREADY EXISTS?
-        new_session = Session(session.conn, self.initial_state())
-        self.sessions[session.conn.id] = new_session
+        new_session = Session(session_id, self, session.platform, self.initial_state())
+        self.sessions[session_id] = new_session
         logging.info(f'{self.name} restarted')
         new_session.current_state.run(new_session)
         return new_session
 
-    def receive_message(self, session, message):
+    def receive_message(self, session_id, message):
+        session = self.sessions[session_id]
         session.set_message(message)
         session.set_predicted_intent(self.nlp_engine.predict_intent(session))
         session.current_state.receive_intent(session)
@@ -122,21 +117,33 @@ class Bot:
     def train(self):
         self.nlp_engine.train()
 
-    def get_session(self, user_id):
-        if user_id in self.sessions:
-            return self.sessions[user_id]
+    def get_session(self, session_id):
+        if session_id in self.sessions:
+            return self.sessions[session_id]
         else:
             return None
 
-    def new_session(self, conn):
-        if conn.id not in self.sessions:
-            session = Session(conn, self.initial_state())
-            self.sessions[conn.id] = session
+    def new_session(self, session_id: UUID, server):
+        if session_id not in self.sessions:
+            session = Session(session_id, self, server, self.initial_state())
+            self.sessions[session_id] = session
             session.current_state.run(session)
             return session
         else:
             pass
             # TODO: HANDLE EXCEPTION
 
-    def delete_session(self, session):
-        del self.sessions[session.conn.id]
+    def delete_session(self, session_id):
+        del self.sessions[session_id]
+
+    def use_websocket_platform(self, use_ui: bool = True):
+        websocket_server = WebSocketPlatform(self, use_ui)
+        websocket_server.initialize()
+        self.platforms.append(websocket_server)
+        return websocket_server
+
+    def use_telegram_platform(self):
+        telegram_server = TelegramPlatform(self)
+        telegram_server.initialize()
+        self.platforms.append(telegram_server)
+        return telegram_server

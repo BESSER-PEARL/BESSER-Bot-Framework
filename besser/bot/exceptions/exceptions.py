@@ -43,7 +43,8 @@ class DuplicatedIntentMatchingTransitionError(Exception):
 class DuplicatedInitialStateError(Exception):
 
     def __init__(self, bot, initial_state1, initial_state2):
-        message = f"Bot '{bot.name}' already contains an initial state '{initial_state1.name}', and '{initial_state2.name}' cannot be initial"
+        message = f"Bot '{bot.name}' already contains an initial state '{initial_state1.name}', and " \
+                  f"'{initial_state2.name}' cannot be initial"
         super().__init__(message)
 
 
@@ -57,12 +58,22 @@ class InitialStateNotFound(Exception):
 class BodySignatureError(Exception):
 
     def __init__(self, bot, state, body, body_template_signature, body_signature):
-        message = f"Expected parameters in body method '{body.__name__}' of state '{state.name}' in bot '{bot.name}' are {body_template_signature}, got {body_signature} instead"
+        message = f"Expected parameters in body method '{body.__name__}' of state '{state.name}' in bot '{bot.name}' " \
+                  f"are {body_template_signature}, got {body_signature} instead"
         super().__init__(message)
 
 
 class DuplicatedAutoTransitionError(Exception):
 
     def __init__(self, bot, state):
-        message = f"State '{state.name}' in bot '{bot.name}' cannot contain more than 1 auto transition ({state.go_to.__name__}() call)"
+        message = f"State '{state.name}' in bot '{bot.name}' cannot contain more than 1 auto transition " \
+                  f"({state.go_to.__name__}() call)"
+        super().__init__(message)
+
+
+class PlatformMismatchError(Exception):
+
+    def __init__(self, platform, session):
+        message = f"Attempting to reply with platform {platform.__class__.__name__} in a session with platform " \
+                  f"{session.platform.__class__.__name__}. Please use the appropriate platform for this session"
         super().__init__(message)
