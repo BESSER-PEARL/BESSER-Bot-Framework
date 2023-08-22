@@ -1,6 +1,5 @@
 import logging
 import threading
-from uuid import UUID
 
 from besser.bot.core.entity.Entity import Entity
 from besser.bot.core.intent.Intent import Intent
@@ -19,18 +18,29 @@ from configparser import ConfigParser
 class Bot:
 
     def __init__(self, name):
-        self.name: str = name
-        self.properties: dict[str, object] = {}
-        self.sessions: dict[str, Session] = {}
+        self._name: str = name
+        self._platforms: list[Platform] = []
+        self._nlp_engine = NLPEngine(self)
+        self._config: ConfigParser = ConfigParser()
+        self._sessions: dict[str, Session] = {}
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
-        self.platforms: list[Platform] = []
-        self.nlp_engine = NLPEngine(self)
-        self.config: ConfigParser = ConfigParser()
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def nlp_engine(self):
+        return self._nlp_engine
+
+    @property
+    def config(self):
+        return self._config
 
     def load_properties(self, path: str):
-        self.config.read(path)
+        self._config.read(path)
 
     def new_state(self, name, initial=False):
         new_state = State(self, name, initial)
@@ -67,7 +77,7 @@ class Bot:
         self.entities.append(new_entity)
         return new_entity
 
-    def initial_state(self) -> State:
+    def initial_state(self) -> State or None:
         for state in self.states:
             if state.initial:
                 return state
@@ -76,70 +86,63 @@ class Bot:
     def run(self):
         if not self.initial_state():
             raise InitialStateNotFound(self)
-        self.nlp_engine.initialize()
-        logging.info(f'{self.name} training started')
+        self._nlp_engine.initialize()
+        logging.info(f'{self._name} training started')
         self.train()
-        logging.info(f'{self.name} training finished')
-        for server in self.platforms:
+        logging.info(f'{self._name} training finished')
+        for server in self._platforms:
             thread = threading.Thread(target=server.run)
             thread.start()
         idle = threading.Event()
         idle.wait()
 
     def reset(self, session_id):
-        session = self.sessions[session_id]
+        session = self._sessions[session_id]
         # TODO: CHECK SESSION ALREADY EXISTS?
         new_session = Session(session_id, self, session.platform, self.initial_state())
-        self.sessions[session_id] = new_session
-        logging.info(f'{self.name} restarted')
+        self._sessions[session_id] = new_session
+        logging.info(f'{self._name} restarted')
         new_session.current_state.run(new_session)
         return new_session
 
     def receive_message(self, session_id, message):
-        session = self.sessions[session_id]
-        session.set_message(message)
-        session.set_predicted_intent(self.nlp_engine.predict_intent(session))
+        session = self._sessions[session_id]
+        session.message = message
+        session.predicted_intent = self._nlp_engine.predict_intent(session)
         session.current_state.receive_intent(session)
-
-    def move(self, session, transition):
-        logging.info(transition.log())
-        session.current_state = transition.dest
-        session.current_state.run(session)
 
     def set_global_fallback_body(self, body):
         for state in self.states:
             state.set_fallback_body(body)
 
     def train(self):
-        self.nlp_engine.train()
+        self._nlp_engine.train()
 
-    def get_session(self, session_id):
-        if session_id in self.sessions:
-            return self.sessions[session_id]
+    def get_session(self, session_id) -> Session or None:
+        if session_id in self._sessions:
+            return self._sessions[session_id]
         else:
             return None
 
-    def new_session(self, session_id: UUID, server):
-        if session_id not in self.sessions:
+    def new_session(self, session_id, server):
+        if session_id not in self._sessions:
             session = Session(session_id, self, server, self.initial_state())
-            self.sessions[session_id] = session
+            self._sessions[session_id] = session
             session.current_state.run(session)
             return session
         else:
-            pass
             # TODO: HANDLE EXCEPTION
+            return None
 
     def delete_session(self, session_id):
-        del self.sessions[session_id]
+        del self._sessions[session_id]
 
     def use_websocket_platform(self, use_ui: bool = True):
         websocket_server = WebSocketPlatform(self, use_ui)
-        websocket_server.initialize()
-        self.platforms.append(websocket_server)
+        self._platforms.append(websocket_server)
         return websocket_server
 
     def use_telegram_platform(self):
         telegram_server = TelegramPlatform(self)
-        telegram_server.initialize()
-        self.platforms.append(telegram_server)
+        self._platforms.append(telegram_server)
         return telegram_server

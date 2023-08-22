@@ -11,22 +11,30 @@ from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_text, pre
 class NLPEngine:
 
     def __init__(self, bot):
-        self.bot = bot
-        self.configuration: NLPConfiguration = NLPConfiguration()
-        self.intent_classifiers = {}
-        self.intent_threshold = 0.4
-        self.ner = SimpleNER(self, self.bot)
+        self._bot = bot
+        self._configuration: NLPConfiguration = NLPConfiguration()
+        self._intent_classifiers = {}
+        self._intent_threshold = 0.4
+        self._ner = SimpleNER(self, self._bot)
+
+    @property
+    def configuration(self):
+        return self._configuration
+
+    @property
+    def ner(self):
+        return self._ner
 
     def initialize(self):
-        for state in self.bot.states:
-            if state not in self.intent_classifiers and state.intents:
-                self.intent_classifiers[state] = SimpleIntentClassifier(self, state)
+        for state in self._bot.states:
+            if state not in self._intent_classifiers and state.intents:
+                self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
 
     def train(self):
-        for entity in self.bot.entities:
+        for entity in self._bot.entities:
             if not entity.base_entity:
-                preprocess_custom_entity_entries(entity, self.configuration)
-        for state, intent_classifier in self.intent_classifiers.items():
+                preprocess_custom_entity_entries(entity, self._configuration)
+        for state, intent_classifier in self._intent_classifiers.items():
             if not state.intents:
                 logging.info(f"Intent classifier in {state.name} not trained (no intents found).")
             else:
@@ -34,16 +42,16 @@ class NLPEngine:
                 logging.info(f"Intent classifier in {state.name} successfully trained.")
 
     def predict_intent(self, session):
-        message = session.get_message()
-        message = preprocess_text(message, self.configuration)
-        intent_classifier = self.intent_classifiers[session.current_state]
+        message = session.message
+        message = preprocess_text(message, self._configuration)
+        intent_classifier = self._intent_classifiers[session.current_state]
         intent_classifier_predictions: list[IntentClassifierPrediction] = intent_classifier.predict(message)
         best_intent_prediction = self.get_best_intent_prediction(session, intent_classifier_predictions)
 
         return best_intent_prediction
 
     def get_best_intent_prediction(self, session, intent_classifier_predictions: list[IntentClassifierPrediction]):
-        fallback = fallback_intent_prediction(session.get_message())
+        fallback = fallback_intent_prediction(session.message)
         best_intent_prediction: IntentClassifierPrediction
         if not intent_classifier_predictions:
             best_intent_prediction = fallback
@@ -52,7 +60,7 @@ class NLPEngine:
         for intent_prediction in intent_classifier_predictions[1:]:
             if intent_prediction.score > best_intent_prediction.score:
                 best_intent_prediction = intent_prediction
-        if best_intent_prediction.score < self.intent_threshold:
+        if best_intent_prediction.score < self._intent_threshold:
             best_intent_prediction = fallback
-            best_intent_prediction.score = self.intent_threshold
+            best_intent_prediction.score = self._intent_threshold
         return best_intent_prediction

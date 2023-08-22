@@ -6,5 +6,5 @@ class EntityEntry:
             synonyms = []
         self.value: str = value
         self.synonyms: list[str] = synonyms
-        self.preprocessed_value: str = None
-        self.preprocessed_synonyms: list[str] = None
+        self.preprocessed_value: str or None = None
+        self.preprocessed_synonyms: list[str] or None = None

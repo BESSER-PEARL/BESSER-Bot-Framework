@@ -7,7 +7,8 @@ from besser.bot.library.entity.BaseEntities import ordered_base_entities, BaseEn
 from besser.bot.nlp.intent_classifier.MatchedParameter import MatchedParameter
 from besser.bot.nlp.ner.base.datetime import ner_datetime, datetime_aux
 from besser.bot.nlp.ner.base.number import ner_number
-from besser.bot.nlp.utils import value_in_sentence, replace_value_in_sentence, find_first_temp, replace_temp_value_in_sentence
+from besser.bot.nlp.utils import value_in_sentence, replace_value_in_sentence, find_first_temp, \
+    replace_temp_value_in_sentence
 
 
 def get_custom_entity_values_dict(intent, preprocessed_values=False) -> dict[str, tuple[list[IntentParameter], str]]:
@@ -80,8 +81,8 @@ def base_entity_ner(sentence: str, entity_name: str, configuration: NLPConfigura
 class SimpleNER:
 
     def __init__(self, nlp_engine, bot):
-        self.nlp_engine = nlp_engine
-        self.bot = bot
+        self._nlp_engine = nlp_engine
+        self._bot = bot
 
     def predict(self, state: State, message: str) -> tuple[dict[Intent, list[MatchedParameter]], dict[str, list[Intent]]]:
 
@@ -93,12 +94,12 @@ class SimpleNER:
             ner_message: str = message
             # Match custom entities
             preprocessed_values: bool
-            if self.nlp_engine.configuration.stemmer:
+            if self._nlp_engine.configuration.stemmer:
                 preprocessed_values = True
             else:
                 preprocessed_values = False
             all_entity_values: dict[str, tuple[list[IntentParameter], str]] = \
-                get_custom_entity_values_dict(intent,preprocessed_values)
+                get_custom_entity_values_dict(intent, preprocessed_values)
             temps: dict[str, tuple[list[IntentParameter], str]] = {}
             temp_template = r'/temp{}/'
             temp_count = 1
@@ -144,7 +145,7 @@ class SimpleNER:
                     if base_entity_name == entity_ref.entity.name:
                         param_name = entity_ref.name
                         formatted_ner_sentence, formatted_frag, param_info = \
-                            base_entity_ner(ner_message, base_entity_name, self.nlp_engine.configuration)
+                            base_entity_ner(ner_message, base_entity_name, self._nlp_engine.configuration)
                         if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
                             intent_matches.append(MatchedParameter(param_name, formatted_frag, param_info))
                             ner_message = replace_value_in_sentence(formatted_ner_sentence, formatted_frag,
@@ -160,4 +161,3 @@ class SimpleNER:
             intent_sentences[ner_message].append(intent)
 
         return ner_result, intent_sentences
-
