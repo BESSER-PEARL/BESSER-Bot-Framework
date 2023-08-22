@@ -5,3 +5,7 @@ tensorflow==2.13.0
 text2num==2.5.0
 websocket-client==1.6.1
 websockets==11.0.3
+python-telegram-bot==20.4
+pandas~=1.5.3
+numpy~=1.24.3
+keras~=2.13.1
