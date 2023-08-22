@@ -48,8 +48,6 @@ class Bot:
         return intent
 
     def new_intent(self, name, training_sentences, parameters=None):
-        if parameters is None:
-            parameters = []
         new_intent = Intent(name, training_sentences, parameters)
         if new_intent in self.intents:
             raise DuplicatedIntentError(self, new_intent)
@@ -63,8 +61,6 @@ class Bot:
         return entity
 
     def new_entity(self, name, base_entity=False, entries=None):
-        if entries is None:
-            entries = {}
         new_entity = Entity(name, base_entity, entries)
         if new_entity in self.entities:
             raise DuplicatedEntityError(self, new_entity)
