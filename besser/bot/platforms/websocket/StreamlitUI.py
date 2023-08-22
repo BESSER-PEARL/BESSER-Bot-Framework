@@ -14,6 +14,9 @@ from streamlit.web import cli as stcli
 
 from besser.bot.platforms.Payload import Payload, PayloadEncoder
 
+# Time interval to check if a streamlit session is still active, in seconds
+SESSION_MONITORING_INTERVAL = 10
+
 
 def get_streamlit_session() -> AppSession or None:
     session_id = get_script_run_ctx().session_id
@@ -97,7 +100,8 @@ def main():
         st.session_state['websocket'] = ws
 
     if 'session_monitoring' not in st.session_state:
-        session_monitoring_thread = threading.Thread(target=session_monitoring, kwargs={'interval': 10})
+        session_monitoring_thread = threading.Thread(target=session_monitoring,
+                                                     kwargs={'interval': SESSION_MONITORING_INTERVAL})
         add_script_run_ctx(session_monitoring_thread)
         session_monitoring_thread.start()
         st.session_state['session_monitoring'] = session_monitoring_thread
@@ -105,13 +109,12 @@ def main():
     ws = st.session_state['websocket']
 
     with st.sidebar:
-        with st.form(key="resetForm"):
-            reset_button = st.form_submit_button(label="Reset bot")
-            if reset_button:
-                st.session_state['history'] = []
-                st.session_state['queue'] = queue.Queue()
-                payload = Payload(action=Payload.RESET)
-                ws.send(json.dumps(payload, cls=PayloadEncoder))
+        reset_button = st.button(label="Reset bot")
+        if reset_button:
+            st.session_state['history'] = []
+            st.session_state['queue'] = queue.Queue()
+            payload = Payload(action=Payload.RESET)
+            ws.send(json.dumps(payload, cls=PayloadEncoder))
 
     for message in st.session_state['history']:
         with st.chat_message(user_type[message[1]]):
