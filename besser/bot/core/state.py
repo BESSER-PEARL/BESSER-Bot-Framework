@@ -2,12 +2,12 @@ import inspect
 import logging
 import traceback
 
-from besser.bot.library.event.EventLibrary import auto, intent_matched
+from besser.bot.library.event.event_library import auto, intent_matched
 from besser.bot.exceptions.exceptions import BodySignatureError, DuplicatedIntentMatchingTransitionError, \
     StateNotFound, IntentNotFound, DuplicatedAutoTransitionError
-from besser.bot.core.Transition import Transition
-from besser.bot.library.intent.IntentLibrary import fallback_intent
-from besser.bot.library.state.StateLibrary import default_fallback_body, default_body
+from besser.bot.core.transition import Transition
+from besser.bot.library.intent.intent_library import fallback_intent
+from besser.bot.library.state.state_library import default_fallback_body, default_body
 
 
 class State:

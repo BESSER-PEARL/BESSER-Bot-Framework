@@ -4,10 +4,10 @@ import logging
 from telegram import Update
 from telegram.ext import ApplicationBuilder, BaseHandler, CommandHandler, ContextTypes, MessageHandler, filters
 
-from besser.bot.core.Session import Session
+from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
-from besser.bot.platforms.Payload import Payload
-from besser.bot.platforms.Platform import Platform
+from besser.bot.platforms.payload import Payload
+from besser.bot.platforms.platform import Platform
 
 
 class TelegramPlatform(Platform):

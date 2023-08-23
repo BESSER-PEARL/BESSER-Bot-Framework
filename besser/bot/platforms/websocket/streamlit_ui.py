@@ -12,7 +12,7 @@ from streamlit.runtime.app_session import AppSession
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 from streamlit.web import cli as stcli
 
-from besser.bot.platforms.Payload import Payload, PayloadEncoder
+from besser.bot.platforms.payload import Payload, PayloadEncoder
 
 # Time interval to check if a streamlit session is still active, in seconds
 SESSION_MONITORING_INTERVAL = 10

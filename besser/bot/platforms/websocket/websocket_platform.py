@@ -9,11 +9,11 @@ from pandas import DataFrame
 from websockets.exceptions import ConnectionClosedError
 from websockets.sync.server import ServerConnection, serve
 
-from besser.bot.core.Session import Session
+from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
-from besser.bot.platforms.Payload import Payload, PayloadEncoder
-from besser.bot.platforms.Platform import Platform
-from besser.bot.platforms.websocket import StreamlitUI
+from besser.bot.platforms.payload import Payload, PayloadEncoder
+from besser.bot.platforms.platform import Platform
+from besser.bot.platforms.websocket import streamlit_ui
 
 
 class WebSocketPlatform(Platform):
@@ -50,7 +50,7 @@ class WebSocketPlatform(Platform):
     def run(self):
         if self._use_ui:
             def run_streamlit():
-                subprocess.run(["streamlit", "run", os.path.abspath(inspect.getfile(StreamlitUI)),
+                subprocess.run(["streamlit", "run", os.path.abspath(inspect.getfile(streamlit_ui)),
                                 "--server.address", self._bot.config.get('ui', 'host', fallback='localhost'),
                                 "--server.port", self._bot.config.get('ui', 'port', fallback='5000')])
 

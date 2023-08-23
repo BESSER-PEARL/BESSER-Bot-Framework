@@ -1,13 +1,13 @@
 import logging
 
-from besser.bot.core.Bot import Bot
-from besser.bot.core.Session import Session
+from besser.bot.core.bot import Bot
+from besser.bot.core.session import Session
 
 # Configure the logging module
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
 
 # Create the bot
-bot = Bot('Greetings_bot')
+bot = Bot('greetings_bot')
 # Load bot properties stored in a dedicated file
 bot.load_properties('config.ini')
 # Define the platform your chatbot will use

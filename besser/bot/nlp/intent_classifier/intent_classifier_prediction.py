@@ -1,6 +1,6 @@
-from besser.bot.core.intent.Intent import Intent
-from besser.bot.library.intent.IntentLibrary import fallback_intent
-from besser.bot.nlp.intent_classifier.MatchedParameter import MatchedParameter
+from besser.bot.core.intent.intent import Intent
+from besser.bot.library.intent.intent_library import fallback_intent
+from besser.bot.nlp.intent_classifier.matched_parameter import MatchedParameter
 
 
 class IntentClassifierPrediction:

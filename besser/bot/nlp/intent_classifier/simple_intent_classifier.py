@@ -7,9 +7,9 @@ from keras.losses import SparseCategoricalCrossentropy
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 
-from besser.bot.core.intent.Intent import Intent
-from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentClassifierPrediction
-from besser.bot.nlp.intent_classifier.MatchedParameter import MatchedParameter
+from besser.bot.core.intent.intent import Intent
+from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
+from besser.bot.nlp.intent_classifier.matched_parameter import MatchedParameter
 from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_training_sentences
 
 

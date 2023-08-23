@@ -2,7 +2,7 @@ import re
 
 from text_to_num import alpha2digit
 
-from besser.bot.nlp.NLPConfiguration import NLPConfiguration
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
 
 
 def ner_number(sentence: str, configuration: NLPConfiguration) -> tuple[str, str, dict]:

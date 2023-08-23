@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from dateparser.search import search_dates
 
-from besser.bot.nlp.NLPConfiguration import NLPConfiguration
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
 from besser.bot.nlp.utils import replace_value_in_sentence
 
 relative_time_parser = ['relative-time']

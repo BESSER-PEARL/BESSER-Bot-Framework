@@ -1,4 +1,4 @@
-from besser.bot.core.intent.IntentParameter import IntentParameter
+from besser.bot.core.intent.intent_parameter import IntentParameter
 
 
 class Intent:

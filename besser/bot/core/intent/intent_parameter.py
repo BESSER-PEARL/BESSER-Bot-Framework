@@ -1,4 +1,4 @@
-from besser.bot.core.entity.Entity import Entity
+from besser.bot.core.entity.entity import Entity
 
 
 class IntentParameter:

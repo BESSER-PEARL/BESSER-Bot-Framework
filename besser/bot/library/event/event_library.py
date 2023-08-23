@@ -1,4 +1,4 @@
-from besser.bot.core.intent import Intent
+from besser.bot.core.intent.intent import Intent
 
 
 def auto():

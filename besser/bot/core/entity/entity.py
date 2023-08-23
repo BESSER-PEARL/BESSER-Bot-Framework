@@ -1,4 +1,4 @@
-from besser.bot.core.entity.EntityEntry import EntityEntry
+from besser.bot.core.entity.entity_entry import EntityEntry
 
 
 class Entity:

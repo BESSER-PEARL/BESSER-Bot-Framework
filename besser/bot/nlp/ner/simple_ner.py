@@ -1,10 +1,10 @@
-from besser.bot.core.State import State
-from besser.bot.core.intent.Intent import Intent
-from besser.bot.core.intent.IntentParameter import IntentParameter
-from besser.bot.core.entity.Entity import Entity
-from besser.bot.nlp.NLPConfiguration import NLPConfiguration
-from besser.bot.library.entity.BaseEntities import ordered_base_entities, BaseEntities
-from besser.bot.nlp.intent_classifier.MatchedParameter import MatchedParameter
+from besser.bot.core.state import State
+from besser.bot.core.intent.intent import Intent
+from besser.bot.core.intent.intent_parameter import IntentParameter
+from besser.bot.core.entity.entity import Entity
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
+from besser.bot.library.entity.base_entities import ordered_base_entities, BaseEntities
+from besser.bot.nlp.intent_classifier.matched_parameter import MatchedParameter
 from besser.bot.nlp.ner.base.datetime import ner_datetime, datetime_aux
 from besser.bot.nlp.ner.base.number import ner_number
 from besser.bot.nlp.utils import value_in_sentence, replace_value_in_sentence, find_first_temp, \

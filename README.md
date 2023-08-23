@@ -13,6 +13,6 @@ pip install -r requirements.txt
 
 ### Example bots
 
-- [GreetingsBot](besser/bot/test/examples/GreetingsBot.py): Very simple bot for the first contact with the framework
-- [WeatherBot](besser/bot/test/examples/WeatherBot.py): Introducing entities
-- [TelegramBot](besser/bot/test/examples/TelegramBot.py): Introducing the [TelegramPlatform](besser/bot/test/examples/TelegramBot.py)
+- [greetings_bot](besser/bot/test/examples/greetings_bot.py): Very simple bot for the first contact with the framework
+- [weather_bot](besser/bot/test/examples/weather_bot.py): Introducing entities
+- [telegram_bot](besser/bot/test/examples/telegram_bot.py): Introducing the [TelegramPlatform](besser/bot/test/examples/telegram_bot.py)

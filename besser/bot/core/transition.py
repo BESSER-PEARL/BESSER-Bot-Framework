@@ -1,5 +1,5 @@
-from besser.bot.library.event.EventLibrary import intent_matched, auto
-from besser.bot.core.intent.Intent import Intent
+from besser.bot.library.event.event_library import intent_matched, auto
+from besser.bot.core.intent.intent import Intent
 
 
 class Transition:

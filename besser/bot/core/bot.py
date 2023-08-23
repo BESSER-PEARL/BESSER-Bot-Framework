@@ -1,16 +1,16 @@
 import logging
 import threading
 
-from besser.bot.core.entity.Entity import Entity
-from besser.bot.core.intent.Intent import Intent
+from besser.bot.core.entity.entity import Entity
+from besser.bot.core.intent.intent import Intent
 from besser.bot.exceptions.exceptions import DuplicatedStateError, DuplicatedIntentError, DuplicatedEntityError, \
     DuplicatedInitialStateError, InitialStateNotFound
-from besser.bot.platforms.Platform import Platform
-from besser.bot.core.Session import Session
-from besser.bot.core.State import State
-from besser.bot.nlp.NLPEngine import NLPEngine
-from besser.bot.platforms.telegram.TelegramPlatform import TelegramPlatform
-from besser.bot.platforms.websocket.WebSocketPlatform import WebSocketPlatform
+from besser.bot.platforms.platform import Platform
+from besser.bot.core.session import Session
+from besser.bot.core.state import State
+from besser.bot.nlp.nlp_engine import NLPEngine
+from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
+from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
 
 from configparser import ConfigParser
 

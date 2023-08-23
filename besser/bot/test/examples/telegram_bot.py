@@ -1,16 +1,15 @@
 import logging
 
 from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import CommandHandler, ContextTypes
 
-from besser.bot.core.Bot import Bot
-from besser.bot.core.Session import Session
-from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import image_intent_prediction
+from besser.bot.core.bot import Bot
+from besser.bot.core.session import Session
 
 # Configure the logging module
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
 
-bot = Bot('Telegram_bot')
+bot = Bot('telegram_bot')
 # Load bot properties stored in a dedicated file
 bot.load_properties('config.ini')
 # Define the platform your chatbot will use

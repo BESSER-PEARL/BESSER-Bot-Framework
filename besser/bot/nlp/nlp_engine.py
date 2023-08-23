@@ -1,10 +1,10 @@
 import logging
 
-from besser.bot.nlp.NLPConfiguration import NLPConfiguration
-from besser.bot.nlp.intent_classifier.IntentClassifierPrediction import IntentClassifierPrediction, \
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
+from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction, \
     fallback_intent_prediction
-from besser.bot.nlp.intent_classifier.SimpleIntentClassifier import SimpleIntentClassifier
-from besser.bot.nlp.ner.SimpleNER import SimpleNER
+from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
+from besser.bot.nlp.ner.simple_ner import SimpleNER
 from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_text, preprocess_custom_entity_entries
 
 

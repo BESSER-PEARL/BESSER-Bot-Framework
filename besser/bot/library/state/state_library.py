@@ -1,4 +1,4 @@
-from besser.bot.core.Session import Session
+from besser.bot.core.session import Session
 
 
 def default_body(session: Session):

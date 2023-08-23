@@ -1,7 +1,7 @@
 from nltk.tokenize import word_tokenize
-from besser.bot.core.intent.Intent import Intent
-from besser.bot.nlp.NLPConfiguration import NLPConfiguration
-from besser.bot.core.entity.Entity import Entity
+from besser.bot.core.intent.intent import Intent
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
+from besser.bot.core.entity.entity import Entity
 from besser.bot.nlp.preprocessing.pipelines import lang_map, create_or_get_stemmer
 from besser.bot.nlp.utils import replace_value_in_sentence
 
