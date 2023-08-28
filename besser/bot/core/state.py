@@ -43,7 +43,7 @@ class State:
     def __hash__(self):
         return hash((self._name, self._bot.name))
 
-    def t_name(self):
+    def _t_name(self):
         self._transition_counter += 1
         return f"t_{self._transition_counter}"
 
@@ -67,14 +67,14 @@ class State:
             # TODO: handle exceptions
             intent = event_params['intent']
             self.intents.append(intent)
-        self.transitions.append(Transition(name=self.t_name(), source=self, dest=dest, event=event,
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=event,
                                            event_params=event_params))
 
     def go_to(self, dest):
         for transition in self.transitions:
             if transition.is_auto():
                 raise DuplicatedAutoTransitionError(self._bot, self)
-        self.transitions.append(Transition(name=self.t_name(), source=self, dest=dest, event=auto, event_params={}))
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
 
     def when_intent_matched_go_to(self, intent, dest):
         if intent in self.intents:
@@ -85,7 +85,7 @@ class State:
             raise StateNotFound(self._bot, dest)
         event_params = {'intent': intent}
         self.intents.append(intent)
-        self.transitions.append(Transition(name=self.t_name(), source=self, dest=dest, event=intent_matched,
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
 
     def receive_intent(self, session):
@@ -114,7 +114,7 @@ class State:
                 traceback.print_exc()
         return
 
-    def check_next_transition(self, session):
+    def _check_next_transition(self, session):
         # TODO: Check conditional transitions
         for transition in self.transitions:
             if transition.event == auto:
@@ -129,4 +129,4 @@ class State:
             logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in bot '"
                           f"{self._bot.name}'. See the attached exception:")
             traceback.print_exc()
-        self.check_next_transition(session)
+        self._check_next_transition(session)
