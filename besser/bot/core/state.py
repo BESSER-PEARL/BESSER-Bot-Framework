@@ -114,12 +114,10 @@ class State:
                 traceback.print_exc()
         return
 
-    def _check_next_transition(self, session):
+    def _check_next_auto_transition(self, session):
         # TODO: Check conditional transitions
-        for transition in self.transitions:
-            if transition.event == auto:
-                session.move(transition)
-                return
+        if self.transitions[0].is_auto():
+            session.move(self.transitions[0])
 
     def run(self, session):
         logging.info(f"[{self._name}] Running body {self._body.__name__}")
@@ -129,4 +127,4 @@ class State:
             logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in bot '"
                           f"{self._bot.name}'. See the attached exception:")
             traceback.print_exc()
-        self._check_next_transition(session)
+        self._check_next_auto_transition(session)
