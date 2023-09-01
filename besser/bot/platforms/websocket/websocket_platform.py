@@ -29,7 +29,7 @@ class WebSocketPlatform(Platform):
 
         def message_handler(conn: ServerConnection):
             self._connections[conn.id] = conn
-            session = self._bot.new_session(conn.id, self)
+            session = self._bot.new_session(str(conn.id), self)
             try:
                 for payload_str in conn:
                     payload: Payload = Payload.decode(payload_str)

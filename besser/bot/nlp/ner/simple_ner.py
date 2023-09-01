@@ -26,9 +26,9 @@ def get_custom_entity_values_dict(intent, preprocessed_values=False) -> dict[str
             entity_values_dict: dict[str, str] = {}
             for entity_entry in entity.entries:
                 if preprocessed_values and \
-                        entity_entry.preprocessed_value is not None and entity_entry.preprocessed_synonyms is not None:
-                    value = entity_entry.preprocessed_value
-                    synonyms = entity_entry.preprocessed_synonyms
+                        entity_entry.processed_value is not None and entity_entry.processed_synonyms is not None:
+                    value = entity_entry.processed_value
+                    synonyms = entity_entry.processed_synonyms
                 else:
                     value = entity_entry.value
                     synonyms = entity_entry.synonyms

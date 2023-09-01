@@ -17,10 +17,10 @@ def preprocess_text(text: str, configuration: NLPConfiguration) -> str:
 
 def preprocess_custom_entity_entries(entity: Entity, configuration: NLPConfiguration):
     for entry in entity.entries:
-        entry.preprocessed_value = preprocess_text(entry.value, configuration)
-        entry.preprocessed_synonyms = []
+        entry.processed_value = preprocess_text(entry.value, configuration)
+        entry.processed_synonyms = []
         for synonym in entry.synonyms:
-            entry.preprocessed_synonyms.append(preprocess_text(synonym, configuration))
+            entry.processed_synonyms.append(preprocess_text(synonym, configuration))
 
 
 def preprocess_training_sentences(intent: Intent, configuration: NLPConfiguration):
