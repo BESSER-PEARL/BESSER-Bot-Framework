@@ -38,7 +38,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-# html_title = "your custom sidebar title"
+html_title = f"{project} {release}"
 html_logo = "logo.png"
 #html_theme_options = {
 #    "light_logo": "logo-light-mode.png",
@@ -110,8 +110,6 @@ f"""{module_name}
 api_starting_directory = '../../besser'  # Change this to your desired starting directory
 api_output_directory = './api'
 generate_api_rst_files(api_starting_directory, api_output_directory)
-
-
 
 
 def linkcode_resolve(domain, info):
