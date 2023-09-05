@@ -28,7 +28,7 @@ class WebSocketPlatform(Platform):
         self._connections = {}
 
         def message_handler(conn: ServerConnection):
-            self._connections[conn.id] = conn
+            self._connections[str(conn.id)] = conn
             session = self._bot.new_session(str(conn.id), self)
             try:
                 for payload_str in conn:
