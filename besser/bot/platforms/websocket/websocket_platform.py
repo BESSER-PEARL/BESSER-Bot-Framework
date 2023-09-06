@@ -51,8 +51,8 @@ class WebSocketPlatform(Platform):
         if self._use_ui:
             def run_streamlit():
                 subprocess.run(["streamlit", "run", os.path.abspath(inspect.getfile(streamlit_ui)),
-                                "--server.address", self._bot.config.get('ui', 'host', fallback='localhost'),
-                                "--server.port", self._bot.config.get('ui', 'port', fallback='5000')])
+                                "--server.address", self._bot.config.get('streamlit', 'host', fallback='localhost'),
+                                "--server.port", self._bot.config.get('streamlit', 'port', fallback='5000')])
 
             thread = threading.Thread(target=run_streamlit)
             logging.info(f'Running Streamlit UI in another thread')
