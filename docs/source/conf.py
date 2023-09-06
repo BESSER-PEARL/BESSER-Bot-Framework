@@ -39,7 +39,7 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_title = f"{project} {release}"
-html_logo = "logo.png"
+html_logo = "img/logo.png"
 #html_theme_options = {
 #    "light_logo": "logo-light-mode.png",
 #    "dark_logo": "logo-dark-mode.png",
@@ -57,38 +57,35 @@ master_doc = "index"
 # Paramlink style
 paramlinks_hyperlink_param = "name"
 
-# API GENERATION
 
-# TODO: SKIP TEST PACKAGE
-# TODO: GROUP BY PACKAGES
-# CORE
-# EXCEPTIONS
-# LIBRARY
-# NLP
-# PLATFORMS
-def generate_api_rst_files(root_dir, output_dir):
+# API GENERATION
+def generate_api_rst_files(preffix, dir, output_dir):
     api_excluded_files = [
         'streamlit_ui.py'
     ]
     os.makedirs(output_dir, exist_ok=True)
-    api_rst = \
+    root_dir = preffix + dir
+    package_name = root_dir.split('/')[-1]
+    package_rst = \
 f"""
-API
-====
+{package_name}
+{'=' * len(package_name)}
 
 .. toctree::
 
 """
     for dirpath, dirnames, filenames in os.walk(root_dir):
-        rel_path = 'besser.' + os.path.relpath(dirpath, root_dir).replace(os.path.sep, '.')
         for filename in filenames:
             if (filename.endswith('.py')) and (not filename.startswith('_')):
                 module_name = os.path.splitext(filename)[0]
-                api_rst += \
-f"""   api/{module_name}
+                package_rst += \
+f"""   {package_name}/{module_name}
 """
                 if filename not in api_excluded_files:
-                    full_module_name = rel_path + '.' + module_name if rel_path != '.' else module_name
+                    rel_path = os.path.relpath(dirpath, root_dir).replace(os.path.sep, '.')
+                    full_module_name = dir.replace('/', '.').replace(os.path.sep, '.') + '.' + rel_path + '.' + module_name \
+                        if rel_path != '.' else \
+                        dir.replace('/', '.').replace(os.path.sep, '.') + rel_path + module_name
                     rst_filename = os.path.join(output_dir, module_name + '.rst')
                     with open(rst_filename, 'w') as rst_file:
                         content = \
@@ -103,13 +100,15 @@ f"""{module_name}
 """
                         rst_file.write(content)
 
-    with open('api.rst', 'w') as file:
-        file.write(api_rst)
+    with open(f'api/{package_name}.rst', 'w') as file:
+        file.write(package_rst)
 
 
-api_starting_directory = '../../besser'  # Change this to your desired starting directory
-api_output_directory = './api'
-generate_api_rst_files(api_starting_directory, api_output_directory)
+generate_api_rst_files('../../', 'besser/bot/core', './api/core')
+generate_api_rst_files('../../', 'besser/bot/exceptions', './api/exceptions')
+generate_api_rst_files('../../', 'besser/bot/library', './api/library')
+generate_api_rst_files('../../', 'besser/bot/nlp', './api/nlp')
+generate_api_rst_files('../../', 'besser/bot/platforms', './api/platforms')
 
 
 def linkcode_resolve(domain, info):
