@@ -1,6 +1,16 @@
 BESSER Bot Framework
 ====================
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   your_first_bot
+   about
+   examples
+   api
+
+
 The `Bot Framework <https://github.com/BESSER-PEARL/bot-framework>`_ is part of the BESSER (BEtter Smart Software fastER) project at the Luxembourg Institute of Science
 and Technology (LIST). It aims to make the design and implementation of chatbots easier and accessible for everyone.
 
@@ -33,15 +43,3 @@ Example bots
 - :doc:`examples/greetings_bot`: Very simple bot for the first contact with the framework
 - :doc:`examples/weather_bot`: Introducing entities
 - :doc:`examples/telegram_bot`: Introducing the :doc:`about/platforms/telegram_platform`
-
-
-Table of contents
------------------
-
-.. toctree::
-   :maxdepth: 1
-
-   your_first_bot
-   about
-   examples
-   api
