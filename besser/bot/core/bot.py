@@ -88,6 +88,21 @@ class Bot:
         """
         self._config.read(path)
 
+    def set_property(self, section: str, option: str, value: str):
+        """
+        Set a bot property.
+
+        :param section: the property section
+        :type section: str
+        :param option: the property option (i.e. key)
+        :type option: str
+        :param value: the property value
+        :type value: str
+        :return:
+        :rtype:
+        """
+        self._config.set(section, option, value)
+
     def new_state(self, name: str, initial: bool = False) -> State:
         """
         Create a new state in the bot.
@@ -210,8 +225,8 @@ class Bot:
         logging.info(f'{self._name} training started')
         self._train()
         logging.info(f'{self._name} training finished')
-        for server in self._platforms:
-            thread = threading.Thread(target=server.run)
+        for platform in self._platforms:
+            thread = threading.Thread(target=platform.run)
             thread.start()
         idle = threading.Event()
         idle.wait()
