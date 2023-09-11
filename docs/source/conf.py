@@ -27,6 +27,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_paramlinks',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
     'm2r2',
 ]
 
