@@ -26,9 +26,14 @@ extensions = [
     'sphinx.ext.linkcode',
     'sphinx_copybutton',
     'sphinx_paramlinks',
+    'sphinx.ext.intersphinx',
     'm2r2',
 ]
 
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+}
 
 autosummary_generate = True
 
