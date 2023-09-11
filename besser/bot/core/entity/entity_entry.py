@@ -1,16 +1,15 @@
 class EntityEntry:
-    """
-    Each one of the entries an entity consists of.
+    """Each one of the entries an entity consists of.
 
-    :param value: the entry value
-    :type value: str
-    :param synonyms: the value synonyms
-    :type value: list[str] or None
+    Args:
+        value (list[str] or None): the entry value
+        synonyms: the value synonyms
 
-    :ivar str value: the entry value
-    :ivar list[str] synonyms: the value synonyms
-    :ivar str or None processed_value: processed value is stored for NER
-    :ivar list[str] or None processed_synonyms: processed synonyms are stored for NER
+    Attributes:
+        value (str): the entry value
+        synonyms (list[str]): The value synonyms
+        processed_value (str or None): Processed value is stored for NER
+        processed_synonyms (list[str] or None): Processed synonyms are stored for NER
     """
 
     def __init__(

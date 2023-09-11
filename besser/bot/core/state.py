@@ -20,30 +20,29 @@ if TYPE_CHECKING:
 
 
 class State:
-    """
-    The State core component of a bot.
+    """The State core component of a bot.
 
     The bot relies on a state machine to define its execution logic. Each state can run a set of actions, and the bot
     can navigate to other states through transitions that are triggered when events occur (e.g. an intent is matched).
 
-    :param bot: the bot the state belongs to
-    :type bot: Bot
-    :param name: the state's name
-    :type name: str
-    :param initial: weather the state is initial or not
-    :type initial: bool
+    Args:
+        bot (Bot): the bot the state belongs to
+        name (str): the state's name
+        initial (bool): weather the state is initial or not
 
-    :ivar Bot _bot: the bot the state belongs to
-    :ivar str _name: the state name
-    :ivar bool _initial: weather the state is initial or not
-    :ivar Callable[[Session], None] _body: the state body. It is a callable that takes as argument a
-        :class:`~besser.bot.core.session.Session`. It will be run whenever the bot moves to this state.
-    :ivar Callable[[Session], None] _fallback_body: the state fallback body. It is a callable that takes as argument a
-        :class:`~besser.bot.core.session.Session`. It will be run whenever the bot tries to move to another state, but
-        it can't (e.g. an intent is matched but none of the current state's transitions are triggered on that intent)
-    :ivar int _transition_counter: count the number of transitions of this state. Used to name the transitions.
-    :ivar list[Intent] intents: the state intents, i.e. those that can be matched from a specific state
-    :ivar list[Transition] transitions: the state's transitions to other states
+    Attributes:
+        _bot (Bot): The bot the state belongs to
+        _name (str): The state name
+        _initial (bool): Weather the state is initial or not
+        _body (Callable[[Session], None]): The state body. It is a callable that takes as argument a
+            :class:`~besser.bot.core.session.Session`. It will be run whenever the bot moves to this state.
+        _fallback_body (Callable[[Session], None]): The state fallback body. It is a callable that takes as argument a
+            :class:`~besser.bot.core.session.Session`. It will be run whenever the bot tries to move to another state,
+            but it can't (e.g. an intent is matched but none of the current state's transitions are triggered on that
+            intent)
+        _transition_counter (int): Count the number of transitions of this state. Used to name the transitions.
+        intents (list[Intent]): The state intents, i.e. those that can be matched from a specific state
+        transitions (list[Transition]): The state's transitions to other states
     """
 
     def __init__(
@@ -63,29 +62,17 @@ class State:
 
     @property
     def bot(self):
-        """
-        Get the state's bot.
-
-        :return: The bot
-        """
+        """Bot: The state's bot."""
         return self._bot
     
     @property
     def name(self):
-        """
-        Get the state name.
-
-        :return: The state name
-        """
+        """str: The state name"""
         return self._name
     
     @property
     def initial(self):
-        """
-        Get the initial status of the state (initial or non-initial).
-
-        :return: The initial status of the state
-        """
+        """bool: The initial status of the state (initial or non-initial)."""
         return self._initial
 
     def __eq__(self, other):
@@ -98,24 +85,20 @@ class State:
         return hash((self._name, self._bot.name))
 
     def _t_name(self):
-        """
-        Name generator for transitions. Transition names are generic and enumerated. On each call, a new name is
+        """Name generator for transitions. Transition names are generic and enumerated. On each call, a new name is
         generated and the transition counter is incremented for the next name.
 
-        :return: a name for the next transition
-        :rtype: str
+        Returns:
+            str: a name for the next transition
         """
         self._transition_counter += 1
         return f"t_{self._transition_counter}"
 
     def set_body(self, body: Callable[[Session], None]) -> None:
-        """
-        Set the state body.
+        """Set the state body.
 
-        :param body: the body
-        :type body: Callable[[Session], None]
-        :return:
-        :rtype:
+        Args:
+            body (Callable[[Session], None]): the body
         """
         body_signature = inspect.signature(body)
         body_template_signature = inspect.signature(default_body)
@@ -124,13 +107,10 @@ class State:
         self._body = body
 
     def set_fallback_body(self, body: Callable[[Session], None]):
-        """
-        Set the state fallback body.
+        """Set the state fallback body.
 
-        :param body: the fallback body
-        :type body: Callable[[Session], None]
-        :return:
-        :rtype:
+        Args:
+            body (Callable[[Session], None]): the fallback body
         """
         body_signature = inspect.signature(body)
         body_template_signature = inspect.signature(default_fallback_body)
@@ -139,20 +119,15 @@ class State:
         self._fallback_body = body
 
     def when_event_go_to(self, event: Callable[..., bool], dest: 'State', event_params: dict) -> None:
-        """
-        Create a new transition on this state.
+        """Create a new transition on this state.
 
         When the bot is in a state and a state's transition event occurs, the bot will move to the destination state
         of the transition.
 
-        :param event: the transition event
-        :type event: Callable[..., bool]
-        :param dest: the destination state
-        :type dest: State
-        :param event_params: the parameters associated to the event
-        :type event_params: dict
-        :return:
-        :rtype:
+        Args:
+            event (Callable[..., bool]): the transition event
+            dest (State): the destination state
+            event_params (dict): the parameters associated to the event
         """
         if event == intent_matched:
             # TODO: CHECK isinstance(obj, Intent)
@@ -163,16 +138,13 @@ class State:
                                            event_params=event_params))
 
     def go_to(self, dest: 'State') -> None:
-        """
-        Create a new `auto` transition on this state.
+        """Create a new `auto` transition on this state.
 
         This transition needs no event to be triggered, which means that when the bot moves to a state that has an
         `auto` transition, the bot will move to the transition's destination state unconditionally.
 
-        :param dest: the destination state
-        :type dest: State
-        :return:
-        :rtype:
+        Args:
+            dest (State): the destination state
         """
         for transition in self.transitions:
             if transition.is_auto():
@@ -180,19 +152,15 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
-        """
-        Create a new `intent matching` transition on this state.
+        """Create a new `intent matching` transition on this state.
 
         When the bot is in a state and an intent is received (the intent is predicted from a user message),
         if the transition event is to receive this particular intent, the bot will move to the transition's destination
         state.
 
-        :param intent: the transition intent
-        :type intent: Intent
-        :param dest: the destination state
-        :type dest: State
-        :return:
-        :rtype:
+        Args:
+            intent (Intent): the transition intent
+            dest (State): the destination state
         """
         if intent in self.intents:
             raise DuplicatedIntentMatchingTransitionError(self, intent)
@@ -206,16 +174,13 @@ class State:
                                            event_params=event_params))
 
     def receive_intent(self, session: Session) -> None:
-        """
-        Receive an intent from a user session (which is predicted from the user message).
+        """Receive an intent from a user session (which is predicted from the user message).
 
         When receiving an intent it looks for the state's transition whose trigger event is to match that intent.
         The fallback body is run when the received intent does not match any transition intent (i.e. fallback intent).
 
-        :param session: the user session that sent the message
-        :type session: Session
-        :return:
-        :rtype:
+        Args:
+            session (Session): the user session that sent the message
         """
         predicted_intent: IntentClassifierPrediction = session.predicted_intent
         if predicted_intent is None:
@@ -243,30 +208,24 @@ class State:
                 traceback.print_exc()
 
     def _check_next_auto_transition(self, session: Session) -> None:
-        """
-        Check weather the first defined transition of the state is an `auto` transition, and if so, move to its
+        """Check weather the first defined transition of the state is an `auto` transition, and if so, move to its
         destination state.
 
         This method is intended to be called after running the body of a state.
 
-        :param session: the user session
-        :type session: Session
-        :return:
-        :rtype:
+        Args:
+            session (Session): the user session
         """
         # TODO: Check conditional transitions
         if self.transitions[0].is_auto():
             session.move(self.transitions[0])
 
     def run(self, session: Session) -> None:
-        """
-        Run the state (i.e. its body). After running the body, check if the first defined transition of the state is
+        """Run the state (i.e. its body). After running the body, check if the first defined transition of the state is
         an `auto` transition, and if so, move to its destination state.
 
-        :param session: the user session
-        :type session: Session
-        :return:
-        :rtype:
+        Args:
+            session (Session): the user session
         """
         logging.info(f"[{self._name}] Running body {self._body.__name__}")
         try:
