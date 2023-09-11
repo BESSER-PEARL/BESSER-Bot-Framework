@@ -11,7 +11,7 @@ from websockets.sync.server import ServerConnection, serve
 
 from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
-from besser.bot.platforms.payload import Payload, PayloadEncoder
+from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.websocket import streamlit_ui
 
@@ -33,9 +33,9 @@ class WebSocketPlatform(Platform):
             try:
                 for payload_str in conn:
                     payload: Payload = Payload.decode(payload_str)
-                    if payload.action == Payload.USER_MESSAGE:
+                    if payload.action == PayloadAction.USER_MESSAGE.value:
                         self._bot.receive_message(session.id, payload.message)
-                    elif payload.action == Payload.RESET:
+                    elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
                 logging.error(f'The client closed unexpectedly')
@@ -68,13 +68,13 @@ class WebSocketPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         session.chat_history.append((message, 0))
-        payload = Payload(action=Payload.BOT_REPLY_STR,
+        payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame):
         message = df.to_json()
         session.chat_history.append((message, 0))
-        payload = Payload(action=Payload.BOT_REPLY_DF,
+        payload = Payload(action=PayloadAction.BOT_REPLY_DF,
                           message=message)
         self._send(session.id, payload)

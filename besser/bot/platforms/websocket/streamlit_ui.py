@@ -12,7 +12,7 @@ from streamlit.runtime.app_session import AppSession
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
 from streamlit.web import cli as stcli
 
-from besser.bot.platforms.payload import Payload, PayloadEncoder
+from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 
 # Time interval to check if a streamlit session is still active, in seconds
 SESSION_MONITORING_INTERVAL = 10
@@ -45,9 +45,9 @@ def main():
         # https://github.com/streamlit/streamlit/issues/2838
         streamlit_session = get_streamlit_session()
         payload: Payload = Payload.decode(payload_str)
-        if payload.action == Payload.BOT_REPLY_STR:
+        if payload.action == PayloadAction.BOT_REPLY_STR.value:
             message = payload.message
-        elif payload.action == Payload.BOT_REPLY_DF:
+        elif payload.action == PayloadAction.BOT_REPLY_DF.value:
             message = pd.read_json(payload.message)
         streamlit_session._session_state['queue'].put(message)
         streamlit_session._handle_rerun_script_request()
@@ -113,7 +113,7 @@ def main():
         if reset_button:
             st.session_state['history'] = []
             st.session_state['queue'] = queue.Queue()
-            payload = Payload(action=Payload.RESET)
+            payload = Payload(action=PayloadAction.RESET)
             ws.send(json.dumps(payload, cls=PayloadEncoder))
 
     for message in st.session_state['history']:
@@ -142,7 +142,7 @@ def main():
         with st.chat_message("user"):
             st.markdown(user_input)
         st.session_state.history.append((user_input, 1))
-        payload = Payload(action=Payload.USER_MESSAGE,
+        payload = Payload(action=PayloadAction.USER_MESSAGE,
                           message=user_input)
         ws.send(json.dumps(payload, cls=PayloadEncoder))
 

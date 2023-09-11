@@ -6,7 +6,7 @@ from telegram.ext import ApplicationBuilder, BaseHandler, CommandHandler, Contex
 
 from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
-from besser.bot.platforms.payload import Payload
+from besser.bot.platforms.payload import Payload, PayloadAction
 from besser.bot.platforms.platform import Platform
 
 
@@ -55,7 +55,7 @@ class TelegramPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         session.chat_history.append((message, 0))
-        payload = Payload(action=Payload.BOT_REPLY_STR,
+        payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
 
