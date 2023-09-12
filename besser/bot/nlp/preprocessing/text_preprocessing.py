@@ -44,13 +44,15 @@ def replace_ner_in_training_sentence(sentence: str, intent: Intent, configuratio
 
 
 def stem_text(text: str, configuration: NLPConfiguration) -> str:
-    tokens: list[str] = word_tokenize(text, language='english')
-    # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
-    stemmer_language: str = 'en'
+    stemmer_language: str = 'en' # default set to english
     if configuration.country in lang_map:
         stemmer_language = lang_map[configuration.country]
-
+    if configuration.country in lang_map.values():
+        stemmer_language = configuration.country
     stemmer = create_or_get_stemmer(stemmer_language)
+    tokens: list[str] = word_tokenize(text, language=stemmer_language)
+    # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
+    
     stemmed_sentence: list[str] = []
 
     # We stem words one by one to be able to skip words all in uppercase (e.g. references to entity types)
