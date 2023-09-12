@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import numpy as np
 import keras
 
@@ -8,20 +10,25 @@ from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 
 from besser.bot.core.intent.intent import Intent
+from besser.bot.core.state import State
+from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.intent_classifier.matched_parameter import MatchedParameter
 from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_training_sentences
 
+if TYPE_CHECKING:
+    from besser.bot.nlp.nlp_engine import NLPEngine
 
-class SimpleIntentClassifier:
 
-    def __init__(self, nlp_engine, state):
+class SimpleIntentClassifier(IntentClassifier):
+
+    def __init__(self, nlp_engine: 'NLPEngine', state: State):
+        super().__init__(state)
         self._nlp_engine = nlp_engine
-        self._state = state
         self._tokenizer = None
         self._model = None
 
-    def train(self):
+    def train(self) -> None:
         if not self._state.intents:
             return
         self._tokenizer = Tokenizer(num_words=self._nlp_engine.configuration.num_words,
