@@ -71,6 +71,7 @@ class Bot:
             path (str): the path to the properties file
         """
         self._config.read(path)
+        self._nlp_engine.setLanguage(self._config.get('nlp', 'language', fallback="english"))
 
     def set_property(self, section: str, option: str, value: str):
         """Set a bot property.
