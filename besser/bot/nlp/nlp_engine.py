@@ -21,7 +21,7 @@ class NLPEngine:
     def configuration(self):
         return self._configuration
     
-    def setLanguage(self, country):
+    def set_language(self, country):
         self._configuration.country = country
 
     @property
