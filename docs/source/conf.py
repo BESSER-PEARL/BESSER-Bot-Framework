@@ -33,7 +33,8 @@ extensions = [
 
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "pandas": ("https://pandas.pydata.org/docs", None),
+    "python-telegram-bot": ("https://docs.python-telegram-bot.org/en/v20.5", None),
 }
 
 autosummary_generate = True

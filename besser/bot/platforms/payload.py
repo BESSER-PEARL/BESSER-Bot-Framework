@@ -4,9 +4,7 @@ from enum import Enum
 
 
 class PayloadAction(Enum):
-    """
-    Enumeration of the different possible actions embedded into a :class:`Payload`.
-    """
+    """Enumeration of the different possible actions embedded into a :class:`Payload`."""
 
     USER_MESSAGE = 'user_message'
     """PayloadAction: Indicates that the payload's purpose is to send a user message."""
@@ -26,14 +24,12 @@ class PayloadAction(Enum):
 
 
 class Payload:
-    """
-    Represents a payload object used for encoding and decoding messages between a bot and any other external agent.
+    """Represents a payload object used for encoding and decoding messages between a bot and any other external agent.
     """
 
     @staticmethod
     def decode(payload_str):
-        """
-        Decode a JSON payload string into a :class:`Payload` object.
+        """Decode a JSON payload string into a :class:`Payload` object.
 
         Args:
             payload_str (str): A JSON-encoded payload string.
@@ -56,8 +52,7 @@ class Payload:
 
 
 class PayloadEncoder(json.JSONEncoder):
-    """
-    Encoder for the :class:`Payload` class.
+    """Encoder for the :class:`Payload` class.
 
     Example:
         .. code::
@@ -67,8 +62,7 @@ class PayloadEncoder(json.JSONEncoder):
     """
 
     def default(self, obj):
-        """
-        Returns a serializable object for a :class:`Payload`
+        """Returns a serializable object for a :class:`Payload`
 
         Args:
             obj: the object to serialize
