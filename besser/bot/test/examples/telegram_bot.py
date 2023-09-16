@@ -1,3 +1,7 @@
+# You may need to add your working directory to the Python path. To do so, uncomment the following lines of code
+# import sys
+# sys.path.append("/Path/to/directory/bot-framework") # Replace with your directory path
+
 import logging
 
 from telegram import Update
