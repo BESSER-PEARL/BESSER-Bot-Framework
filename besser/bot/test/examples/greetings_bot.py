@@ -15,9 +15,10 @@ websocket_platform = bot.use_websocket_platform(use_ui=True)
 
 # STATES
 
-s0 = bot.new_state('s0', initial=True)
+initial_state = bot.new_state('initial_state', initial=True)
 hello_state = bot.new_state('hello_state')
-bye_state = bot.new_state('bye_state')
+good_state = bot.new_state('good_state')
+bad_state = bot.new_state('bad_state')
 
 # INTENTS
 
@@ -26,38 +27,51 @@ hello_intent = bot.new_intent('hello_intent', [
     'hi'
 ])
 
-bye_intent = bot.new_intent('bye_intent', [
-    'bye',
-    'goodbye',
-    'see you'
+good_intent = bot.new_intent('good_intent', [
+    'good',
+    'fine',
+])
+
+bad_intent= bot.new_intent('bad_intent', [
+    'bad',
+    'awful',
 ])
 
 
 # STATES BODIES' DEFINITION + TRANSITIONS
 
 
-def s0_body(session: Session):
-    session.reply('Hello!')
+def initial_body(session: Session):
+    pass
 
 
-s0.set_body(s0_body)
-s0.when_intent_matched_go_to(hello_intent, hello_state)
+initial_state.set_body(initial_body)
+initial_state.when_intent_matched_go_to(hello_intent, hello_state)
 
 
 def hello_body(session: Session):
-    session.reply('Bye!')
+    session.reply('Hi! How are you?')
 
 
 hello_state.set_body(hello_body)
-hello_state.when_intent_matched_go_to(bye_intent, bye_state)
+hello_state.when_intent_matched_go_to(good_intent, good_state)
+hello_state.when_intent_matched_go_to(bad_intent, bad_state)
 
 
-def bye_body(session: Session):
-    session.reply('Let\'s start again...')
+def good_body(session: Session):
+    session.reply('I am glad to hear that!')
 
 
-bye_state.set_body(bye_body)
-bye_state.go_to(s0)
+good_state.set_body(good_body)
+good_state.go_to(initial_state)
+
+
+def bad_body(session: Session):
+    session.reply('I am sorry to hear that...')
+
+
+bad_state.set_body(bad_body)
+bad_state.go_to(initial_state)
 
 
 # RUN APPLICATION
