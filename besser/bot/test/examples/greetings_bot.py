@@ -28,7 +28,7 @@ bad_state = bot.new_state('bad_state')
 
 hello_intent = bot.new_intent('hello_intent', [
     'hello',
-    'hi'
+    'hi',
 ])
 
 good_intent = bot.new_intent('good_intent', [
@@ -45,11 +45,6 @@ bad_intent= bot.new_intent('bad_intent', [
 # STATES BODIES' DEFINITION + TRANSITIONS
 
 
-def initial_body(session: Session):
-    pass
-
-
-initial_state.set_body(initial_body)
 initial_state.when_intent_matched_go_to(hello_intent, hello_state)
 
 
