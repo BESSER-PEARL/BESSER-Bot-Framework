@@ -21,8 +21,7 @@ if TYPE_CHECKING:
 class SimpleIntentClassifier(IntentClassifier):
 
     def __init__(self, nlp_engine: 'NLPEngine', state: State):
-        super().__init__(state)
-        self._nlp_engine = nlp_engine
+        super().__init__(nlp_engine, state)
         self._tokenizer = None
         self._model = None
 
