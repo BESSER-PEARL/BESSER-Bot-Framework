@@ -1,11 +1,11 @@
 import logging
 
-from besser.bot.nlp.nlp_configuration import NLPConfiguration
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction, \
     fallback_intent_prediction
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.simple_ner import SimpleNER
-from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_text, preprocess_custom_entity_entries
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
+from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_custom_entity_entries, preprocess_text
 
 
 class NLPEngine:
@@ -15,14 +15,11 @@ class NLPEngine:
         self._configuration: NLPConfiguration = NLPConfiguration()
         self._intent_classifiers = {}
         self._intent_threshold = 0.4
-        self._ner = SimpleNER(self, self._bot)
+        self._ner = None
 
     @property
     def configuration(self):
         return self._configuration
-    
-    def set_language(self, country):
-        self._configuration.country = country
 
     @property
     def ner(self):
@@ -32,6 +29,10 @@ class NLPEngine:
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
+        self._ner = SimpleNER(self, self._bot)
+
+    def set_language(self, country):
+        self._configuration.country = country
 
     def train(self):
         for entity in self._bot.entities:

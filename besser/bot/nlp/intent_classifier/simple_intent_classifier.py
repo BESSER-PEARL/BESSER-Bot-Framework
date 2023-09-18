@@ -1,19 +1,17 @@
 from typing import TYPE_CHECKING
 
-import numpy as np
 import keras
-
+import numpy as np
 from keras import Sequential
-from keras.layers import Embedding, GlobalAveragePooling1D, Dense
+from keras.layers import Dense, Embedding, GlobalAveragePooling1D
 from keras.losses import SparseCategoricalCrossentropy
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 
-from besser.bot.core.intent.intent import Intent
 from besser.bot.core.state import State
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
-from besser.bot.nlp.intent_classifier.matched_parameter import MatchedParameter
+from besser.bot.nlp.ner.ner_prediction import NERPrediction
 from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_training_sentences
 
 if TYPE_CHECKING:
@@ -79,13 +77,11 @@ class SimpleIntentClassifier(IntentClassifier):
     def predict(self, message: str) -> list[IntentClassifierPrediction]:
 
         intent_classifier_results: list[IntentClassifierPrediction] = []
-        ner_result: dict[Intent, list[MatchedParameter]] = {}
-        intent_sentences: dict[str, list[Intent]] = {}
 
         # We try to replace all potential entity value with the corresponding entity name
-        ner_result, intent_sentences = self._state.bot.nlp_engine.ner.predict(self._state, message)
+        ner_prediction: NERPrediction = self._state.bot.nlp_engine.ner.predict(self._state, message)
 
-        for (ner_sentence, intents) in intent_sentences.items():
+        for (ner_sentence, intents) in ner_prediction.ner_sentences.items():
             # DOUBLE STEMMING AVOIDED
             sentences = [ner_sentence]
             sequences = self._tokenizer.texts_to_sequences(sentences)
@@ -118,13 +114,16 @@ class SimpleIntentClassifier(IntentClassifier):
 
             if run_full_prediction:
                 full_prediction = self._model.predict(padded, verbose=0)
-                prediction = full_prediction[
-                    0]  # We return just a single array with the predictions as we predict for just one sentence
+                prediction = full_prediction[0]  # We return just a single array with the predictions as we predict for just one sentence
 
             for intent in intents:
                 # it is impossible to have a duplicated intent in another ner_sentence
                 intent_index = self._state.intents.index(intent)
-                intent_classifier_results.append(
-                    IntentClassifierPrediction(intent, prediction[intent_index], ner_sentence, ner_result[intent]))
+                intent_classifier_results.append(IntentClassifierPrediction(
+                    intent,
+                    prediction[intent_index],
+                    ner_sentence,
+                    ner_prediction.intent_matched_parameters[intent]
+                ))
 
         return intent_classifier_results

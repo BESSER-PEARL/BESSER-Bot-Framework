@@ -1,14 +1,15 @@
-from besser.bot.core.state import State
-from besser.bot.core.intent.intent import Intent
-from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.entity.entity import Entity
-from besser.bot.nlp.nlp_configuration import NLPConfiguration
-from besser.bot.library.entity.base_entities import ordered_base_entities, BaseEntities
+from besser.bot.core.intent.intent_parameter import IntentParameter
+from besser.bot.core.state import State
+from besser.bot.library.entity.base_entities import BaseEntities, ordered_base_entities
 from besser.bot.nlp.intent_classifier.matched_parameter import MatchedParameter
-from besser.bot.nlp.ner.base.datetime import ner_datetime, datetime_aux
+from besser.bot.nlp.ner.base.datetime import datetime_aux, ner_datetime
 from besser.bot.nlp.ner.base.number import ner_number
-from besser.bot.nlp.utils import value_in_sentence, replace_value_in_sentence, find_first_temp, \
-    replace_temp_value_in_sentence
+from besser.bot.nlp.ner.ner import NER
+from besser.bot.nlp.ner.ner_prediction import NERPrediction
+from besser.bot.nlp.nlp_configuration import NLPConfiguration
+from besser.bot.nlp.utils import find_first_temp, replace_temp_value_in_sentence, replace_value_in_sentence, \
+    value_in_sentence
 
 
 def get_custom_entity_values_dict(intent, preprocessed_values=False) -> dict[str, tuple[list[IntentParameter], str]]:
@@ -78,20 +79,21 @@ def base_entity_ner(sentence: str, entity_name: str, configuration: NLPConfigura
     return None, None, None
 
 
-class SimpleNER:
+class SimpleNER(NER):
 
     def __init__(self, nlp_engine, bot):
-        self._nlp_engine = nlp_engine
-        self._bot = bot
+        super().__init__(nlp_engine, bot)
 
-    def predict(self, state: State, message: str) -> tuple[dict[Intent, list[MatchedParameter]], dict[str, list[Intent]]]:
+    def train(self) -> None:
+        pass
 
-        ner_result: dict[Intent, list[MatchedParameter]] = {}
-        intent_sentences: dict[str, list[Intent]] = {}
+    def predict(self, state: State, message: str) -> NERPrediction:
+
+        ner_prediction: NERPrediction = NERPrediction()
 
         for intent in state.intents:
             intent_matches: list[MatchedParameter] = []
-            ner_message: str = message
+            ner_sentence: str = message
             # Match custom entities
             preprocessed_values: bool
             if self._nlp_engine.configuration.stemmer:
@@ -110,17 +112,17 @@ class SimpleNER:
                 # value can be an entry value (i.e. value == entry_value)
                 # or a synonym of an entry value (i.e. value is a synonym of entry_value)
                 # value can be preprocessed
-                if value_in_sentence(value, ner_message):
+                if value_in_sentence(value, ner_sentence):
                     temp_n = temp_template.format(temp_count)
                     temp_count += 1
-                    ner_message = replace_value_in_sentence(ner_message, value, temp_n)
+                    ner_sentence = replace_value_in_sentence(ner_sentence, value, temp_n)
                     temps[temp_n] = (entity_refs, entry_value)
 
             entity_refs_done: list[IntentParameter] = []
             while len(temps) > 0:
                 # We get the temp that appears first in the sentence,
                 # and replace it by the 1st entity reference, in order of declaration in the bot definition
-                temp = find_first_temp(ner_message)
+                temp = find_first_temp(ner_sentence)
                 (entity_refs, value) = temps[temp]
                 entity_ref = next(
                     (e for e in entity_refs if e not in entity_refs_done),
@@ -128,11 +130,11 @@ class SimpleNER:
                 )
                 if entity_ref is None:
                     # We found 2 values of the same entity_ref.entity, but there can be only 1
-                    ner_message = replace_temp_value_in_sentence(ner_message, temp, value)
+                    ner_sentence = replace_temp_value_in_sentence(ner_sentence, temp, value)
                     # VALUE IS THE ORIGINAL (woman => Will write Femení!!!)
                 else:
                     entity_refs_done.append(entity_ref)
-                    ner_message = replace_temp_value_in_sentence(ner_message, temp, entity_ref.entity.name.upper())
+                    ner_sentence = replace_temp_value_in_sentence(ner_sentence, temp, entity_ref.entity.name.upper())
                     intent_matches.append(MatchedParameter(entity_ref.name, value, {}))
                 temps.pop(temp)
 
@@ -145,19 +147,17 @@ class SimpleNER:
                     if base_entity_name == entity_ref.entity.name:
                         param_name = entity_ref.name
                         formatted_ner_sentence, formatted_frag, param_info = \
-                            base_entity_ner(ner_message, base_entity_name, self._nlp_engine.configuration)
+                            base_entity_ner(ner_sentence, base_entity_name, self._nlp_engine.configuration)
                         if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
                             intent_matches.append(MatchedParameter(param_name, formatted_frag, param_info))
-                            ner_message = replace_value_in_sentence(formatted_ner_sentence, formatted_frag,
+                            ner_sentence = replace_value_in_sentence(formatted_ner_sentence, formatted_frag,
                                                                     base_entity_name.upper())
             matched_params_names = [mp.name for mp in intent_matches]
             for entity_param in intent.parameters:
                 if entity_param.name not in matched_params_names:
                     intent_matches.append(MatchedParameter(entity_param.name, None, {}))
 
-            ner_result[intent] = intent_matches
-            if not intent_sentences.get(ner_message):
-                intent_sentences[ner_message] = []
-            intent_sentences[ner_message].append(intent)
+            ner_prediction.add_intent_matched_parameters(intent, intent_matches)
+            ner_prediction.add_ner_sentence(ner_sentence, intent)
 
-        return ner_result, intent_sentences
+        return ner_prediction
