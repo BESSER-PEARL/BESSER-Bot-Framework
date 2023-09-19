@@ -5,7 +5,7 @@ from besser.bot.nlp.intent_classifier.intent_classifier_prediction import Intent
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.simple_ner import SimpleNER
 from besser.bot.nlp.nlp_configuration import NLPConfiguration
-from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_custom_entity_entries, preprocess_text
+from besser.bot.nlp.preprocessing.text_preprocessing import preprocess_custom_entity_entries
 
 
 class NLPEngine:
@@ -47,7 +47,6 @@ class NLPEngine:
 
     def predict_intent(self, session):
         message = session.message
-        message = preprocess_text(message, self._configuration)
         intent_classifier = self._intent_classifiers[session.current_state]
         intent_classifier_predictions: list[IntentClassifierPrediction] = intent_classifier.predict(message)
         best_intent_prediction = self.get_best_intent_prediction(session, intent_classifier_predictions)

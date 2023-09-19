@@ -22,16 +22,10 @@ class SimpleIntentClassifier(IntentClassifier):
 
     def __init__(self, nlp_engine: 'NLPEngine', state: State):
         super().__init__(nlp_engine, state)
-        self._tokenizer = None
-        self._model = None
-
-    def train(self) -> None:
-        if not self._state.intents:
-            return
-        self._tokenizer = Tokenizer(num_words=self._nlp_engine.configuration.num_words,
-                                    lower=self._nlp_engine.configuration.lower,
-                                    oov_token=self._nlp_engine.configuration.oov_token)
-        self._model = Sequential([
+        self._tokenizer: Tokenizer = Tokenizer(num_words=self._nlp_engine.configuration.num_words,
+                                               lower=self._nlp_engine.configuration.lower,
+                                               oov_token=self._nlp_engine.configuration.oov_token)
+        self._model: Sequential = Sequential([
             Embedding(input_dim=self._nlp_engine.configuration.num_words,
                       output_dim=self._nlp_engine.configuration.embedding_dim,
                       input_length=self._nlp_engine.configuration.input_max_num_tokens),
@@ -42,11 +36,19 @@ class SimpleIntentClassifier(IntentClassifier):
             Dense(len(self._state.intents), activation=self._nlp_engine.configuration.activation_last_layer)
             # choose sigmoid if, in your scenario, a sentence could possibly match several intents
         ])
+        self.__total_training_sentences: list[str] = []
+        """All the processed training sentences of all intents of the intent classifier's state."""
 
-        total_training_sentences: list[str] = []
-        total_training_sequences: list[str]
-        total_labels_training_sentences: list[int] = []
+        self.__total_training_sequences: list[str] = []
+        """All the training sequences of all intents of the intent classifier's state."""
 
+        self.__total_labels_training_sentences: list[int] = []
+        """The label (identifying the intent) of all training sentences."""
+
+        self.__intent_label_mapping: dict[int, Intent] = {}
+        """A mapping of the intent labels and their corresponding intents."""
+
+    def train(self) -> None:
         for intent in self._state.intents:
             preprocess_training_sentences(intent, self._nlp_engine.configuration)
             index_intent = self._state.intents.index(intent)
