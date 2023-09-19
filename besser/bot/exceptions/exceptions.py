@@ -71,6 +71,14 @@ class DuplicatedAutoTransitionError(Exception):
         super().__init__(message)
 
 
+class ConflictingAutoTransitionError(Exception):
+
+    def __init__(self, bot, state):
+        message = f"State '{state.name}' in bot '{bot.name}' cannot contain an auto transition with other transitions " \
+                  f"({state.go_to.__name__}() call)"
+        super().__init__(message)
+
+
 class PlatformMismatchError(Exception):
 
     def __init__(self, platform, session):
