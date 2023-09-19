@@ -77,3 +77,11 @@ class PlatformMismatchError(Exception):
         message = f"Attempting to reply with platform {platform.__class__.__name__} in a session with platform " \
                   f"{session.platform.__class__.__name__}. Please use the appropriate platform for this session"
         super().__init__(message)
+
+
+class IntentClassifierWithoutIntentsError(Exception):
+
+    def __init__(self, state, intent_classifier):
+        message = f"Attempting to create a {intent_classifier.__class__.__name__} in a state without intents: " \
+                  f"{state.name}"
+        super().__init__(message)

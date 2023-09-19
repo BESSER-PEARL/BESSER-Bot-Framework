@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 class IntentClassifier(ABC):
 
     def __init__(self, nlp_engine: 'NLPEngine', state: State):
+        if not state.intents:
+            raise IntentClassifierWithoutIntentsError(state, self)
         self._nlp_engine: 'NLPEngine' = nlp_engine
         self._state = state
 
