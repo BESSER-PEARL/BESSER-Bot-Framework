@@ -9,8 +9,10 @@ nlp
    nlp/utils
    nlp/intent_classifier
    nlp/intent_classifier_prediction
-   nlp/matched_parameter
    nlp/simple_intent_classifier
+   nlp/matched_parameter
+   nlp/ner
+   nlp/ner_prediction
    nlp/simple_ner
    nlp/any
    nlp/datetime
