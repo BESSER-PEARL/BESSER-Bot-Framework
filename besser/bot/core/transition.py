@@ -1,7 +1,8 @@
-from besser.bot.library.event.event_library import intent_matched, auto
-from besser.bot.core.intent.intent import Intent
-
 from typing import Callable, TYPE_CHECKING
+
+from besser.bot.core.intent.intent import Intent
+from besser.bot.library.event.event_library import auto, intent_matched
+
 if TYPE_CHECKING:
     from besser.bot.core.state import State
 
@@ -53,6 +54,8 @@ class Transition:
             return f"{self.event.__name__} ({self.event_params['intent'].name}): [{self.source.name}] --> " \
                    f"[{self.dest.name}]"
         elif self.event == auto:
+            return f"{self.event.__name__}: [{self.source.name}] --> [{self.dest.name}]"
+        else:
             return f"{self.event.__name__}: [{self.source.name}] --> [{self.dest.name}]"
 
     def is_intent_matched(self, intent: Intent) -> bool:
