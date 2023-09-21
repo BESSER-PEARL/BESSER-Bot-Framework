@@ -1,21 +1,20 @@
 import logging
 import threading
+from configparser import ConfigParser
 from typing import Callable
 
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.entity.entity_entry import EntityEntry
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
-from besser.bot.exceptions.exceptions import DuplicatedStateError, DuplicatedIntentError, DuplicatedEntityError, \
-    DuplicatedInitialStateError, InitialStateNotFound
-from besser.bot.platforms.platform import Platform
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
+from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError, \
+    DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
+from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
-
-from configparser import ConfigParser
 
 
 class Bot:
@@ -71,7 +70,6 @@ class Bot:
             path (str): the path to the properties file
         """
         self._config.read(path)
-        self._nlp_engine.set_language(self._config.get('nlp', 'language', fallback="english"))
 
     def set_property(self, section: str, option: str, value: str):
         """Set a bot property.

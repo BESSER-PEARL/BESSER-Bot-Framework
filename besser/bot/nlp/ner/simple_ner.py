@@ -5,12 +5,11 @@ from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.state import State
 from besser.bot.library.entity.base_entities import BaseEntities, ordered_base_entities
-from besser.bot.nlp.ner.base.datetime import datetime_aux, ner_datetime
+from besser.bot.nlp.ner.base.datetime import ner_datetime
 from besser.bot.nlp.ner.base.number import ner_number
 from besser.bot.nlp.ner.matched_parameter import MatchedParameter
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.ner_prediction import NERPrediction
-from besser.bot.nlp.nlp_configuration import NLPConfiguration
 from besser.bot.nlp.utils import find_first_temp, replace_temp_value_in_sentence, replace_value_in_sentence, \
     value_in_sentence
 
@@ -87,7 +86,7 @@ def get_custom_entity_values_dict(
 def base_entity_ner(
         sentence: str,
         entity_name: str,
-        configuration: NLPConfiguration
+        nlp_engine: 'NLPEngine'
 ) -> tuple[str or None, str or None, dict or None]:
     """
     Do NER with a base entity.
@@ -97,24 +96,16 @@ def base_entity_ner(
     Args:
         sentence (str): the text to do the NER to
         entity_name (str): the base entity name
-        configuration (NLPConfiguration): the NLP configuration parameters
+        nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot
 
     Returns:
         tuple[str or None, str or None, dict or None]: the sentence (that can be modified), the matched fragment,
             and the extra info. If no value has been found, return None
     """
     if entity_name == BaseEntities.NUMBER:
-        return ner_number(sentence, configuration)
+        return ner_number(sentence, nlp_engine)
     if entity_name == BaseEntities.DATETIME:
-        result = ner_datetime(sentence, configuration)
-        if result == (None, None, None):
-            sentence = datetime_aux(True, sentence, configuration)
-            sentence, frag, info = ner_datetime(sentence, configuration)
-            if sentence is None:
-                return None, None, None
-            sentence = datetime_aux(False, sentence, configuration)
-            result = sentence, frag, info
-        return result
+        return ner_datetime(sentence, nlp_engine)
     if entity_name == BaseEntities.ANY:
         # return ner_any(sentence, configuration)
         return None, None, None
@@ -139,18 +130,19 @@ class SimpleNER(NER):
         super().__init__(nlp_engine, bot)
 
     def train(self) -> None:
-        pass
+        for entity in self._bot.entities:
+            entity.process_entity_entries(self._nlp_engine)
 
     def predict(self, state: State, message: str) -> NERPrediction:
-
         ner_prediction: NERPrediction = NERPrediction()
-
         for intent in state.intents:
             intent_matches: list[MatchedParameter] = []
             ner_sentence: str = message
             # Match custom entities
             processed_values: bool
-            if self._nlp_engine.configuration.stemmer:
+            stemmer = self._nlp_engine.get_property('stemmer')
+            if stemmer:
+                # Other conditions may be necessary to use the processed entity values
                 processed_values = True
             else:
                 processed_values = False
@@ -201,7 +193,7 @@ class SimpleNER(NER):
                     if base_entity_name == intent_parameter.entity.name:
                         param_name = intent_parameter.name
                         formatted_ner_sentence, formatted_frag, param_info = \
-                            base_entity_ner(ner_sentence, base_entity_name, self._nlp_engine.configuration)
+                            base_entity_ner(ner_sentence, base_entity_name, self._nlp_engine)
                         if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
                             intent_matches.append(MatchedParameter(param_name, formatted_frag, param_info))
                             ner_sentence = replace_value_in_sentence(formatted_ner_sentence, formatted_frag,

@@ -4,7 +4,6 @@ nlp
 
 .. toctree::
 
-   nlp/nlp_configuration
    nlp/nlp_engine
    nlp/utils
    nlp/intent_classifier
