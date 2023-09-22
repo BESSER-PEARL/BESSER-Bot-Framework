@@ -24,7 +24,7 @@ class NLPEngine:
     Args:
         bot (Bot): the bot the NLPEngine belongs to
 
-    Attributes
+    Attributes:
         _bot (Bot): The bot the NLPEngine belongs to
         _intent_classifiers (dict[State, IntentClassifier]): The collection of Intent Classifiers of the NLPEngine.
             There is one for each bot state (only states with transitions triggered by intent matching)
@@ -42,7 +42,7 @@ class NLPEngine:
         return self._ner
 
     def initialize(self) -> None:
-        """Initialize the NLPEngine"""
+        """Initialize the NLPEngine."""
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
