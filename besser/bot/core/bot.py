@@ -10,7 +10,7 @@ from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
-from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError, \
+from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError,\
     DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
 from besser.bot.platforms.platform import Platform

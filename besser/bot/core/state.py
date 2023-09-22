@@ -6,7 +6,7 @@ from besser.bot.core.intent.intent import Intent
 from besser.bot.core.session import Session
 from besser.bot.library.event.event_library import auto, intent_matched
 from besser.bot.exceptions.exceptions import BodySignatureError, DuplicatedIntentMatchingTransitionError, \
-    StateNotFound, IntentNotFound, DuplicatedAutoTransitionError
+    StateNotFound, IntentNotFound, DuplicatedAutoTransitionError, ConflictingAutoTransitionError
 from besser.bot.core.transition import Transition
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_fallback_body, default_body
@@ -129,6 +129,9 @@ class State:
             dest (State): the destination state
             event_params (dict): the parameters associated to the event
         """
+        for transition in self.transitions:
+            if transition.event.is_auto():
+                raise ConflictingAutoTransitionError(self._bot, self)
         if event == intent_matched:
             # TODO: CHECK isinstance(obj, Intent)
             # TODO: handle exceptions
@@ -140,15 +143,16 @@ class State:
     def go_to(self, dest: 'State') -> None:
         """Create a new `auto` transition on this state.
 
-        This transition needs no event to be triggered, which means that when the bot moves to a state that has an
-        `auto` transition, the bot will move to the transition's destination state unconditionally.
+        This transition needs no event to be triggered, which means that when the bot moves to a state 
+        that has an `auto` transition, the bot will move to the transition's destination state 
+        unconditionally without waitng for user input. This transition cannot be combined with other 
+        transitions.
 
         Args:
             dest (State): the destination state
         """
-        for transition in self.transitions:
-            if transition.is_auto():
-                raise DuplicatedAutoTransitionError(self._bot, self)
+        if self.transitions:
+            raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
@@ -168,10 +172,33 @@ class State:
             raise IntentNotFound(self._bot, intent)
         if dest not in self._bot.states:
             raise StateNotFound(self._bot, dest)
+        for transition in self.transitions:
+            if transition.is_auto():
+                raise ConflictingAutoTransitionError(self._bot, self)
         event_params = {'intent': intent}
         self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
+    
+    def when_no_intent_matched_go_to(self, dest: 'State') -> None:
+        """Create a new `no intent matching` transition on this state.
+
+        When the bot is in a state and no fitting intent is received (the intent is predicted from a user message), 
+        the bot will move to the transition's destination
+        state. If no other transition is specified, the bot will wait for a user message regardless.
+
+        Args:
+            dest (State): the destination state
+        """
+        event_params = {'intent': fallback_intent}
+       # self.intents.append(fallback_intent)
+        if dest not in self._bot.states:
+            raise StateNotFound(self._bot, dest)
+        for transition in self.transitions:
+            if transition.is_auto():
+                raise ConflictingAutoTransitionError(self._bot, self)
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
+                                           event_params=event_params))   
 
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).

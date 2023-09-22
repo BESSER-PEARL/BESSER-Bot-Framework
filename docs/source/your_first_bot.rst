@@ -13,8 +13,8 @@ The greetings bot
 
    Greetings bot diagram
 
-The chatbot we are going to create has a really simple structure. The user is intended to reply the bot messages,
-which are "hello" and "bye", and this workflow is repeated *ad infinitum*.
+The chatbot we are going to create has a really simple structure. The user is intended to greet the bot and answer a
+simple *How are you?* question. This workflow is repeated *ad infinitum*.
 
 You can also see the full bot code :doc:`here <examples/greetings_bot>`
 
@@ -96,8 +96,6 @@ An intent is composed by a name, a set of training sentences and optionally a se
 The idea here is to give representative examples of each intent so the bot can understand the users messages and
 identify their intents.
 
-Here, we provide the bot with a few examples of what a *hello* message should look like, and the same with *goodbye*.
-
 Usually, the more examples you provide (what we call training data), the better predictions the bot will make on the
 users inputs. But note that data quality matters!
 
@@ -134,7 +132,7 @@ It receives the user session as a parameter to read/write user-specific informat
 .. note::
 
     The bot can send messages to the user through the user session (``session.reply("message"))``) or through the
-    platform (``websocket_platform.reply("message"))``). There are other kinds of replies which can be platform-specific
+    platform (``websocket_platform.reply(session, "message"))``). There are other kinds of replies which can be platform-specific
     (e.g. sending a picture, reacting to a user message...)
 
 initial_state
