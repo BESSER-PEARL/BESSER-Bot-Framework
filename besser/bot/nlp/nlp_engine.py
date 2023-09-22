@@ -3,31 +3,50 @@ from typing import Any, TYPE_CHECKING
 
 from besser.bot import nlp
 from besser.bot.core.property import Property
+from besser.bot.core.session import Session
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction, \
     fallback_intent_prediction
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
+from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
+    from besser.bot.core.state import State
 
 
 class NLPEngine:
+    """The NLP Engine of a bot.
+
+    It is in charge of running different Natural Language Processing tasks required by the bot.
+
+    Args:
+        bot (Bot): the bot the NLPEngine belongs to
+
+    Attributes
+        _bot (Bot): The bot the NLPEngine belongs to
+        _intent_classifiers (dict[State, IntentClassifier]): The collection of Intent Classifiers of the NLPEngine.
+            There is one for each bot state (only states with transitions triggered by intent matching)
+        _ner (NER or None): The NER (Named Entity Recognition) system of the NLPEngine
+    """
 
     def __init__(self, bot: 'Bot'):
         self._bot: 'Bot' = bot
-        self._intent_classifiers: list[IntentClassifier] = {}
-        self._ner = None
+        self._intent_classifiers: dict['State', IntentClassifier] = {}
+        self._ner: NER or None = None
 
     @property
     def ner(self):
+        """NER: The bot name."""
         return self._ner
 
-    def initialize(self):
+    def initialize(self) -> None:
+        """Initialize the NLPEngine"""
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
+        # TODO: Only instantiate the NER if asked (maybe a bot does not need NER), via bot properties
         self._ner = SimpleNER(self, self._bot)
 
     def get_property(self, prop: Property) -> Any:
@@ -43,7 +62,8 @@ class NLPEngine:
             return None
         return self._bot.get_property(prop)
 
-    def train(self):
+    def train(self) -> None:
+        """Train the NLP components of the NLPEngine."""
         self._ner.train()
         logging.info(f"NER successfully trained.")
         for state, intent_classifier in self._intent_classifiers.items():
@@ -53,26 +73,45 @@ class NLPEngine:
                 intent_classifier.train()
                 logging.info(f"Intent classifier in {state.name} successfully trained.")
 
-    def predict_intent(self, session):
+    def predict_intent(self, session: Session) -> IntentClassifierPrediction:
+        """Predict the intent of a user message.
+
+        Args:
+            session (Session): the user session
+
+        Returns:
+            IntentClassifierPrediction: the intent prediction
+        """
         message = session.message
         intent_classifier = self._intent_classifiers[session.current_state]
         intent_classifier_predictions: list[IntentClassifierPrediction] = intent_classifier.predict(message)
-        best_intent_prediction = self.get_best_intent_prediction(session, intent_classifier_predictions)
-
+        best_intent_prediction = self.get_best_intent_prediction(intent_classifier_predictions)
+        if best_intent_prediction is None:
+            best_intent_prediction = fallback_intent_prediction(session.message)
         return best_intent_prediction
 
-    def get_best_intent_prediction(self, session, intent_classifier_predictions: list[IntentClassifierPrediction]):
-        fallback = fallback_intent_prediction(session.message)
+    def get_best_intent_prediction(
+            self,
+            intent_classifier_predictions: list[IntentClassifierPrediction]
+    ) -> IntentClassifierPrediction or None:
+        """Get the best intent prediction out of a list of intent predictions. If none of the predictions is well
+        enough to be considered, return nothing.
+
+        Args:
+            intent_classifier_predictions (list[IntentClassifierPrediction]):
+
+        Returns:
+            IntentClassifierPrediction or None: the best intent prediction or None if no intent prediction is well
+                enough
+        """
         best_intent_prediction: IntentClassifierPrediction
         if not intent_classifier_predictions:
-            best_intent_prediction = fallback
-        else:
-            best_intent_prediction = intent_classifier_predictions[0]
+            return None
+        best_intent_prediction = intent_classifier_predictions[0]
         for intent_prediction in intent_classifier_predictions[1:]:
             if intent_prediction.score > best_intent_prediction.score:
                 best_intent_prediction = intent_prediction
         intent_threshold: float = self.get_property(nlp.NLP_INTENT_THRESHOLD)
         if best_intent_prediction.score < intent_threshold:
-            best_intent_prediction = fallback
-            best_intent_prediction.score = intent_threshold
+            return None
         return best_intent_prediction
