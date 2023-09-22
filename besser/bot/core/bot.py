@@ -1,23 +1,21 @@
 import logging
 import threading
-from typing import Callable
+from configparser import ConfigParser
+from typing import Any, Callable
 
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.entity.entity_entry import EntityEntry
 from besser.bot.core.intent.intent import Intent
-from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
-from besser.bot.exceptions.exceptions import DuplicatedStateError, DuplicatedIntentError, DuplicatedEntityError, \
-    DuplicatedInitialStateError, InitialStateNotFound
-from besser.bot.platforms.platform import Platform
+from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
+from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError,\
+    DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
-from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
+from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
-
-from configparser import ConfigParser
 
 
 class Bot:
@@ -73,17 +71,39 @@ class Bot:
             path (str): the path to the properties file
         """
         self._config.read(path)
-        self._nlp_engine.set_language(self._config.get('nlp', 'language', fallback="english"))
 
-    def set_property(self, section: str, option: str, value: str):
+    def get_property(self, prop: Property) -> Any:
+        """Get a bot property's value
+
+        Args:
+            prop (Property): the property to get its value
+
+        Returns:
+            Any: the property value, or None
+        """
+        if prop.type == str:
+            getter = self._config.get
+        elif prop.type == bool:
+            getter = self._config.getboolean
+        elif prop.type == int:
+            getter = self._config.getint
+        elif prop.type == float:
+            getter = self._config.getfloat
+        else:
+            return None
+        return getter(prop.section, prop.name, fallback=prop.default_value)
+
+    def set_property(self, prop: Property, value: Any):
         """Set a bot property.
 
         Args:
-            section (str): the property section
-            option (str): the property option (i.e. key)
+            prop (Property): the property to set
             value (str): the property value
         """
-        self._config.set(section, option, value)
+        if not isinstance(value, prop.type):
+            raise TypeError(f"Attempting to set the bot property '{prop.name}' in section '{prop.section}' with a "
+                            f"{type(value)} value: {value}. The expected property value type is {prop.type}")
+        self._config.set(prop.section, prop.name, value)
 
     def new_state(self, name: str, initial: bool = False) -> State:
         """Create a new state in the bot.
@@ -233,10 +253,7 @@ class Bot:
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
         session.message = message
-        if session.current_state.intents:
-            session.predicted_intent = self._nlp_engine.predict_intent(session)
-        else: 
-            session.predicted_intent = IntentClassifierPrediction(intent=fallback_intent)
+        session.predicted_intent = self._nlp_engine.predict_intent(session)
         session.current_state.receive_intent(session)
 
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:

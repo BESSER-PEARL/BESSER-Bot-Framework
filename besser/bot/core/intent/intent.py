@@ -1,5 +1,12 @@
+from typing import TYPE_CHECKING
+
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.intent.intent_parameter import IntentParameter
+from besser.bot.nlp.preprocessing.text_preprocessing import process_text
+from besser.bot.nlp.utils import replace_value_in_sentence
+
+if TYPE_CHECKING:
+    from besser.bot.nlp.nlp_engine import NLPEngine
 
 
 class Intent:
@@ -18,7 +25,7 @@ class Intent:
     Attributes:
         name (str): The intent's name
         training_sentences (list[str]): The intent's training sentences
-        processed_training_sentences (list[str]): Processed training sentences are stored for intent prediction
+        processed_training_sentences (list[str] or None): Processed training sentences are stored for intent prediction
         parameters (list[IntentParameter]): The intent's parameters
     """
 
@@ -34,7 +41,7 @@ class Intent:
             training_sentences = []
         self.name: str = name
         self.training_sentences: list[str] = training_sentences
-        self.processed_training_sentences: list[str] = []
+        self.processed_training_sentences: list[str] or None = None
         self.parameters: list[IntentParameter] = parameters
 
     def __eq__(self, other):
@@ -64,3 +71,19 @@ class Intent:
         # TODO: Check parameter not repeated
         self.parameters.append(IntentParameter(name, fragment, entity))
         return self
+
+    def process_training_sentences(self, nlp_engine: 'NLPEngine'):
+        """Process the training sentences of the intent.
+
+        Args:
+            nlp_engine (): the NLPEngine that handles the NLP processes of the bot
+        """
+        self.processed_training_sentences = []
+        for i in range(len(self.training_sentences)):
+            processed_sentence: str = self.training_sentences[i]
+            for parameter in self.parameters:
+                # Replace parameter fragments by entity names
+                processed_sentence = replace_value_in_sentence(processed_sentence, parameter.fragment,
+                                                               parameter.entity.name.upper())
+            processed_sentence = process_text(processed_sentence, nlp_engine)
+            self.processed_training_sentences.append(processed_sentence)
