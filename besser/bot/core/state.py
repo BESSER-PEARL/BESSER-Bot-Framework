@@ -143,18 +143,16 @@ class State:
     def go_to(self, dest: 'State') -> None:
         """Create a new `auto` transition on this state.
 
-        This transition needs no event to be triggered, which means that when the bot moves to a state that has an
-        `auto` transition, the bot will move to the transition's destination state unconditionally without waitng for user input.
-        This transition cannot be combined with other transitions.
+        This transition needs no event to be triggered, which means that when the bot moves to a state 
+        that has an `auto` transition, the bot will move to the transition's destination state 
+        unconditionally without waitng for user input. This transition cannot be combined with other 
+        transitions.
 
         Args:
             dest (State): the destination state
         """
-        for transition in self.transitions:
-            if transition.is_auto():
-                raise DuplicatedAutoTransitionError(self._bot, self)
-            if not transition.is_auto():
-                raise ConflictingAutoTransitionError(self._bot, self)
+        if self.transitions:
+            raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
