@@ -5,6 +5,7 @@ from typing import Callable
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.entity.entity_entry import EntityEntry
 from besser.bot.core.intent.intent import Intent
+from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.exceptions.exceptions import DuplicatedStateError, DuplicatedIntentError, DuplicatedEntityError, \
     DuplicatedInitialStateError, InitialStateNotFound
@@ -12,6 +13,7 @@ from besser.bot.platforms.platform import Platform
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
 from besser.bot.nlp.nlp_engine import NLPEngine
+from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
 
@@ -231,7 +233,10 @@ class Bot:
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
         session.message = message
-        session.predicted_intent = self._nlp_engine.predict_intent(session)
+        if session.current_state.intents:
+            session.predicted_intent = self._nlp_engine.predict_intent(session)
+        else: 
+            session.predicted_intent = IntentClassifierPrediction(intent=fallback_intent)
         session.current_state.receive_intent(session)
 
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:
