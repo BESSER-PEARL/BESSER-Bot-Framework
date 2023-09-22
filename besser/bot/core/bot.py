@@ -10,7 +10,7 @@ from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
-from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError,\
+from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError, \
     DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
 from besser.bot.platforms.platform import Platform
@@ -100,7 +100,7 @@ class Bot:
             prop (Property): the property to set
             value (str): the property value
         """
-        if not isinstance(value, prop.type):
+        if (value is not None) and (not isinstance(value, prop.type)):
             raise TypeError(f"Attempting to set the bot property '{prop.name}' in section '{prop.section}' with a "
                             f"{type(value)} value: {value}. The expected property value type is {prop.type}")
         self._config.set(prop.section, prop.name, value)

@@ -17,7 +17,7 @@ class Property:
         default_value (Any): The property default value
     """
     def __init__(self, section: str, name: str, property_type: type, default_value: Any):
-        if not isinstance(default_value, property_type):
+        if (default_value is not None) and (not isinstance(default_value, property_type)):
             raise TypeError(f"Attempting to create a property '{name}' in section '{section}' with a "
                             f"{type(default_value)} default value: {default_value}. The expected property value type "
                             f"is {property_type}")
