@@ -64,12 +64,12 @@ class State:
     def bot(self):
         """Bot: The state's bot."""
         return self._bot
-
+    
     @property
     def name(self):
         """str: The state name"""
         return self._name
-
+    
     @property
     def initial(self):
         """bool: The initial status of the state (initial or non-initial)."""
@@ -103,8 +103,7 @@ class State:
         body_signature = inspect.signature(body)
         body_template_signature = inspect.signature(default_body)
         if body_signature.parameters != body_template_signature.parameters:
-            raise BodySignatureError(
-                self._bot, self, body, body_template_signature, body_signature)
+            raise BodySignatureError(self._bot, self, body, body_template_signature, body_signature)
         self._body = body
 
     def set_fallback_body(self, body: Callable[[Session], None]):
@@ -116,8 +115,7 @@ class State:
         body_signature = inspect.signature(body)
         body_template_signature = inspect.signature(default_fallback_body)
         if body_signature.parameters != body_template_signature.parameters:
-            raise BodySignatureError(
-                self._bot, self, body, body_template_signature, body_signature)
+            raise BodySignatureError(self._bot, self, body, body_template_signature, body_signature)
         self._fallback_body = body
 
     def when_event_go_to(self, event: Callable[..., bool], dest: 'State', event_params: dict) -> None:
@@ -145,10 +143,9 @@ class State:
     def go_to(self, dest: 'State') -> None:
         """Create a new `auto` transition on this state.
 
-        This transition needs no event to be triggered, which means that when the bot moves to a 
-        state that has an `auto` transition, the bot will move to the transition's destination state 
-        unconditionally without waitng for user input. This transition cannot be combined with other
-        transitions.
+        This transition needs no event to be triggered, which means that when the bot moves to a state that has an
+        `auto` transition, the bot will move to the transition's destination state unconditionally without waitng for user input.
+        This transition cannot be combined with other transitions.
 
         Args:
             dest (State): the destination state
@@ -158,8 +155,7 @@ class State:
                 raise DuplicatedAutoTransitionError(self._bot, self)
             if not transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
-        self.transitions.append(Transition(
-            name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
         """Create a new `intent matching` transition on this state.
@@ -185,7 +181,7 @@ class State:
         self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
-
+    
     def when_no_intent_matched_go_to(self, dest: 'State') -> None:
         """Create a new `no intent matching` transition on this state.
 
@@ -204,7 +200,7 @@ class State:
             if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
-                                           event_params=event_params))
+                                           event_params=event_params))   
 
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).
@@ -232,8 +228,7 @@ class State:
             return
         if predicted_intent.intent == fallback_intent:
             # When no intent is matched (i.e. intent == fallback_intent), run the fallback body of the state
-            logging.info(
-                f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
+            logging.info(f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
             try:
                 self._fallback_body(session)
             except Exception as _:
