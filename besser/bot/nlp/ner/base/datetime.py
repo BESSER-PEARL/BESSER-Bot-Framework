@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 
 from dateparser.search import search_dates
 
+from besser.bot import nlp
 from besser.bot.nlp.utils import replace_value_in_sentence
 
 if TYPE_CHECKING:
@@ -17,8 +18,8 @@ def ner_datetime(sentence: str, nlp_engine: 'NLPEngine') -> tuple[str, str, dict
     matched_frag: str = None
     matched_dt: datetime = None
 
-    language = nlp_engine.get_property('language')
-    timezone = nlp_engine.get_property('timezone')
+    language = nlp_engine.get_property(nlp.NLP_LANGUAGE)
+    timezone = nlp_engine.get_property(nlp.NLP_TIMEZONE)
 
     timezone = ZoneInfo(timezone)
     now = datetime.now(tz=timezone).replace(microsecond=0)

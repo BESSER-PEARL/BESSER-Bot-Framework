@@ -1,11 +1,13 @@
 import logging
 from typing import Any, TYPE_CHECKING
 
+from besser.bot import nlp
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction, \
     fallback_intent_prediction
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.simple_ner import SimpleNER
+from besser.bot.property import Property
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
@@ -28,8 +30,18 @@ class NLPEngine:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
         self._ner = SimpleNER(self, self._bot)
 
-    def get_property(self, name: str) -> Any:
-        return self._bot.config.get('nlp', name, fallback='')
+    def get_property(self, prop: Property) -> Any:
+        """Get a NLP property's value from the NLPEngine's bot.
+
+        Args:
+            prop (Property): the property to get its value
+
+        Returns:
+            Any: the property value, or None if the property is not an NLP property
+        """
+        if prop.section != nlp.SECTION_NLP:
+            return None
+        return self._bot.get_property(prop)
 
     def train(self):
         self._ner.train()
@@ -59,7 +71,7 @@ class NLPEngine:
         for intent_prediction in intent_classifier_predictions[1:]:
             if intent_prediction.score > best_intent_prediction.score:
                 best_intent_prediction = intent_prediction
-        intent_threshold: float = self.get_property('intent_threshold')
+        intent_threshold: float = self.get_property(nlp.NLP_INTENT_THRESHOLD)
         if best_intent_prediction.score < intent_threshold:
             best_intent_prediction = fallback
             best_intent_prediction.score = intent_threshold

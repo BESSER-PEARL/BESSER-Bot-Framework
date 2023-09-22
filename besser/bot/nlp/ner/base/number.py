@@ -3,13 +3,15 @@ from typing import TYPE_CHECKING
 
 from text_to_num import alpha2digit
 
+from besser.bot import nlp
+
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine
 
 
 def ner_number(sentence: str, nlp_engine: 'NLPEngine') -> tuple[str, str, dict]:
     # First, we parse any number in the sentence expressed in natural language (e.g. "five") to actual numbers
-    language = nlp_engine.get_property('language')
+    language = nlp_engine.get_property(nlp.NLP_LANGUAGE)
     sentence = alpha2digit(sentence, lang=language)
 
     # Negative/positive numbers with optional point/comma followed by more digits

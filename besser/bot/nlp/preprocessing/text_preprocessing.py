@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from nltk.tokenize import word_tokenize
 
+from besser.bot import nlp
 from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map
 
 if TYPE_CHECKING:
@@ -9,8 +10,8 @@ if TYPE_CHECKING:
 
 
 def process_text(text: str, nlp_engine: 'NLPEngine') -> str:
-    stemmer: bool = nlp_engine.get_property('stemmer')
-    language: str = nlp_engine.get_property('language')
+    stemmer: bool = nlp_engine.get_property(nlp.NLP_STEMMER)
+    language: str = nlp_engine.get_property(nlp.NLP_LANGUAGE)
 
     preprocessed_sentence: str = text
     preprocessed_sentence = preprocessed_sentence.replace('_', ' ')

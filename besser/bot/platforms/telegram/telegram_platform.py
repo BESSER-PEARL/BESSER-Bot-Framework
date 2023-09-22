@@ -8,6 +8,7 @@ from telegram.ext import Application, ApplicationBuilder, BaseHandler, CommandHa
 
 from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
+from besser.bot.platforms import telegram
 from besser.bot.platforms.payload import Payload, PayloadAction
 from besser.bot.platforms.platform import Platform
 
@@ -32,7 +33,7 @@ class TelegramPlatform(Platform):
         super().__init__()
         self._bot: 'Bot' = bot
         self._telegram_app: Application = ApplicationBuilder().token(
-            self._bot.config.get('telegram', 'token', fallback=None)).build()
+            self._bot.get_property(telegram.TELEGRAM_TOKEN)).build()
 
         # Handler for text messages
         async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):

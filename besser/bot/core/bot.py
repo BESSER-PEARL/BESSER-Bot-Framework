@@ -1,7 +1,7 @@
 import logging
 import threading
 from configparser import ConfigParser
-from typing import Callable
+from typing import Any, Callable
 
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.entity.entity_entry import EntityEntry
@@ -15,6 +15,7 @@ from besser.bot.nlp.nlp_engine import NLPEngine
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
+from besser.bot.property import Property
 
 
 class Bot:
@@ -71,15 +72,38 @@ class Bot:
         """
         self._config.read(path)
 
-    def set_property(self, section: str, option: str, value: str):
+    def get_property(self, prop: Property) -> Any:
+        """Get a bot property's value
+
+        Args:
+            prop (Property): the property to get its value
+
+        Returns:
+            Any: the property value, or None
+        """
+        if prop.type == str:
+            getter = self._config.get
+        elif prop.type == bool:
+            getter = self._config.getboolean
+        elif prop.type == int:
+            getter = self._config.getint
+        elif prop.type == float:
+            getter = self._config.getfloat
+        else:
+            return None
+        return getter(prop.section, prop.name, fallback=prop.default_value)
+
+    def set_property(self, prop: Property, value: Any):
         """Set a bot property.
 
         Args:
-            section (str): the property section
-            option (str): the property option (i.e. key)
+            prop (Property): the property to set
             value (str): the property value
         """
-        self._config.set(section, option, value)
+        if not isinstance(value, prop.type):
+            raise TypeError(f"Attempting to set the bot property '{prop.name}' in section '{prop.section}' with a "
+                            f"{type(value)} value: {value}. The expected property value type is {prop.type}")
+        self._config.set(prop.section, prop.name, value)
 
     def new_state(self, name: str, initial: bool = False) -> State:
         """Create a new state in the bot.

@@ -12,6 +12,7 @@ from websockets.sync.server import ServerConnection, WebSocketServer, serve
 
 from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
+from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.websocket import streamlit_ui
@@ -47,8 +48,8 @@ class WebSocketPlatform(Platform):
     def __init__(self, bot: 'Bot', use_ui: bool = True):
         super().__init__()
         self._bot: 'Bot' = bot
-        self._host: str = self._bot.config.get('websocket', 'host', fallback='localhost')
-        self._port: int = self._bot.config.getint('websocket', 'port', fallback=8765)
+        self._host: str = self._bot.get_property(websocket.WEBSOCKET_HOST)
+        self._port: int = self._bot.get_property(websocket.WEBSOCKET_PORT)
         self._use_ui: bool = use_ui
         self._connections: dict[str, ServerConnection] = {}
 
@@ -82,8 +83,8 @@ class WebSocketPlatform(Platform):
             def run_streamlit() -> None:
                 """Run the Streamlit UI in a dedicated thread."""
                 subprocess.run(["streamlit", "run", os.path.abspath(inspect.getfile(streamlit_ui)),
-                                "--server.address", self._bot.config.get('streamlit', 'host', fallback='localhost'),
-                                "--server.port", self._bot.config.get('streamlit', 'port', fallback='5000')])
+                                "--server.address", self._bot.get_property(websocket.STREAMLIT_HOST),
+                                "--server.port", str(self._bot.get_property(websocket.STREAMLIT_PORT))])
 
             thread = threading.Thread(target=run_streamlit)
             logging.info(f'Running Streamlit UI in another thread')

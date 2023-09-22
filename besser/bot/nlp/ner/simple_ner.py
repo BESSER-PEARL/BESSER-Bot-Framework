@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from besser.bot import nlp
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
@@ -140,7 +141,7 @@ class SimpleNER(NER):
             ner_sentence: str = message
             # Match custom entities
             processed_values: bool
-            stemmer = self._nlp_engine.get_property('stemmer')
+            stemmer = self._nlp_engine.get_property(nlp.NLP_STEMMER)
             if stemmer:
                 # Other conditions may be necessary to use the processed entity values
                 processed_values = True
