@@ -1,4 +1,4 @@
-from besser.bot.property import Property
+from besser.bot.core.property import Property
 
 # Definition of the bot properties within the websocket_platform section
 

@@ -2,12 +2,12 @@ import logging
 from typing import Any, TYPE_CHECKING
 
 from besser.bot import nlp
+from besser.bot.core.property import Property
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction, \
     fallback_intent_prediction
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.simple_ner import SimpleNER
-from besser.bot.property import Property
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
