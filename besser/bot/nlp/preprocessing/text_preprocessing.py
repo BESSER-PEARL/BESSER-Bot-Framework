@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from nltk.tokenize import word_tokenize
 
 from besser.bot import nlp
-from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map_stemmers, lang_map_tokenizers
+from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map, lang_map_stemmers, lang_map_tokenizers
 
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine
@@ -24,6 +24,8 @@ def process_text(text: str, nlp_engine: 'NLPEngine') -> str:
 def stem_text(text: str, language: str) -> str:
     stemmer_language: str = 'english'  # default set to english
     # add check whether user used "en" instead of english
+    if language in lang_map:
+        stemmer_language = lang_map[language]
     stemmer = create_or_get_stemmer(stemmer_language)
     # not every stemming language has a corresponsing tokenizer, should we simply use a basic tokenizer for languages that do not possess the fitting tokenizer?
     if language in lang_map_tokenizers:

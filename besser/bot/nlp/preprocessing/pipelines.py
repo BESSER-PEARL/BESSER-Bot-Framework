@@ -5,7 +5,17 @@ import snowballstemmer as SnowballStemmer
 
 lang_map_stemmers = SnowballStemmer._languages
 lang_map_tokenizers = nltk.SnowballStemmer.languages
-
+lang_map = {
+    'en': 'english',
+    'es': 'spanish',
+    'fr': 'french',
+    'it': 'italian',
+    'de': 'german',
+    'nl': 'dutch',
+    'pt': 'portuguese',
+    'ca': 'catalan',
+    'lb': 'luxembourgish'
+}
 stemmers: dict[str, SnowballStemmer.stemmer] = {}
 
 try:
