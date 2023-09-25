@@ -10,7 +10,7 @@ from besser.bot.nlp.intent_classifier.intent_classifier_prediction import Intent
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
-
+from besser.bot.nlp.preprocessing.pipelines import lang_map
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
     from besser.bot.core.state import State
@@ -43,6 +43,8 @@ class NLPEngine:
 
     def initialize(self) -> None:
         """Initialize the NLPEngine."""
+        if self.get_property(nlp.NLP_LANGUAGE) in lang_map.values():
+            self._bot.set_property(nlp.NLP_LANGUAGE, list(lang_map.keys())[list(lang_map.values()).index(self.get_property(nlp.NLP_LANGUAGE))])
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
@@ -83,11 +85,14 @@ class NLPEngine:
             IntentClassifierPrediction: the intent prediction
         """
         message = session.message
+        fallback_intent = fallback_intent_prediction(session.message)
+        if not session.current_state.intents:
+            return fallback_intent
         intent_classifier = self._intent_classifiers[session.current_state]
         intent_classifier_predictions: list[IntentClassifierPrediction] = intent_classifier.predict(message)
         best_intent_prediction = self.get_best_intent_prediction(intent_classifier_predictions)
         if best_intent_prediction is None:
-            best_intent_prediction = fallback_intent_prediction(session.message)
+            best_intent_prediction = fallback_intent
         return best_intent_prediction
 
     def get_best_intent_prediction(

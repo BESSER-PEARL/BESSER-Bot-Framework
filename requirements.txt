@@ -9,3 +9,4 @@ python-telegram-bot==20.4
 pandas~=1.5.3
 numpy~=1.24.3
 keras~=2.13.1
+snowballstemmer==2.2.0
