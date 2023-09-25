@@ -23,7 +23,6 @@ def process_text(text: str, nlp_engine: 'NLPEngine') -> str:
 
 def stem_text(text: str, language: str) -> str:
     stemmer_language: str = 'english'  # default set to english
-    # add check whether user used "en" instead of english
     if language in lang_map:
         stemmer_language = lang_map[language]
     stemmer = create_or_get_stemmer(stemmer_language)

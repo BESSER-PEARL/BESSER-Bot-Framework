@@ -30,6 +30,5 @@ def create_or_get_stemmer(lang: str = 'english') -> SnowballStemmer:
         return stemmers[lang]
     stemmer = SnowballStemmer.stemmer(lang)
     stemmers[lang] = stemmer
-    
     logging.info(f'Stemmer added: {lang}')
     return stemmer
