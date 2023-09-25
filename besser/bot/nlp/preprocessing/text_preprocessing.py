@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from nltk.tokenize import word_tokenize
 
 from besser.bot import nlp
-from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map, lang_map_stemmers, lang_map_tokenizers
+from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map, lang_map_tokenizers
 
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine

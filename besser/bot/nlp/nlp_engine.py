@@ -10,7 +10,7 @@ from besser.bot.nlp.intent_classifier.intent_classifier_prediction import Intent
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
-
+from besser.bot.nlp.preprocessing.pipelines import lang_map
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
     from besser.bot.core.state import State
@@ -43,6 +43,8 @@ class NLPEngine:
 
     def initialize(self) -> None:
         """Initialize the NLPEngine."""
+        if self.get_property(nlp.NLP_LANGUAGE) in lang_map.values():
+            self._bot.set_property(nlp.NLP_LANGUAGE, list(lang_map.keys())[list(lang_map.values()).index(self.get_property(nlp.NLP_LANGUAGE))])
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
