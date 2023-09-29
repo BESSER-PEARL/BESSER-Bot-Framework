@@ -4,7 +4,7 @@ import traceback
 
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.session import Session
-from besser.bot.library.event.event_library import auto, intent_matched
+from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
 from besser.bot.exceptions.exceptions import BodySignatureError, DuplicatedIntentMatchingTransitionError, \
     StateNotFound, IntentNotFound, DuplicatedAutoTransitionError, ConflictingAutoTransitionError
 from besser.bot.core.transition import Transition
@@ -12,6 +12,8 @@ from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_fallback_body, default_body
 
 from typing import Callable, TYPE_CHECKING
+
+import operator
 
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 
@@ -130,7 +132,7 @@ class State:
             event_params (dict): the parameters associated to the event
         """
         for transition in self.transitions:
-            if transition.event.is_auto():
+            if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
         if event == intent_matched:
             # TODO: CHECK isinstance(obj, Intent)
@@ -200,6 +202,21 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))   
 
+    def when_session_variable_operation_match_go_to(self, var_name: str, operation: operator, target, dest: 'State') -> None:
+        """Create a new `no intent matching` transition on this state.
+
+        When the bot is in a state and no fitting intent is received (the intent is predicted from a user message), 
+        the bot will move to the transition's destination
+        state. If no other transition is specified, the bot will wait for a user message regardless.
+
+        Args:
+            dest (State): the destination state
+        """
+        event_params = {'var_name': var_name, 'operation': operation, 'target': target}
+        
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=session_operation_matched,
+                                           event_params=event_params))  
+
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).
 
@@ -218,8 +235,11 @@ class State:
             if transition.is_intent_matched(predicted_intent.intent):
                 session.move(transition)
                 return
-            if transition.is_auto():
+            elif transition.is_auto():
                 auto_transition = transition
+            elif transition.is_session_operation_matched(session):
+                session.move(transition)
+                return       
         if auto_transition:
             # When no intent is matched, but there is an auto transition, move through it
             session.move(auto_transition)
