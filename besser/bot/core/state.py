@@ -129,7 +129,7 @@ class State:
             raise BodySignatureError(self._bot, self, body, body_template_signature, body_signature)
         self._fallback_body = body
     
-    def check_global_state(self, dest: 'State'):
+    def _check_global_state(self, dest: 'State'):
         """Add state to global state component if condition is met.
 
         If the previous state is a global state, add this state to the component's list
@@ -166,7 +166,7 @@ class State:
             self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=event,
                                            event_params=event_params))
-        self.check_global_state(dest)
+        self._check_global_state(dest)
 
     def go_to(self, dest: 'State') -> None:
         """Create a new `auto` transition on this state.
@@ -182,7 +182,7 @@ class State:
         if self.transitions:
             raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
-        self.check_global_state(dest)
+        self._check_global_state(dest)
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
         """Create a new `intent matching` transition on this state.
@@ -208,7 +208,7 @@ class State:
         self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
-        self.check_global_state(dest)
+        self._check_global_state(dest)
     
     def when_no_intent_matched_go_to(self, dest: 'State') -> None:
         """Create a new `no intent matching` transition on this state.
@@ -231,13 +231,15 @@ class State:
                                            event_params=event_params))   
 
     def when_session_variable_operation_match_go_to(self, var_name: str, operation: operator, target, dest: 'State') -> None:
-        """Create a new `no intent matching` transition on this state.
+        """Create a new `session_operation_matched` transition on this state.
 
-        When the bot is in a state and no fitting intent is received (the intent is predicted from a user message), 
-        the bot will move to the transition's destination
-        state. If no other transition is specified, the bot will wait for a user message regardless.
+        When the bot is in a state and the operation on the specified session variable and target value returns true,
+        then the bot moves to the specified destination state.
 
         Args:
+            var_name (str): the name of the stored variable in the session storage
+            operation (operator): the comparison operation to be done on the stored and target value
+            target (any): the target value to which will be used in the operation with the stored value
             dest (State): the destination state
         """
         event_params = {'var_name': var_name, 'operation': operation, 'target': target}

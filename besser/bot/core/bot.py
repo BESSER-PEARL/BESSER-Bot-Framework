@@ -34,6 +34,9 @@ class Bot:
         states (list[State]): The bot states
         intents (list[Intent]): The bot intents
         entities (list[Entity]): The bot entities
+        global_initial_states (list[State, Intent]): List of tuples of initial global states and their triggering intent
+        global_state_component (dict[State, list[State]]): Dictionnary of global state components, where key is initial
+            global state and values is set of states in corresponding global component
     """
 
     def __init__(self, name: str):
@@ -209,7 +212,7 @@ class Bot:
                 return state
         return None
 
-    def init_global_state(self) -> None:
+    def _init_global_state(self) -> None:
         """Initialise the global state and add the necessary transitions.
 
         Go through all the global states and add transitions to every state to jump to the global states.
@@ -235,10 +238,10 @@ class Bot:
         """Start the execution of the bot.
 
         The bot is idle until a user connects, a session is created and the initial state starts running.
-        """ 
+        """
         if not self.initial_state():
             raise InitialStateNotFound(self)
-        self.init_global_state()
+        self._init_global_state()
         self._nlp_engine.initialize()
         logging.info(f'{self._name} training started')
         self._train()

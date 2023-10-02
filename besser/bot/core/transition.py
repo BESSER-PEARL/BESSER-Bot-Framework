@@ -80,7 +80,7 @@ class Transition:
         """For `session-value-comparison` transitions, check if the given operation on a stored session 
         value and a given target value returns true (stored in the transition event parameters).
 
-        If the transition event is not `intent-matching`, return false.
+        If the transition event is not `session_operation_matched`, return false.
 
         Args:
             session (Session): the session in which the to be compared value is stored
