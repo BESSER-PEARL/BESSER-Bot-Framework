@@ -115,8 +115,18 @@ class Session:
             transition (Transition): the transition that points to the bot state to move
         """
         logging.info(transition.log())
+        if any(transition.dest in global_state for global_state in self._bot.global_initial_states):
+            self.set("prev_state", self.current_state)
         self._current_state = transition.dest
         self._current_state.run(self)
+        # check whether automatic transition due to session param should take place
+        # TODO: maybe using the event_params to check the next transition is not the best way
+        for next_transition in self.current_state.transitions:
+            if "intent" in next_transition.event_params:
+                return
+            elif "var_name" in next_transition.event_params:
+                if next_transition.is_session_operation_matched(self):
+                    self.move(next_transition)
 
     def reply(self, message: str) -> None:
         """A bot message (usually a reply to a user message) is sent to the session platform to show it to the user.

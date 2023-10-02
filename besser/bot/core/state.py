@@ -96,6 +96,15 @@ class State:
         self._transition_counter += 1
         return f"t_{self._transition_counter}"
 
+    def set_global(self, intent: Intent):
+        """Set state as globally accessible state.
+
+        Args:
+            intent (Intent): the intent that should trigger the jump to the global state
+        """
+        self.bot.global_initial_states.append((self, intent))
+        self.bot.global_state_component[self] = [self]
+
     def set_body(self, body: Callable[[Session], None]) -> None:
         """Set the state body.
 
@@ -119,6 +128,22 @@ class State:
         if body_signature.parameters != body_template_signature.parameters:
             raise BodySignatureError(self._bot, self, body, body_template_signature, body_signature)
         self._fallback_body = body
+    
+    def check_global_state(self, dest: 'State'):
+        """Add state to global state component if condition is met.
+
+        If the previous state is a global state, add this state to the component's list
+        of the global state.
+
+        Args:
+            dest (State): the destination state
+        """
+        if any(self in global_state for global_state in self.bot.global_initial_states):
+            self.bot.global_state_component[self].append(dest)
+            return
+        for global_state in self.bot.global_state_component:
+            if self in self.bot.global_state_component[global_state]:
+                self.bot.global_state_component[global_state].append(dest)
 
     def when_event_go_to(self, event: Callable[..., bool], dest: 'State', event_params: dict) -> None:
         """Create a new transition on this state.
@@ -141,6 +166,7 @@ class State:
             self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=event,
                                            event_params=event_params))
+        self.check_global_state(dest)
 
     def go_to(self, dest: 'State') -> None:
         """Create a new `auto` transition on this state.
@@ -156,6 +182,7 @@ class State:
         if self.transitions:
             raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
+        self.check_global_state(dest)
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
         """Create a new `intent matching` transition on this state.
@@ -181,6 +208,7 @@ class State:
         self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
+        self.check_global_state(dest)
     
     def when_no_intent_matched_go_to(self, dest: 'State') -> None:
         """Create a new `no intent matching` transition on this state.

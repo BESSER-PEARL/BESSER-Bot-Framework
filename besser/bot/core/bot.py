@@ -17,6 +17,7 @@ from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
 
+import operator
 
 class Bot:
     """The bot class.
@@ -44,6 +45,8 @@ class Bot:
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
+        self.global_initial_states: list[State, Intent] = []
+        self.global_state_component: dict[State, list[State]] = dict()
 
     @property
     def name(self):
@@ -206,13 +209,36 @@ class Bot:
                 return state
         return None
 
+    def init_global_state(self) -> None:
+        """Initialise the global state and add the necessary transitions.
+
+        Go through all the global states and add transitions to every state to jump to the global states.
+        Also add the transition to jump back to the previous state once the global state component
+        has been completed. 
+        """
+        global_state_follow_up = []
+        for global_state_tuple in self.global_initial_states:
+            global_state = global_state_tuple[0]
+            for state in self.global_state_component[global_state]:
+                global_state_follow_up.append(state)
+        for global_state_tuple in self.global_initial_states:
+            global_state = global_state_tuple[0]
+            for state in self.states:
+                if (not any(state.name is global_init_state[0].name for global_init_state in self.global_initial_states) 
+                        and state not in global_state_follow_up):
+                    if state.transitions and not state.transitions[0].is_auto():
+                        state.when_intent_matched_go_to(global_state_tuple[1], global_state)
+                        self.global_state_component[global_state][-1].when_session_variable_operation_match_go_to(
+                            var_name="prev_state", operation=operator.eq, target=state, dest=state)
+
     def run(self) -> None:
         """Start the execution of the bot.
 
         The bot is idle until a user connects, a session is created and the initial state starts running.
-        """
+        """ 
         if not self.initial_state():
             raise InitialStateNotFound(self)
+        self.init_global_state()
         self._nlp_engine.initialize()
         logging.info(f'{self._name} training started')
         self._train()
