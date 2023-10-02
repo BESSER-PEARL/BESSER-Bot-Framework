@@ -1,7 +1,7 @@
 from typing import Callable, TYPE_CHECKING
 
 from besser.bot.core.intent.intent import Intent
-from besser.bot.library.event.event_library import auto, intent_matched
+from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
 
 if TYPE_CHECKING:
     from besser.bot.core.state import State
@@ -74,6 +74,25 @@ class Transition:
         if self.event == intent_matched:
             target_intent = self.event_params['intent']
             return self.event(target_intent, intent)
+        return False
+
+    def is_session_operation_matched(self, session) -> bool:
+        """For `session-value-comparison` transitions, check if the given operation on a stored session 
+        value and a given target value returns true (stored in the transition event parameters).
+
+        If the transition event is not `session_operation_matched`, return false.
+
+        Args:
+            session (Session): the session in which the to be compared value is stored
+
+        Returns:
+            bool: true if the operation on stored and target values returns true, false otherwise
+        """
+        if self.event == session_operation_matched:
+            target = self.event_params['target']
+            operation = self.event_params['operation']
+            var_name = self.event_params['var_name']
+            return session_operation_matched(session.get(var_name), operation, target)
         return False
 
     def is_auto(self) -> bool:

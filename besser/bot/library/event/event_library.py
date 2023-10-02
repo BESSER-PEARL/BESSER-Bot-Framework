@@ -6,7 +6,8 @@ value, trigger the transitions.
 """
 
 from besser.bot.core.intent.intent import Intent
-
+from typing import Any
+import operator
 
 def auto() -> bool:
     """This event always returns True."""
@@ -25,3 +26,18 @@ def intent_matched(target_intent: Intent, matched_intent: Intent) -> bool:
         bool: True if the 2 intents are the same, false otherwise
     """
     return target_intent.name == matched_intent.name
+
+def session_operation_matched(current_value: Any, operation: operator, target_value: Any) -> bool:
+    """
+    This event checks if for a specific comparison operation, using a stored session value
+    and a given target value, returns true.
+
+    Args:
+        current_value (any): the stored value 
+        operation (operator): the comparison operation to be used
+        target_value (any): the target value to compare to
+
+    Returns:
+        bool: True if the comparison operation of the given values returns true
+    """
+    return operation(current_value, target_value)

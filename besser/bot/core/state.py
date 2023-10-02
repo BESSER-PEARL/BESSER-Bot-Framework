@@ -4,7 +4,7 @@ import traceback
 
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.session import Session
-from besser.bot.library.event.event_library import auto, intent_matched
+from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
 from besser.bot.exceptions.exceptions import BodySignatureError, DuplicatedIntentMatchingTransitionError, \
     StateNotFound, IntentNotFound, DuplicatedAutoTransitionError, ConflictingAutoTransitionError
 from besser.bot.core.transition import Transition
@@ -12,6 +12,8 @@ from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_fallback_body, default_body
 
 from typing import Callable, TYPE_CHECKING
+
+import operator
 
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 
@@ -94,6 +96,15 @@ class State:
         self._transition_counter += 1
         return f"t_{self._transition_counter}"
 
+    def set_global(self, intent: Intent):
+        """Set state as globally accessible state.
+
+        Args:
+            intent (Intent): the intent that should trigger the jump to the global state
+        """
+        self.bot.global_initial_states.append((self, intent))
+        self.bot.global_state_component[self] = [self]
+
     def set_body(self, body: Callable[[Session], None]) -> None:
         """Set the state body.
 
@@ -117,6 +128,22 @@ class State:
         if body_signature.parameters != body_template_signature.parameters:
             raise BodySignatureError(self._bot, self, body, body_template_signature, body_signature)
         self._fallback_body = body
+    
+    def _check_global_state(self, dest: 'State'):
+        """Add state to global state component if condition is met.
+
+        If the previous state is a global state, add this state to the component's list
+        of the global state.
+
+        Args:
+            dest (State): the destination state
+        """
+        if any(self in global_state for global_state in self.bot.global_initial_states):
+            self.bot.global_state_component[self].append(dest)
+            return
+        for global_state in self.bot.global_state_component:
+            if self in self.bot.global_state_component[global_state]:
+                self.bot.global_state_component[global_state].append(dest)
 
     def when_event_go_to(self, event: Callable[..., bool], dest: 'State', event_params: dict) -> None:
         """Create a new transition on this state.
@@ -130,7 +157,7 @@ class State:
             event_params (dict): the parameters associated to the event
         """
         for transition in self.transitions:
-            if transition.event.is_auto():
+            if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
         if event == intent_matched:
             # TODO: CHECK isinstance(obj, Intent)
@@ -139,6 +166,7 @@ class State:
             self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=event,
                                            event_params=event_params))
+        self._check_global_state(dest)
 
     def go_to(self, dest: 'State') -> None:
         """Create a new `auto` transition on this state.
@@ -154,6 +182,7 @@ class State:
         if self.transitions:
             raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
+        self._check_global_state(dest)
 
     def when_intent_matched_go_to(self, intent: Intent, dest: 'State') -> None:
         """Create a new `intent matching` transition on this state.
@@ -179,6 +208,7 @@ class State:
         self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
+        self._check_global_state(dest)
     
     def when_no_intent_matched_go_to(self, dest: 'State') -> None:
         """Create a new `no intent matching` transition on this state.
@@ -200,6 +230,23 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))   
 
+    def when_session_variable_operation_match_go_to(self, var_name: str, operation: operator, target, dest: 'State') -> None:
+        """Create a new `session_operation_matched` transition on this state.
+
+        When the bot is in a state and the operation on the specified session variable and target value returns true,
+        then the bot moves to the specified destination state.
+
+        Args:
+            var_name (str): the name of the stored variable in the session storage
+            operation (operator): the comparison operation to be done on the stored and target value
+            target (any): the target value to which will be used in the operation with the stored value
+            dest (State): the destination state
+        """
+        event_params = {'var_name': var_name, 'operation': operation, 'target': target}
+        
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=session_operation_matched,
+                                           event_params=event_params))  
+
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).
 
@@ -218,8 +265,11 @@ class State:
             if transition.is_intent_matched(predicted_intent.intent):
                 session.move(transition)
                 return
-            if transition.is_auto():
+            elif transition.is_auto():
                 auto_transition = transition
+            elif transition.is_session_operation_matched(session):
+                session.move(transition)
+                return       
         if auto_transition:
             # When no intent is matched, but there is an auto transition, move through it
             session.move(auto_transition)
