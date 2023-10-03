@@ -104,6 +104,15 @@ class State:
         """
         self.bot.global_initial_states.append((self, intent))
         self.bot.global_state_component[self] = [self]
+        # Check whether the states from the global component are already in the list
+        # Currently only works for linear states
+        transitions = self.transitions
+        while transitions:
+            transition = transitions[0]
+            if transition not in self.bot.global_state_component[self]:
+                self.bot.global_state_component[self].append(transition.dest) 
+            transitions = transition.dest.transitions
+
 
     def set_body(self, body: Callable[[Session], None]) -> None:
         """Set the state body.
