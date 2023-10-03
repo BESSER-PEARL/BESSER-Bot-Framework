@@ -14,7 +14,8 @@ lang_map = {
     'nl': 'dutch',
     'pt': 'portuguese',
     'ca': 'catalan',
-    'lb': 'luxembourgish'
+    # TODO: replace german stemmer by actual luxembourgish stemmer
+    'lb': 'german'
 }
 stemmers: dict[str, SnowballStemmer.stemmer] = {}
 
