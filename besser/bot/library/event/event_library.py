@@ -5,9 +5,11 @@ Events are functions embedded in :class:`~besser.bot.core.transition.Transition`
 value, trigger the transitions.
 """
 
-from besser.bot.core.intent.intent import Intent
-from typing import Any
 import operator
+from typing import Any
+
+from besser.bot.core.intent.intent import Intent
+
 
 def auto() -> bool:
     """This event always returns True."""
@@ -27,15 +29,16 @@ def intent_matched(target_intent: Intent, matched_intent: Intent) -> bool:
     """
     return target_intent.name == matched_intent.name
 
+
 def session_operation_matched(current_value: Any, operation: operator, target_value: Any) -> bool:
     """
     This event checks if for a specific comparison operation, using a stored session value
     and a given target value, returns true.
 
     Args:
-        current_value (any): the stored value 
+        current_value (Any): the stored value
         operation (operator): the comparison operation to be used
-        target_value (any): the target value to compare to
+        target_value (Any): the target value to compare to
 
     Returns:
         bool: True if the comparison operation of the given values returns true

@@ -1,20 +1,17 @@
 import inspect
 import logging
+import operator
 import traceback
+from typing import Any, Callable, TYPE_CHECKING
 
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.session import Session
-from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
-from besser.bot.exceptions.exceptions import BodySignatureError, DuplicatedIntentMatchingTransitionError, \
-    StateNotFound, IntentNotFound, DuplicatedAutoTransitionError, ConflictingAutoTransitionError
 from besser.bot.core.transition import Transition
+from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
+    DuplicatedIntentMatchingTransitionError, IntentNotFound, StateNotFound
+from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
 from besser.bot.library.intent.intent_library import fallback_intent
-from besser.bot.library.state.state_library import default_fallback_body, default_body
-
-from typing import Callable, TYPE_CHECKING
-
-import operator
-
+from besser.bot.library.state.state_library import default_body, default_fallback_body
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 
 if TYPE_CHECKING:
@@ -239,7 +236,13 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))   
 
-    def when_session_variable_operation_match_go_to(self, var_name: str, operation: operator, target, dest: 'State') -> None:
+    def when_session_variable_operation_match_go_to(
+            self,
+            var_name: str,
+            operation: operator,
+            target: Any,
+            dest: 'State'
+    ) -> None:
         """Create a new `session_operation_matched` transition on this state.
 
         When the bot is in a state and the operation on the specified session variable and target value returns true,
@@ -248,7 +251,7 @@ class State:
         Args:
             var_name (str): the name of the stored variable in the session storage
             operation (operator): the comparison operation to be done on the stored and target value
-            target (any): the target value to which will be used in the operation with the stored value
+            target (Any): the target value to which will be used in the operation with the stored value
             dest (State): the destination state
         """
         event_params = {'var_name': var_name, 'operation': operation, 'target': target}

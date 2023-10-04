@@ -1,4 +1,5 @@
 import logging
+import operator
 import threading
 from configparser import ConfigParser
 from typing import Any, Callable
@@ -17,7 +18,6 @@ from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
 
-import operator
 
 class Bot:
     """The bot class.
@@ -48,7 +48,7 @@ class Bot:
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
-        self.global_initial_states: list[State, Intent] = []
+        self.global_initial_states: list[tuple[State, Intent]] = []
         self.global_state_component: dict[State, list[State]] = dict()
 
     @property
@@ -212,8 +212,8 @@ class Bot:
                 return state
         return None
 
-    def _init_global_state(self) -> None:
-        """Initialise the global state and add the necessary transitions.
+    def _init_global_states(self) -> None:
+        """Initialise the global states and add the necessary transitions.
 
         Go through all the global states and add transitions to every state to jump to the global states.
         Also add the transition to jump back to the previous state once the global state component
@@ -241,7 +241,7 @@ class Bot:
         """
         if not self.initial_state():
             raise InitialStateNotFound(self)
-        self._init_global_state()
+        self._init_global_states()
         self._nlp_engine.initialize()
         logging.info(f'{self._name} training started')
         self._train()

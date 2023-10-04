@@ -42,7 +42,9 @@ class WebSocketPlatform(Platform):
         _port (int): The WebSocket port (e.g. `8765`)
         _use_ui (bool): Weather to use the built-in UI or not
         _connections (dict[str, ServerConnection]): The list of active connections (i.e. users connected to the bot)
-        _websocket_server (WebSocketServer): The WebSocket server instance
+        _websocket_server (WebSocketServer or None): The WebSocket server instance
+        _message_handler (Callable[[ServerConnection], None]): The function that handles the user connections
+            (sessions) and incoming messages
     """
 
     def __init__(self, bot: 'Bot', use_ui: bool = True):
@@ -52,6 +54,7 @@ class WebSocketPlatform(Platform):
         self._port: int = self._bot.get_property(websocket.WEBSOCKET_PORT)
         self._use_ui: bool = use_ui
         self._connections: dict[str, ServerConnection] = {}
+        self._websocket_server: WebSocketServer or None = None
 
         def message_handler(conn: ServerConnection) -> None:
             """This method is run on each user connection to handle incoming messages and the bot sessions.
@@ -75,10 +78,10 @@ class WebSocketPlatform(Platform):
             finally:
                 logging.info(f'Session finished')
                 self._bot.delete_session(session.id)
-
-        self._websocket_server: WebSocketServer = serve(message_handler, self._host, self._port)
+        self._message_handler = message_handler
 
     def run(self) -> None:
+        self._websocket_server = serve(self._message_handler, self._host, self._port)
         if self._use_ui:
             def run_streamlit() -> None:
                 """Run the Streamlit UI in a dedicated thread."""
