@@ -10,6 +10,7 @@ Table of contents
 -----------------
 
 .. toctree::
+   :maxdepth: 1
 
    about/core
    about/nlp

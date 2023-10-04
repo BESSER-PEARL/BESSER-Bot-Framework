@@ -14,6 +14,7 @@ Table of contents
 -----------------
 
 .. toctree::
+   :maxdepth: 1
 
    core/intents
    core/entities
