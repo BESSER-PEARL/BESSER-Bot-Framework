@@ -61,7 +61,7 @@ state. A typical scenario is when the user sends a message to the bot, but the b
 ant therefore, runs the fallback body of the user's current state. The process is the same as with regular body
 functions:
 
-.. python::
+.. code:: python
 
     def example_fallback_body(session: Session):
         session.reply(session, "Sorry, I didn't understand you")
@@ -75,7 +75,7 @@ functions:
 There is a way to assign a custom fallback body to all bot states at the same time (replacing all previously assigned
 fallback bodies). You need to do it through the bot object:
 
-.. python::
+.. code:: python
 
     bot.set_global_fallback_body(example_fallback_body)
 
