@@ -21,11 +21,11 @@ telegram_platform = bot.use_telegram_platform()
 
 
 # Adding a custom handler for the Telegram Application: command /help
-async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    session = bot.get_session(update.effective_chat.id)
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    session = bot.get_session(str(update.effective_chat.id))
     session.reply('I am a bot, tell me something!')
-reset_handler = CommandHandler('help', reset)
-telegram_platform.add_handler(reset_handler)
+help_handler = CommandHandler('help', help)
+telegram_platform.add_handler(help_handler)
 
 
 # STATES
@@ -93,7 +93,6 @@ def hello_fallback_body(session: Session):
 hello_state.set_body(hello_body)
 hello_state.set_fallback_body(hello_fallback_body)
 hello_state.when_intent_matched_go_to(bye_intent, bye_state)
-# hello_state.go_to(s0)  # This transition will be triggered when no intent is detected, replacing the fallback scenario
 
 
 def bye_body(session: Session):
