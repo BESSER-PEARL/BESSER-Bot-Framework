@@ -43,6 +43,8 @@ the message's intent is hello_intent, the user will move to handle_hello_state, 
 
    The bot we just created, has 2 states linked by an intent.
 
+.. _intents-with-parameters:
+
 Intents with parameters
 -----------------------
 
@@ -70,6 +72,14 @@ Intent parameters have a **name**, a **fragment** that indicates the position of
 sentences and an **entity** that defines the values that can be matched in the parameter.
 
 See the :doc:`entities <entities>` guide to learn about them.
+
+.. note::
+
+    You can also add a list of parameters directly in the intent creation:
+
+    .. code:: python
+
+        weather_intent = bot.new_intent('weather_intent', training_sentences, parameters)
 
 Now let's see how the bot can access the intent parameters in runtime. Let's say we add the following transition to
 another state:
