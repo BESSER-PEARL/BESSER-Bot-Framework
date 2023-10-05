@@ -2,11 +2,13 @@ States
 ======
 
 A bot is composed by a set of states. The user can navigate through the bot states by triggering the
-:doc:`transitions <transitions>` that move the user's current state in the bot to another one. Creating a new state
+transitions that move the user's current state in the bot to another one. Creating a new state
 is really simple:
 
 .. code:: python
 
+    bot = Bot('example_bot')
+    ...
     example_state = bot.new_state('example_state')
 
 The bot must have 1 (and only 1) initial state, which is the starting point of the bot. To create an initial state,

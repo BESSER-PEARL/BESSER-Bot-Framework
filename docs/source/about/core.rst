@@ -16,8 +16,8 @@ Table of contents
 .. toctree::
    :maxdepth: 1
 
+   core/states
    core/intents
    core/entities
-   core/states
    core/transitions
    core/sessions
