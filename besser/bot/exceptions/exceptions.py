@@ -33,6 +33,13 @@ class DuplicatedEntityError(Exception):
         super().__init__(message)
 
 
+class DuplicatedIntentParameterError(Exception):
+
+    def __init__(self, intent, name):
+        message = f"Intent '{intent.name}' already contains a parameter with name '{name}'"
+        super().__init__(message)
+
+
 class DuplicatedIntentMatchingTransitionError(Exception):
 
     def __init__(self, state, intent):
