@@ -103,11 +103,11 @@ def base_entity_ner(
         tuple[str or None, str or None, dict or None]: the sentence (that can be modified), the matched fragment,
             and the extra info. If no value has been found, return None
     """
-    if entity_name == BaseEntities.NUMBER:
+    if entity_name == BaseEntities.NUMBER.value:
         return ner_number(sentence, nlp_engine)
-    if entity_name == BaseEntities.DATETIME:
+    if entity_name == BaseEntities.DATETIME.value:
         return ner_datetime(sentence, nlp_engine)
-    if entity_name == BaseEntities.ANY:
+    if entity_name == BaseEntities.ANY.value:
         # return ner_any(sentence, configuration)
         return None, None, None
     return None, None, None
@@ -191,14 +191,14 @@ class SimpleNER(NER):
             # Base entities must be checked in a specific order
             for base_entity_name in ordered_base_entities:
                 for intent_parameter in base_entity_intent_parameters:
-                    if base_entity_name == intent_parameter.entity.name:
+                    if base_entity_name.value == intent_parameter.entity.name:
                         param_name = intent_parameter.name
                         formatted_ner_sentence, formatted_frag, param_info = \
-                            base_entity_ner(ner_sentence, base_entity_name, self._nlp_engine)
+                            base_entity_ner(ner_sentence, base_entity_name.value, self._nlp_engine)
                         if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
                             intent_matches.append(MatchedParameter(param_name, formatted_frag, param_info))
                             ner_sentence = replace_value_in_sentence(formatted_ner_sentence, formatted_frag,
-                                                                    base_entity_name.upper())
+                                                                    base_entity_name.value.upper())
             matched_params_names = [mp.name for mp in intent_matches]
             for entity_param in intent.parameters:
                 if entity_param.name not in matched_params_names:
