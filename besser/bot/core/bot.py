@@ -176,7 +176,6 @@ class Bot:
         """
         if entity in self.entities:
             raise DuplicatedEntityError(self, entity)
-        # TODO: Check entity is in self.entities
         self.entities.append(entity)
         return entity
 
