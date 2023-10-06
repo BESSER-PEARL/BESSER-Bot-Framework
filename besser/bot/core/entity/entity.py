@@ -57,8 +57,9 @@ class Entity:
         Args:
             nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot
         """
-        for entry in self.entries:
-            entry.processed_value = process_text(entry.value, nlp_engine)
-            entry.processed_synonyms = []
-            for synonym in entry.synonyms:
-                entry.processed_synonyms.append(process_text(synonym, nlp_engine))
+        if not self.base_entity:
+            for entry in self.entries:
+                entry.processed_value = process_text(entry.value, nlp_engine)
+                entry.processed_synonyms = []
+                for synonym in entry.synonyms:
+                    entry.processed_synonyms.append(process_text(synonym, nlp_engine))

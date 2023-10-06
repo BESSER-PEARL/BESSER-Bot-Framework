@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.intent.intent_parameter import IntentParameter
+from besser.bot.exceptions.exceptions import DuplicatedIntentParameterError
 from besser.bot.nlp.preprocessing.text_preprocessing import process_text
 from besser.bot.nlp.utils import replace_value_in_sentence
 
@@ -68,7 +69,9 @@ class Intent:
         Returns:
             Intent: Returns the instance of :class:`Intent` it was called on (i.e., self).
         """
-        # TODO: Check parameter not repeated
+        for parameter in self.parameters:
+            if parameter.name == name:
+                raise DuplicatedIntentParameterError(self, name)
         self.parameters.append(IntentParameter(name, fragment, entity))
         return self
 
