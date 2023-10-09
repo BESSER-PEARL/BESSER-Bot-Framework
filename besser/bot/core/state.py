@@ -277,12 +277,7 @@ class State:
             logging.error("Something went wrong, no intent was predicted")
             return
         for transition in self.transitions:
-            if transition.is_intent_matched(session):
-                session.move(transition)
-                return
-            elif transition.is_session_operation_matched(session):
-                # TODO: Do we want this behaviour? We also would need to check generic events:
-                # elif transition.is_event_true()
+            if transition.is_event_true(session):
                 session.move(transition)
                 return
         if predicted_intent.intent == fallback_intent:
