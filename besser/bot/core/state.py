@@ -308,12 +308,7 @@ class State:
             if next_transition.event == intent_matched:
                 # If the next transition is an intent_matched, we return to await the user message
                 return
-            elif next_transition.is_session_operation_matched(session):
-                # Check when_session_variable_operation_match_go_to transition
-                session.move(next_transition)
-                return
             elif next_transition.is_event_true(session):
-                # Check custom events transitions
                 session.move(next_transition)
                 return
 
