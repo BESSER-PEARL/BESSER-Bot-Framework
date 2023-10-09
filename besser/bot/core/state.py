@@ -8,8 +8,9 @@ from besser.bot.core.intent.intent import Intent
 from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
 from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
-    DuplicatedIntentMatchingTransitionError, IntentNotFound, StateNotFound
+    DuplicatedIntentMatchingTransitionError, EventSignatureError, IntentNotFound, StateNotFound
 from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
+from besser.bot.library.event.event_template import event_template
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_body, default_fallback_body
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
@@ -63,12 +64,12 @@ class State:
     def bot(self):
         """Bot: The state's bot."""
         return self._bot
-    
+
     @property
     def name(self):
         """str: The state name"""
         return self._name
-    
+
     @property
     def initial(self):
         """bool: The initial status of the state (initial or non-initial)."""
@@ -107,9 +108,8 @@ class State:
         while transitions:
             transition = transitions[0]
             if transition not in self.bot.global_state_component[self]:
-                self.bot.global_state_component[self].append(transition.dest) 
+                self.bot.global_state_component[self].append(transition.dest)
             transitions = transition.dest.transitions
-
 
     def set_body(self, body: Callable[[Session], None]) -> None:
         """Set the state body.
@@ -134,7 +134,7 @@ class State:
         if body_signature.parameters != body_template_signature.parameters:
             raise BodySignatureError(self._bot, self, body, body_template_signature, body_signature)
         self._fallback_body = body
-    
+
     def _check_global_state(self, dest: 'State'):
         """Add state to global state component if condition is met.
 
@@ -162,6 +162,10 @@ class State:
             dest (State): the destination state
             event_params (dict): the parameters associated to the event
         """
+        event_signature = inspect.signature(event)
+        event_template_signature = inspect.signature(event_template)
+        if event_signature.parameters != event_template_signature.parameters:
+            raise EventSignatureError(self._bot, event, event_template_signature, event_signature)
         for transition in self.transitions:
             if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
@@ -215,7 +219,7 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
         self._check_global_state(dest)
-    
+
     def when_no_intent_matched_go_to(self, dest: 'State') -> None:
         """Create a new `no intent matching` transition on this state.
 
@@ -227,14 +231,14 @@ class State:
             dest (State): the destination state
         """
         event_params = {'intent': fallback_intent}
-       # self.intents.append(fallback_intent)
+        # self.intents.append(fallback_intent)
         if dest not in self._bot.states:
             raise StateNotFound(self._bot, dest)
         for transition in self.transitions:
             if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
-                                           event_params=event_params))   
+                                           event_params=event_params))
 
     def when_session_variable_operation_match_go_to(
             self,
@@ -255,9 +259,9 @@ class State:
             dest (State): the destination state
         """
         event_params = {'var_name': var_name, 'operation': operation, 'target': target}
-        
+
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=session_operation_matched,
-                                           event_params=event_params))  
+                                           event_params=event_params))
 
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).
@@ -272,20 +276,15 @@ class State:
         if predicted_intent is None:
             logging.error("Something went wrong, no intent was predicted")
             return
-        auto_transition = None
         for transition in self.transitions:
-            if transition.is_intent_matched(predicted_intent.intent):
+            if transition.is_intent_matched(session):
                 session.move(transition)
                 return
-            elif transition.is_auto():
-                auto_transition = transition
             elif transition.is_session_operation_matched(session):
+                # TODO: Do we want this behaviour? We also would need to check generic events:
+                # elif transition.is_event_true()
                 session.move(transition)
-                return       
-        if auto_transition:
-            # When no intent is matched, but there is an auto transition, move through it
-            session.move(auto_transition)
-            return
+                return
         if predicted_intent.intent == fallback_intent:
             # When no intent is matched (i.e. intent == fallback_intent), run the fallback body of the state
             logging.info(f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
@@ -296,7 +295,7 @@ class State:
                               f"bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
 
-    def _check_next_auto_transition(self, session: Session) -> None:
+    def _check_next_transition(self, session: Session) -> None:
         """Check weather the first defined transition of the state is an `auto` transition, and if so, move to its
         destination state.
 
@@ -305,9 +304,23 @@ class State:
         Args:
             session (Session): the user session
         """
-        # TODO: Check conditional transitions
+        # Check auto transition
         if self.transitions[0].is_auto():
             session.move(self.transitions[0])
+            return
+
+        for next_transition in self.transitions:
+            if next_transition.event == intent_matched:
+                # If the next transition is an intent_matched, we return to await the user message
+                return
+            elif next_transition.is_session_operation_matched(session):
+                # Check when_session_variable_operation_match_go_to transition
+                session.move(next_transition)
+                return
+            elif next_transition.is_event_true(session):
+                # Check custom events transitions
+                session.move(next_transition)
+                return
 
     def run(self, session: Session) -> None:
         """Run the state (i.e. its body). After running the body, check if the first defined transition of the state is
@@ -323,4 +336,4 @@ class State:
             logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in bot '"
                           f"{self._bot.name}'. See the attached exception:")
             traceback.print_exc()
-        self._check_next_auto_transition(session)
+        self._check_next_transition(session)
