@@ -1,6 +1,5 @@
 import inspect
 import logging
-import operator
 import traceback
 from typing import Any, Callable, TYPE_CHECKING
 
@@ -9,7 +8,7 @@ from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
 from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
     DuplicatedIntentMatchingTransitionError, EventSignatureError, IntentNotFound, StateNotFound
-from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
+from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation
 from besser.bot.library.event.event_template import event_template
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_body, default_fallback_body
@@ -151,14 +150,14 @@ class State:
             if self in self.bot.global_state_component[global_state]:
                 self.bot.global_state_component[global_state].append(dest)
 
-    def when_event_go_to(self, event: Callable[..., bool], dest: 'State', event_params: dict) -> None:
+    def when_event_go_to(self, event: Callable[[Session, dict], bool], dest: 'State', event_params: dict) -> None:
         """Create a new transition on this state.
 
         When the bot is in a state and a state's transition event occurs, the bot will move to the destination state
         of the transition.
 
         Args:
-            event (Callable[..., bool]): the transition event
+            event (Callable[[Session, dict], bool]): the transition event
             dest (State): the destination state
             event_params (dict): the parameters associated to the event
         """
@@ -169,11 +168,6 @@ class State:
         for transition in self.transitions:
             if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
-        if event == intent_matched:
-            # TODO: CHECK isinstance(obj, Intent)
-            # TODO: handle exceptions
-            intent = event_params['intent']
-            self.intents.append(intent)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=event,
                                            event_params=event_params))
         self._check_global_state(dest)
@@ -183,7 +177,7 @@ class State:
 
         This transition needs no event to be triggered, which means that when the bot moves to a state 
         that has an `auto` transition, the bot will move to the transition's destination state 
-        unconditionally without waitng for user input. This transition cannot be combined with other 
+        unconditionally without waiting for user input. This transition cannot be combined with other
         transitions.
 
         Args:
@@ -240,27 +234,27 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=intent_matched,
                                            event_params=event_params))
 
-    def when_session_variable_operation_match_go_to(
+    def when_variable_matches_operation_go_to(
             self,
             var_name: str,
-            operation: operator,
+            operation: Callable[[Any, Any], bool],
             target: Any,
             dest: 'State'
     ) -> None:
-        """Create a new `session_operation_matched` transition on this state.
+        """Create a new `variable_matches_operation` transition on this state.
 
         When the bot is in a state and the operation on the specified session variable and target value returns true,
         then the bot moves to the specified destination state.
 
         Args:
             var_name (str): the name of the stored variable in the session storage
-            operation (operator): the comparison operation to be done on the stored and target value
+            operation (Callable[[Any, Any], bool]): the comparison operation to be done on the stored and target value
             target (Any): the target value to which will be used in the operation with the stored value
             dest (State): the destination state
         """
         event_params = {'var_name': var_name, 'operation': operation, 'target': target}
 
-        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=session_operation_matched,
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=variable_matches_operation,
                                            event_params=event_params))
 
     def receive_intent(self, session: Session) -> None:

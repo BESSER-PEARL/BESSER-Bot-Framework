@@ -1,3 +1,0 @@
-Name,Description,Example values
-number, "Matches a number", "``3``, ``3.5``, ``-3.5``, ``minus three``"
-datetime, "Matches a date, a time or a date-time", "``2023-09-14``, ``08:30:00``, ``1985‑09‑25 17:45:30``, ``today``, ``tomorrow at 5pm``, ``in five years and 2 weeks``, ``3 months ago``"

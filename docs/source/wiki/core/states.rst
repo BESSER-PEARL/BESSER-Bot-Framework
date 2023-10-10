@@ -18,6 +18,8 @@ simply set the following attribute:
 
     initial_state = bot.new_state('initial_state', initial=True)
 
+.. _state-body:
+
 State body
 ----------
 
@@ -54,6 +56,8 @@ Now, we must assign this body function to our state:
 .. code:: python
 
     example_state.set_body(example_body)
+
+.. _state-fallback-body:
 
 State fallback body
 -------------------
@@ -163,3 +167,18 @@ Note that, the final transition back to the original state always gets added to 
    :alt: Greetings bot diagram with transitions to and from global-state-component
 
    Greetings bot diagram with transitions to and from global-state-component.
+
+API References
+--------------
+
+- Bot: :class:`besser.bot.core.bot.Bot`
+- Bot.new_state(): :meth:`besser.bot.core.bot.Bot.new_state`
+- Bot.set_global_fallback_body(): :meth:`besser.bot.core.bot.Bot.set_global_fallback_body`
+- Intent: :class:`besser.bot.core.intent.intent.Intent`
+- Session: :class:`besser.bot.core.session.Session`
+- Session.reply(): :meth:`besser.bot.core.session.Session.reply`
+- State: :class:`besser.bot.core.state.State`
+- State.set_body(): :meth:`besser.bot.core.state.State.set_body`
+- State.set_fallback_body(): :meth:`besser.bot.core.state.State.set_fallback_body`
+- State.set_global(): :meth:`besser.bot.core.state.State.set_global`
+- State.when_intent_matched_go_to(): :meth:`besser.bot.core.state.State.when_intent_matched_go_to`

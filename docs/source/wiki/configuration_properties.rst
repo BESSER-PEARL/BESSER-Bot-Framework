@@ -2,7 +2,7 @@ Configuration properties
 ========================
 
 You can set the language for your bot using the 'language' attribute found in the config.ini file. 
-We follow the `Link ISO 691-1 <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>`_ standard for setting the languages. 
+We follow the `ISO 639-1 <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>`_ standard for setting the languages.
 Currently supported languages are: 
 
 .. list-table:: 

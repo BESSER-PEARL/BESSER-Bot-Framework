@@ -1,5 +1,5 @@
-About
-=====
+Wiki
+==================
 
 The BESSER bot-framework has been created to reduce boilerplate code, complex API understanding, and technical details
 to facilitate the definition and deployment of your bots. Bot Framework helps you focus on what really matters: the
@@ -12,8 +12,6 @@ Table of contents
 .. toctree::
    :maxdepth: 1
 
-   about/core
-   about/nlp
-   about/platforms
-   about/library
-   about/configuration_properties
+   wiki/core
+   wiki/platforms
+   wiki/configuration_properties
