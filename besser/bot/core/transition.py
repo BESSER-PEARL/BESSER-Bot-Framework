@@ -1,9 +1,9 @@
 from typing import Callable, TYPE_CHECKING
 
-from besser.bot.core.intent.intent import Intent
 from besser.bot.library.event.event_library import auto, intent_matched, session_operation_matched
 
 if TYPE_CHECKING:
+    from besser.bot.core.session import Session
     from besser.bot.core.state import State
 
 
@@ -55,45 +55,57 @@ class Transition:
                    f"[{self.dest.name}]"
         elif self.event == auto:
             return f"{self.event.__name__}: [{self.source.name}] --> [{self.dest.name}]"
+        elif self.event == session_operation_matched:
+            return f"({self.event_params['var_name']} " \
+                   f"{self.event_params['operation'].__name__} " \
+                   f"{self.event_params['target']}): " \
+                   f"[{self.source.name}] --> [{self.dest.name}]"
         else:
             return f"{self.event.__name__}: [{self.source.name}] --> [{self.dest.name}]"
 
-    def is_intent_matched(self, intent: Intent) -> bool:
-        """For `intent-matching` transitions, check if the given intent matches with the transition's expected intent
-        (stored in the transition event parameters).
+    def is_intent_matched(self, session: 'Session') -> bool:
+        """For `intent-matching` transitions, check if the predicted intent (stored in the given session) matches with
+        the transition's expected intent (stored in the transition event parameters).
 
-        If the transition event is not `intent-matching`, return false.
-
-        Args:
-            intent (Intent): the target intent
-
-        Returns:
-            bool: true if the transition's intent matches with the
-            target one, false otherwise
-        """
-        if self.event == intent_matched:
-            target_intent = self.event_params['intent']
-            return self.event(target_intent, intent)
-        return False
-
-    def is_session_operation_matched(self, session) -> bool:
-        """For `session-value-comparison` transitions, check if the given operation on a stored session 
-        value and a given target value returns true (stored in the transition event parameters).
-
-        If the transition event is not `session_operation_matched`, return false.
+        If the transition event is not `intent_matched`, return false.
 
         Args:
             session (Session): the session in which the to be compared value is stored
 
         Returns:
+            bool: true if the transition's intent matches with the target one, false otherwise
+        """
+        if self.event == intent_matched:
+            return self.event(session, self.event_params)
+        return False
+
+    def is_session_operation_matched(self, session: 'Session') -> bool:
+        """For `session-value-comparison` transitions, check if the given operation on a stored session 
+        value and a given target value (stored in the transition event parameters) returns true.
+
+        If the transition event is not `session_operation_matched`, return false.
+
+        Args:
+            session (Session): the session in which the value to be compared is stored
+
+        Returns:
             bool: true if the operation on stored and target values returns true, false otherwise
         """
         if self.event == session_operation_matched:
-            target = self.event_params['target']
-            operation = self.event_params['operation']
-            var_name = self.event_params['var_name']
-            return session_operation_matched(session.get(var_name), operation, target)
+            return self.event(session, self.event_params)
         return False
+
+    def is_event_true(self, session: 'Session') -> bool:
+        """Given a session, returns true if the event associated to the transition returns true, and false otherwise.
+        (Applicable to any event)
+
+        Args:
+            session (Session): the session in which some user data can be stored and used within the event
+
+        Returns:
+            bool: true if the transition's event returned true, false otherwise
+        """
+        return self.event(session, self.event_params)
 
     def is_auto(self) -> bool:
         """Check if the transition event is `auto` (i.e. a transition that does not need any event to be triggered).

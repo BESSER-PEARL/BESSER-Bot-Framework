@@ -70,6 +70,14 @@ class BodySignatureError(Exception):
         super().__init__(message)
 
 
+class EventSignatureError(Exception):
+
+    def __init__(self, bot, event, event_template_signature, event_signature):
+        message = f"Expected parameters in event method '{event.__name__}' in bot " \
+                  f"'{bot.name}' are {event_template_signature}, got {event_signature} instead"
+        super().__init__(message)
+
+
 class DuplicatedAutoTransitionError(Exception):
 
     def __init__(self, bot, state):
