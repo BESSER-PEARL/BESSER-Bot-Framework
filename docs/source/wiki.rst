@@ -1,5 +1,5 @@
 Wiki
-==================
+====
 
 The BESSER bot-framework has been created to reduce boilerplate code, complex API understanding, and technical details
 to facilitate the definition and deployment of your bots. Bot Framework helps you focus on what really matters: the
