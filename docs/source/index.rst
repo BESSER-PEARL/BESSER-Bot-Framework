@@ -6,7 +6,7 @@ BESSER Bot Framework
    :hidden:
 
    your_first_bot
-   about
+   wiki
    examples
    api
 
@@ -35,11 +35,11 @@ Where to start?
 
 (WIP) Check out the :doc:`your_first_bot` tutorial. You will learn how simple it can be!
 
-(WIP) Dive into :doc:`about` and become a master.
+(WIP) Dive into :doc:`wiki` and become a master.
 
 Example bots
 ------------
 
 - :doc:`examples/greetings_bot`: Very simple bot for the first contact with the framework
 - :doc:`examples/weather_bot`: Introducing entities
-- :doc:`examples/telegram_bot`: Introducing the :doc:`about/platforms/telegram_platform`
+- :doc:`examples/telegram_bot`: Introducing the :doc:`wiki/platforms/telegram_platform`

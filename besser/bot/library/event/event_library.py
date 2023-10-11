@@ -5,8 +5,7 @@ Events are functions embedded in :class:`~besser.bot.core.transition.Transition`
 value, trigger the transitions.
 """
 
-import operator
-from typing import Any, TYPE_CHECKING
+from typing import Any, Callable, TYPE_CHECKING
 
 from besser.bot.core.intent.intent import Intent
 
@@ -14,8 +13,16 @@ if TYPE_CHECKING:
     from besser.bot.core.session import Session
 
 
-def auto() -> bool:
-    """This event always returns True."""
+def auto(session: 'Session', event_params: dict) -> bool:
+    """This event always returns True.
+
+    Args:
+        session (Session): the current user session
+        event_params (dict): the event parameters
+
+    Returns:
+        bool: always true
+    """
     return True
 
 
@@ -35,7 +42,7 @@ def intent_matched(session: 'Session', event_params: dict) -> bool:
     return target_intent.name == matched_intent.name
 
 
-def session_operation_matched(session: 'Session', event_params: dict) -> bool:
+def variable_matches_operation(session: 'Session', event_params: dict) -> bool:
     """
     This event checks if for a specific comparison operation, using a stored session value
     and a given target value, returns true.
@@ -49,6 +56,6 @@ def session_operation_matched(session: 'Session', event_params: dict) -> bool:
     """
     var_name: str = event_params['var_name']
     target_value: Any = event_params['target']
-    operation: operator = event_params['operation']
+    operation: Callable[[Any, Any], bool] = event_params['operation']
     current_value: Any = session.get(var_name)
     return operation(current_value, target_value)

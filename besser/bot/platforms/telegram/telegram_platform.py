@@ -52,7 +52,7 @@ class TelegramPlatform(Platform):
             session_id = str(update.effective_chat.id)
             self._bot.reset(session_id)
         reset_handler = CommandHandler('reset', reset)
-        self._telegram_app.add_handler(reset_handler)
+        self.add_handler(reset_handler)
 
     @property
     def telegram_app(self):

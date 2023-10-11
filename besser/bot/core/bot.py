@@ -230,7 +230,7 @@ class Bot:
                         and state not in global_state_follow_up):
                     if state.transitions and not state.transitions[0].is_auto():
                         state.when_intent_matched_go_to(global_state_tuple[1], global_state)
-                        self.global_state_component[global_state][-1].when_session_variable_operation_match_go_to(
+                        self.global_state_component[global_state][-1].when_variable_matches_operation_go_to(
                             var_name="prev_state", operation=operator.eq, target=state, dest=state)
 
     def run(self) -> None:

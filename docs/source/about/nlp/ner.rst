@@ -1,2 +1,0 @@
-NER (Named Entity Recognition)
-==============================

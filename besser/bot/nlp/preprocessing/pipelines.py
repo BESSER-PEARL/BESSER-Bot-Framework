@@ -1,9 +1,9 @@
 import logging
 
 import nltk
-import snowballstemmer as SnowballStemmer
+import snowballstemmer
 
-lang_map_stemmers = SnowballStemmer._languages
+lang_map_stemmers = snowballstemmer._languages
 lang_map_tokenizers = nltk.SnowballStemmer.languages
 lang_map = {
     'en': 'english',
@@ -17,7 +17,7 @@ lang_map = {
     # TODO: replace german stemmer by actual luxembourgish stemmer
     'lb': 'german'
 }
-stemmers: dict[str, SnowballStemmer.stemmer] = {}
+stemmers: dict[str, snowballstemmer.stemmer] = {}
 
 try:
     nltk.data.find('tokenizers/punkt')
@@ -26,10 +26,10 @@ except LookupError:
     nltk.download('punkt')
 
 
-def create_or_get_stemmer(lang: str = 'english') -> SnowballStemmer:
+def create_or_get_stemmer(lang: str = 'english') -> snowballstemmer:
     if lang in stemmers:
         return stemmers[lang]
-    stemmer = SnowballStemmer.stemmer(lang)
+    stemmer = snowballstemmer.stemmer(lang)
     stemmers[lang] = stemmer
     logging.info(f'Stemmer added: {lang}')
     return stemmer

@@ -55,7 +55,7 @@ Let's start creating your bot. We only need to specify its name.
    be optional and others may have default values so you don't necessarily need to specify them.
 
    For this bot we don't need to set any property, but you can see the
-   :doc:`configuration properties <about/configuration_properties>` to learn more.
+   :doc:`configuration properties <wiki/configuration_properties>` to learn more.
 
 
 Define the platform your chatbot will use.
@@ -67,7 +67,7 @@ Define the platform your chatbot will use.
 The bot platform will allow you to communicate with your chatbot using a bidirectional channel, so you can send and
 receive messages.
 
-See :doc:`Platforms <about/platforms>` to learn more.
+See :doc:`Platforms <wiki/platforms>` to learn more.
 
 States
 ------
@@ -76,7 +76,7 @@ Now, we are going to create the bot states you can see in the previous figure.
 
 .. warning::
 
-   Every bot has 1 (and only 1) initial state! See :doc:`States <about/core/states>` to learn more.
+   Every bot has 1 (and only 1) initial state! See :doc:`States <wiki/core/states>` to learn more.
 
 .. code:: python
 
@@ -116,7 +116,7 @@ users inputs. But note that data quality matters!
         'awful',
     ])
 
-See :doc:`Intents <about/core/intents>` to learn more.
+See :doc:`Intents <wiki/core/intents>` to learn more.
 
 State bodies and transitions
 ----------------------------
