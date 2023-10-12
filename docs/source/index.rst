@@ -33,9 +33,9 @@ Requirements
 Where to start?
 ~~~~~~~~~~~~~~~
 
-(WIP) Check out the :doc:`your_first_bot` tutorial. You will learn how simple it can be!
+👉 Check out the :doc:`your_first_bot` tutorial. You will learn how simple it can be!
 
-(WIP) Dive into the :doc:`wiki` and become a master.
+👉 Dive into the :doc:`wiki` and become a master of chatbots.
 
 Example bots
 ------------
