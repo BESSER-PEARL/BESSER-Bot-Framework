@@ -28,7 +28,7 @@ in a "hello" message:
     ])
 
 Once we have defined our intent, we need to add the proper :doc:`transitions <transitions>` to explicitly define where
-this intent is expected to be received and where is the user expected to move once the intent is received:
+this intent is expected to be received and where the user is expected to move once the intent is received:
 
 .. code:: python
 
