@@ -8,11 +8,10 @@ occurs.
 
 .. warning::
 
-    Transitions order matters! The order in which a state's transitions are created is the order in which they will be
+    Transitions' order matters! The order in which a state's transitions are created is the order in which they will be
     evaluated once the state body finishes its execution.
 
-In this section we are explaining how to create transitions (and the *events* that trigger them) and the different
-methods available to create predefined transitions in a really easy way.
+In this section, we will explain how to create transitions, including the *events* that trigger them, and the various methods available for creating predefined transitions in an easy way.
 
 Let's say we have the following bot:
 
@@ -28,11 +27,10 @@ Let's say we have the following bot:
 Intent transitions
 ------------------
 
-When the user sends a message to the bot, it gets the user intent and uses it to decide which state to move. When the
-user intent matches with a transition intent, the bot moves to the transition destination state.
+When the user sends a message to the bot, it gets the user intent and uses it to decide which state to move to. When the
+user intent matches with a specified transition intent, the bot moves to the specified transition destination state.
 
-Therefore, :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>` is a kind of event. It is
-integrated in the Bot Framework so you only need to define the transition:
+Therefore, :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>` is a pre-defined event integrated into the Bot Framework, so you only need to define the transition:
 
 .. code:: python
 
@@ -55,6 +53,7 @@ Note **that there is the possibility that the bot cannot transition to any state
 last transition, when neither yes_intent nor no_intent are matched the bot would not know where to move.
 In that scenario, the bot would run the state1's fallback body, without moving to another state
 (see :any:`state-fallback-body` for more info).
+Thus, it is up to the bot creator to choose whether, in case no intent is matched, a transition to another state takes place or not.
 
 
 Session variables transitions
