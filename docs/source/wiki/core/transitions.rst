@@ -11,8 +11,7 @@ occurs.
     Transitions' order matters! The order in which a state's transitions are created is the order in which they will be
     evaluated once the state body finishes its execution.
 
-In this section we are explaining how to create transitions (and the *events* that trigger them) and the different
-methods available to create predefined transitions in a really easy way.
+In this section, we will explain how to create transitions, including the *events* that trigger them, and the various methods available for creating predefined transitions in an easy way.
 
 Let's say we have the following bot:
 
