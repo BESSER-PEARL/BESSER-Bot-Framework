@@ -8,7 +8,7 @@ occurs.
 
 .. warning::
 
-    Transitions order matters! The order in which a state's transitions are created is the order in which they will be
+    Transitions' order matters! The order in which a state's transitions are created is the order in which they will be
     evaluated once the state body finishes its execution.
 
 In this section we are explaining how to create transitions (and the *events* that trigger them) and the different
