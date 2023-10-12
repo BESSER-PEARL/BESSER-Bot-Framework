@@ -53,6 +53,7 @@ Note **that there is the possibility that the bot cannot transition to any state
 last transition, when neither yes_intent nor no_intent are matched the bot would not know where to move.
 In that scenario, the bot would run the state1's fallback body, without moving to another state
 (see :any:`state-fallback-body` for more info).
+Thus, it is up to the bot creator to choose whether, in case no intent is matched, a transition to another state takes place or not.
 
 
 Session variables transitions
