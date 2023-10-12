@@ -10,6 +10,7 @@ The chatbot language. This is the expected language the users will talk to the c
 affect the quality of some NLP processes.
 
 The list of available languages can be found at `snowballstemmer <https://pypi.org/project/snowballstemmer/>`_.
+Note that luxembourgish (lb) is also partially supported, as the language can be chosen, yet the stemmer is still a work in progress.
 
 Languages must be written in `ISO 639-1 <https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes>`_ format (e.g., 'en'
 for English)
