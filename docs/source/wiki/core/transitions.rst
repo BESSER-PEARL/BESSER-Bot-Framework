@@ -27,8 +27,8 @@ Let's say we have the following bot:
 Intent transitions
 ------------------
 
-When the user sends a message to the bot, it gets the user intent and uses it to decide which state to move. When the
-user intent matches with a transition intent, the bot moves to the transition destination state.
+When the user sends a message to the bot, it gets the user intent and uses it to decide which state to move to. When the
+user intent matches with a specified transition intent, the bot moves to the specified transition destination state.
 
 Therefore, :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>` is a kind of event. It is
 integrated in the Bot Framework so you only need to define the transition:
