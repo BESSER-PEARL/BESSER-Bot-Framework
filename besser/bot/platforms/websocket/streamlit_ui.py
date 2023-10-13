@@ -3,10 +3,10 @@ import queue
 import sys
 import threading
 import time
+
 import pandas as pd
 import streamlit as st
 import websocket
-
 from streamlit.runtime import Runtime
 from streamlit.runtime.app_session import AppSession
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
@@ -124,18 +124,13 @@ def main():
         message = st.session_state['queue'].get()
         st.session_state['history'].append((message, 0))
         with st.chat_message("assistant"):
-            if isinstance(message, str):
-                message_placeholder = st.empty()
-                full_response = ""
-                # Simulate stream of response with milliseconds delay
-                for chunk in message.split():
-                    full_response += chunk + " "
-                    time.sleep(0.04)
-                    # Add a blinking cursor to simulate typing
-                    message_placeholder.write(full_response + "▌")
-                message_placeholder.write(full_response)
-            else:
-                st.write(message)
+            with st.spinner(''):
+                if isinstance(message, str) and len(message) > 80:
+                    time.sleep(2)
+                else:
+                    time.sleep(1)
+                time.sleep(1.5)
+            st.write(message)
 
     # React to user input
     if user_input := st.chat_input("What is up?"):
