@@ -1,7 +1,6 @@
-# bot-framework
+# BESSER Bot Framework
 
-The Bot Framework is part of the BESSER (BEtter Smart Software fastER) project at the Luxembourg Institute of Science
-and Technology (LIST). It aims to make the design and implementation of chatbots easier and accessible for everyone.
+The BESSER Bot Framework is part of the BESSER (BEtter Smart Software fastER) project. It aims to make the design and implementation of chatbots easier and accessible for everyone.
 
 **Check out the official [documentation](https://besserbot-framework.readthedocs.io/en/latest/).**
 
