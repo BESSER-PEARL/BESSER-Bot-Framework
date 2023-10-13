@@ -120,16 +120,19 @@ def main():
         with st.chat_message(user_type[message[1]]):
             st.write(message[0])
 
+    first_message = True
     while not st.session_state['queue'].empty():
         message = st.session_state['queue'].get()
+        t = len(message) / 1000 * 3
+        if t > 3:
+            t = 3
+        elif t < 1 and first_message:
+            t = 1
+        first_message = False
         st.session_state['history'].append((message, 0))
         with st.chat_message("assistant"):
             with st.spinner(''):
-                if isinstance(message, str) and len(message) > 80:
-                    time.sleep(2)
-                else:
-                    time.sleep(1)
-                time.sleep(1.5)
+                time.sleep(t)
             st.write(message)
 
     # React to user input
