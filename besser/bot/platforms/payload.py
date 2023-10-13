@@ -22,6 +22,11 @@ class PayloadAction(Enum):
     object.
     """
 
+    BOT_REPLY_OPTIONS = 'bot_reply_options'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a list of strings, where 
+    the user should select 1 of them.
+    """
+
 
 class Payload:
     """Represents a payload object used for encoding and decoding messages between a bot and any other external agent.

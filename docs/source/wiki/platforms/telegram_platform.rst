@@ -45,7 +45,7 @@ After that, you can use the platform to send different kinds of messages to the 
     The bot cannot detect when a user opens the Telegram chat window. Therefore, to start the conversation, it is needed
     a first message to "wake the bot up". After that, it will start running the initial state.
 
-We are working on other replies (buttons, files, media, charts...). They will be available soon, stay tuned!
+⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
 
 Handlers
 --------

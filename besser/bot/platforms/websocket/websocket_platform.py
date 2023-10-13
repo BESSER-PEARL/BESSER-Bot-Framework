@@ -119,3 +119,19 @@ class WebSocketPlatform(Platform):
         payload = Payload(action=PayloadAction.BOT_REPLY_DF,
                           message=message)
         self._send(session.id, payload)
+
+    def reply_options(self, session: Session, options: list[str]):
+        """Send a list of options as a reply. They can be used to let the user choose one of them
+
+        Args:
+            session (Session): the user session
+            options (list[str]): the list of options to send to the user
+        """
+        d = {}
+        for i, button in enumerate(options):
+            d[i] = button
+        message = json.dumps(d)
+        session.chat_history.append((message, 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_OPTIONS,
+                          message=message)
+        self._send(session.id, payload)
