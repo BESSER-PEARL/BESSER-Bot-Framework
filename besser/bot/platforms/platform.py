@@ -14,11 +14,32 @@ class Platform(ABC):
     (e.g. Telegram, Slack...) for instance, sending and receiving messages.
 
     This class serves as a template to implement platforms.
+
+     Attributes:
+        running (bool): Weather the platform is running or not
     """
 
-    @abstractmethod
+    def __init__(self):
+        self.running = False
+
     def run(self) -> None:
         """Run the platform."""
+        self.initialize()
+        self.start()
+
+    @abstractmethod
+    def initialize(self) -> None:
+        """Initialize the platform. This function is called right before starting the platform."""
+        pass
+
+    @abstractmethod
+    def start(self) -> None:
+        """Start the platform."""
+        pass
+
+    @abstractmethod
+    def stop(self) -> None:
+        """Terminate the platform execution."""
         pass
 
     @abstractmethod

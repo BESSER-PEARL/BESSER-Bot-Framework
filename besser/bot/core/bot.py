@@ -11,8 +11,8 @@ from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
-from besser.bot.exceptions.exceptions import DuplicatedEntityError, DuplicatedInitialStateError, DuplicatedIntentError, \
-    DuplicatedStateError, InitialStateNotFound
+from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
+    DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
@@ -28,23 +28,27 @@ class Bot:
     Attributes:
         _name (str): The bot name
         _platforms (list[Platform]): The bot platforms
+        _platforms_threads (list[threading.Thread]): The threads where the platforms are run
         _nlp_engine (NLPEngine): The bot NLP engine
         _config (ConfigParser): The bot configuration parameters
         _sessions (dict[str, Session]): The bot sessions
+        _trained (bool): Weather the bot has been trained or not. It must be trained before it starts its execution.
         states (list[State]): The bot states
         intents (list[Intent]): The bot intents
         entities (list[Entity]): The bot entities
         global_initial_states (list[State, Intent]): List of tuples of initial global states and their triggering intent
-        global_state_component (dict[State, list[State]]): Dictionnary of global state components, where key is initial
+        global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
     """
 
     def __init__(self, name: str):
         self._name: str = name
         self._platforms: list[Platform] = []
+        self._platforms_threads: list[threading.Thread] = []
         self._nlp_engine = NLPEngine(self)
         self._config: ConfigParser = ConfigParser()
         self._sessions: dict[str, Session] = {}
+        self._trained: bool = False
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
@@ -218,38 +222,55 @@ class Bot:
         Also add the transition to jump back to the previous state once the global state component
         has been completed. 
         """
-        global_state_follow_up = []
-        for global_state_tuple in self.global_initial_states:
-            global_state = global_state_tuple[0]
-            for state in self.global_state_component[global_state]:
-                global_state_follow_up.append(state)
-        for global_state_tuple in self.global_initial_states:
-            global_state = global_state_tuple[0]
-            for state in self.states:
-                if (not any(state.name is global_init_state[0].name for global_init_state in self.global_initial_states) 
-                        and state not in global_state_follow_up):
-                    if state.transitions and not state.transitions[0].is_auto():
-                        state.when_intent_matched_go_to(global_state_tuple[1], global_state)
-                        self.global_state_component[global_state][-1].when_variable_matches_operation_go_to(
-                            var_name="prev_state", operation=operator.eq, target=state, dest=state)
+        if self.global_initial_states:
+            global_state_follow_up = []
+            for global_state_tuple in self.global_initial_states:
+                global_state = global_state_tuple[0]
+                for state in self.global_state_component[global_state]:
+                    global_state_follow_up.append(state)
+            for global_state_tuple in self.global_initial_states:
+                global_state = global_state_tuple[0]
+                for state in self.states:
+                    if (not any(state.name is global_init_state[0].name for global_init_state in self.global_initial_states)
+                            and state not in global_state_follow_up):
+                        if state.transitions and not state.transitions[0].is_auto():
+                            state.when_intent_matched_go_to(global_state_tuple[1], global_state)
+                            self.global_state_component[global_state][-1].when_variable_matches_operation_go_to(
+                                var_name="prev_state", operation=operator.eq, target=state, dest=state)
+            self.global_initial_states.clear()
 
-    def run(self) -> None:
-        """Start the execution of the bot.
-
-        The bot is idle until a user connects, a session is created and the initial state starts running.
-        """
-        if not self.initial_state():
-            raise InitialStateNotFound(self)
-        self._init_global_states()
-        self._nlp_engine.initialize()
-        logging.info(f'{self._name} training started')
-        self._train()
-        logging.info(f'{self._name} training finished')
+    def _run_platforms(self) -> None:
+        """Stop the execution of the bot platforms"""
         for platform in self._platforms:
             thread = threading.Thread(target=platform.run)
+            self._platforms_threads.append(thread)
             thread.start()
-        idle = threading.Event()
-        idle.wait()
+
+    def _stop_platforms(self) -> None:
+        for platform, thread in zip(self._platforms, self._platforms_threads):
+            platform.stop()
+            thread.join()
+        self._platforms_threads = []
+
+    def run(self, train: bool = True, sleep: bool = False) -> None:
+        """Start the execution of the bot.
+
+        Args:
+            train (bool): weather to train the bot or not
+            sleep (bool): weather to sleep after running the bot or not, which means that this function will not return
+        """
+        if train:
+            self.train()
+        if not self._trained:
+            raise BotNotTrainedError(self)
+        self._run_platforms()
+        if sleep:
+            idle = threading.Event()
+            idle.wait()
+
+    def stop(self) -> None:
+        """Stop the bot execution."""
+        self._stop_platforms()
 
     def reset(self, session_id: str) -> Session:
         """Reset the bot current state and memory for the specified session. Then, restart the bot again for this session.
@@ -264,7 +285,7 @@ class Bot:
         # TODO: Raise exception SessionNotFound
         new_session = Session(session_id, self, session.platform)
         self._sessions[session_id] = new_session
-        logging.info(f'{self._name} restarted')
+        logging.info(f'{self._name} restarted by user {session_id}')
         new_session.current_state.run(new_session)
         return new_session
 
@@ -299,12 +320,19 @@ class Bot:
         for state in self.states:
             state.set_fallback_body(body)
 
-    def _train(self) -> None:
+    def train(self) -> None:
         """Train the bot.
 
         The bot training is done before its execution.
         """
+        if not self.initial_state():
+            raise InitialStateNotFound(self)
+        self._init_global_states()
+        self._nlp_engine.initialize()
+        logging.info(f'{self._name} training started')
         self._nlp_engine.train()
+        logging.info(f'{self._name} training finished')
+        self._trained = True
 
     def get_session(self, session_id: str) -> Session or None:
         """Get a bot session.
