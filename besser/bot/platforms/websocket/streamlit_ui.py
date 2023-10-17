@@ -166,7 +166,10 @@ def main():
         st.session_state.history.append((user_input, 1))
         payload = Payload(action=PayloadAction.USER_MESSAGE,
                           message=user_input)
-        ws.send(json.dumps(payload, cls=PayloadEncoder))
+        try:
+            ws.send(json.dumps(payload, cls=PayloadEncoder))
+        except Exception as e:
+            st.error('Your message could not be sent. The connection is already closed')
 
     st.stop()
 
