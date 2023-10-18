@@ -36,20 +36,8 @@ class TelegramPlatform(Platform):
         self._bot: 'Bot' = bot
         self._telegram_app: Application = None
         self._event_loop: asyncio.AbstractEventLoop = None
+        self._handlers: list[BaseHandler] = []
 
-    @property
-    def telegram_app(self):
-        """telegram.ext._application.Application: The Telegram app."""
-        return self._telegram_app
-
-    def initialize(self) -> None: # Hide Info logging messages
-        logging.getLogger("httpx").setLevel(logging.WARNING)
-        self._telegram_app = ApplicationBuilder().token(
-            self._bot.get_property(telegram.TELEGRAM_TOKEN)).build()
-        self._event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._event_loop)
-
-        # Handler for text messages
         async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
             session = self._bot.get_session(session_id)
@@ -60,7 +48,7 @@ class TelegramPlatform(Platform):
                 self._bot.receive_message(session.id, text)
 
         message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), message)
-        self._telegram_app.add_handler(message_handler)
+        self._handlers.append(message_handler)
 
         # Handler for reset command
         async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -68,7 +56,20 @@ class TelegramPlatform(Platform):
             self._bot.reset(session_id)
 
         reset_handler = CommandHandler('reset', reset)
-        self.add_handler(reset_handler)
+        self._handlers.append(reset_handler)
+
+    @property
+    def telegram_app(self):
+        """telegram.ext._application.Application: The Telegram app."""
+        return self._telegram_app
+
+    def initialize(self) -> None: # Hide Info logging messages
+        logging.getLogger("httpx").setLevel(logging.WARNING)
+        self._telegram_app = ApplicationBuilder().token(
+            self._bot.get_property(telegram.TELEGRAM_TOKEN)).build()
+        self._telegram_app.add_handlers(self._handlers)
+        self._event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._event_loop)
 
     def start(self) -> None:
         logging.info(f'{self._bot.name}\'s TelegramPlatform starting')
@@ -100,4 +101,4 @@ class TelegramPlatform(Platform):
         Args:
             handler (telegram.ext.BaseHandler): the handler to add
         """
-        self._telegram_app.add_handler(handler)
+        self._handlers.append(handler)
