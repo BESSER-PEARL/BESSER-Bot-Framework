@@ -252,7 +252,7 @@ class Bot:
             thread.join()
         self._platforms_threads = []
 
-    def run(self, train: bool = True, sleep: bool = False) -> None:
+    def run(self, train: bool = True, sleep: bool = True) -> None:
         """Start the execution of the bot.
 
         Args:
