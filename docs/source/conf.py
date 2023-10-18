@@ -2,13 +2,14 @@
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
-import importlib
-import inspect
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+import importlib
+import inspect
 import os
 import sys
 
+# Add the project root directory to the path
 sys.path.insert(0, os.path.abspath('../../'))
 
 project = 'bot-framework'
@@ -20,15 +21,14 @@ release = '0.1'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.linkcode',
-    'sphinx_copybutton',
-    'sphinx_paramlinks',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon',
-    'm2r2',
+    'sphinx.ext.duration',  # measure durations of Sphinx processing
+    'sphinx.ext.autodoc',  # include documentation from docstrings
+    'sphinx.ext.autosummary',  # generate autodoc summaries
+    'sphinx.ext.linkcode',  # add external links to source code
+    'sphinx_copybutton',  # add a little “copy” button to the right of the code blocks
+    'sphinx_paramlinks',  # allows :param: directives within Python documentation to be linkable
+    'sphinx.ext.intersphinx',  # link to other projects’ documentation
+    'sphinx.ext.napoleon',  # support for Google (and also NumPy) style docstrings
 ]
 
 intersphinx_mapping = {
@@ -119,6 +119,7 @@ generate_api_rst_files('../../', 'besser/bot/platforms', './api/platforms')
 
 
 def linkcode_resolve(domain, info):
+    """Generate links to module components."""
     if domain != 'py':
         return None
     if not info['module']:

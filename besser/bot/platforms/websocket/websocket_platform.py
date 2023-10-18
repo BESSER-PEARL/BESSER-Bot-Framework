@@ -126,7 +126,7 @@ class WebSocketPlatform(Platform):
 
         Args:
             session (Session): the user session
-            df (DataFrame): the message to send to the user
+            df (pandas.DataFrame): the message to send to the user
         """
         message = df.to_json()
         session.chat_history.append((message, 0))

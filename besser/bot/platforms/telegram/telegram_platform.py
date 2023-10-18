@@ -39,7 +39,7 @@ class TelegramPlatform(Platform):
 
     @property
     def telegram_app(self):
-        """:class:`telegram.ext._application.Application`: The Telegram app."""
+        """telegram.ext._application.Application: The Telegram app."""
         return self._telegram_app
 
     def initialize(self) -> None: # Hide Info logging messages
@@ -98,6 +98,6 @@ class TelegramPlatform(Platform):
         Add a custom Telegram handler for the bot.
 
         Args:
-            handler (:obj:`telegram.ext.BaseHandler`): the handler to add
+            handler (telegram.ext.BaseHandler): the handler to add
         """
         self._telegram_app.add_handler(handler)
