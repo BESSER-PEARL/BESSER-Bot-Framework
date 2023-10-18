@@ -11,7 +11,7 @@ BESSER Bot Framework
    api
 
 
-The `Bot Framework <https://github.com/BESSER-PEARL/bot-framework>`_ is part of the BESSER (BEtter Smart Software fastER) project at the Luxembourg Institute of Science
+The `BESSER Bot Framework (BBF) <https://github.com/BESSER-PEARL/bot-framework>`_ is part of the BESSER (BEtter Smart Software fastER) project at the Luxembourg Institute of Science
 and Technology (LIST). It aims to make the design and implementation of chatbots easier and accessible for everyone.
 
 Quickstart

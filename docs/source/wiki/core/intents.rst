@@ -2,7 +2,7 @@ Intents
 =======
 
 Intents define the *intentions* or *goals* the user can express to a bot. In this article we review how to create
-intents with the Bot Framework.
+intents with BBF.
 
 Simple intents
 --------------

@@ -4,7 +4,7 @@ Telegram platform
 The Telegram Platform allows a bot to communicate with the users using `Telegram <https://telegram.org/>`_.
 
 Telegram is a great platform for chatbots. You can create a Telegram bot through the
-`Bot Father <https://core.telegram.org/bots/tutorial>`_ and then, link it to our Bot Framework's chatbot. This way,
+`Bot Father <https://core.telegram.org/bots/tutorial>`_ and then, link it to our BBF chatbot. This way,
 you can define your chatbot architecture and logics, and then use your Telegram bot as the communication channel.
 
 Our Telegram Platform uses the `python-telegram-bot <https://github.com/python-telegram-bot/python-telegram-bot>`_
@@ -53,7 +53,7 @@ Handlers
 The python-telegram-bot library (Telegram Bot API Python wrapper under our Telegram Platform) uses
 `handlers <https://docs.python-telegram-bot.org/en/latest/telegram.ext.handlers-tree.html>`_ to handle
 bot updates (e.g., the user sends a text message, an image, a command, etc.). Our Telegram Platform interface allows
-you to add custom handlers to your bot, so this feature is not lost when using the Bot Framework.
+you to add custom handlers to your bot, so this feature is not lost when using BBF.
 
 This is an example handler function that will be executed when bot receives the ``/help`` command:
 

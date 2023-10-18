@@ -1,7 +1,7 @@
 Core
 ====
 
-The core package defines and implements the basic components of a chatbot architecture. Bot Framework relies on
+The core package defines and implements the basic components of a chatbot architecture. BBF relies on
 `State Machines <https://en.wikipedia.org/wiki/Finite-state_machine>`_ to define the bot execution logic.
 
 .. figure:: ../img/greetings_bot_diagram.png
