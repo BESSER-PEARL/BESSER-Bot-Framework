@@ -40,12 +40,9 @@ class TelegramPlatform(Platform):
 
         async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
-            session = self._bot.get_session(session_id)
-            if session is None:
-                self._bot.new_session(session_id, self)
-            else:
-                text = update.message.text
-                self._bot.receive_message(session.id, text)
+            session = self._bot.get_or_create_session(session_id, self)
+            text = update.message.text
+            self._bot.receive_message(session.id, text)
 
         message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), message)
         self._handlers.append(message_handler)
