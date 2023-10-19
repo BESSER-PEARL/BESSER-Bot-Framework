@@ -30,7 +30,8 @@ Intent transitions
 When the user sends a message to the bot, it gets the user intent and uses it to decide which state to move to. When the
 user intent matches with a specified transition intent, the bot moves to the specified transition destination state.
 
-Therefore, :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>` is a pre-defined event integrated into the Bot Framework, so you only need to define the transition:
+Therefore, :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>` is a pre-defined event
+integrated into BBF, so you only need to define the transition:
 
 .. code:: python
 

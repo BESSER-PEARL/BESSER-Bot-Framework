@@ -50,11 +50,11 @@ class WebSocketPlatform(Platform):
     def __init__(self, bot: 'Bot', use_ui: bool = True):
         super().__init__()
         self._bot: 'Bot' = bot
-        self._host: str = self._bot.get_property(websocket.WEBSOCKET_HOST)
-        self._port: int = self._bot.get_property(websocket.WEBSOCKET_PORT)
+        self._host: str = None
+        self._port: int = None
         self._use_ui: bool = use_ui
         self._connections: dict[str, ServerConnection] = {}
-        self._websocket_server: WebSocketServer or None = None
+        self._websocket_server: WebSocketServer = None
 
         def message_handler(conn: ServerConnection) -> None:
             """This method is run on each user connection to handle incoming messages and the bot sessions.
@@ -66,6 +66,8 @@ class WebSocketPlatform(Platform):
             session = self._bot.new_session(str(conn.id), self)
             try:
                 for payload_str in conn:
+                    if not self.running:
+                        raise ConnectionClosedError(None, None)
                     payload: Payload = Payload.decode(payload_str)
                     if payload.action == PayloadAction.USER_MESSAGE.value:
                         self._bot.receive_message(session.id, payload.message)
@@ -80,8 +82,12 @@ class WebSocketPlatform(Platform):
                 self._bot.delete_session(session.id)
         self._message_handler = message_handler
 
-    def run(self) -> None:
+    def initialize(self) -> None:
+        self._host = self._bot.get_property(websocket.WEBSOCKET_HOST)
+        self._port = self._bot.get_property(websocket.WEBSOCKET_PORT)
         self._websocket_server = serve(self._message_handler, self._host, self._port)
+
+    def start(self) -> None:
         if self._use_ui:
             def run_streamlit() -> None:
                 """Run the Streamlit UI in a dedicated thread."""
@@ -92,8 +98,16 @@ class WebSocketPlatform(Platform):
             thread = threading.Thread(target=run_streamlit)
             logging.info(f'Running Streamlit UI in another thread')
             thread.start()
+            #
+            self._use_ui = False
         logging.info(f'{self._bot.name}\'s WebSocketPlatform starting at ws://{self._host}:{self._port}')
+        self.running = True
         self._websocket_server.serve_forever()
+
+    def stop(self):
+        self._websocket_server.shutdown()
+        self.running = False
+        logging.info(f'{self._bot.name}\'s WebSocketPlatform stopped')
 
     def _send(self, session_id, payload: Payload) -> None:
         conn = self._connections[session_id]
@@ -112,10 +126,26 @@ class WebSocketPlatform(Platform):
 
         Args:
             session (Session): the user session
-            df (DataFrame): the message to send to the user
+            df (pandas.DataFrame): the message to send to the user
         """
         message = df.to_json()
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_DF,
+                          message=message)
+        self._send(session.id, payload)
+
+    def reply_options(self, session: Session, options: list[str]):
+        """Send a list of options as a reply. They can be used to let the user choose one of them
+
+        Args:
+            session (Session): the user session
+            options (list[str]): the list of options to send to the user
+        """
+        d = {}
+        for i, button in enumerate(options):
+            d[i] = button
+        message = json.dumps(d)
+        session.chat_history.append((message, 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_OPTIONS,
                           message=message)
         self._send(session.id, payload)

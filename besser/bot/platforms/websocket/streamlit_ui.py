@@ -3,10 +3,10 @@ import queue
 import sys
 import threading
 import time
+
 import pandas as pd
 import streamlit as st
 import websocket
-
 from streamlit.runtime import Runtime
 from streamlit.runtime.app_session import AppSession
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
@@ -49,6 +49,11 @@ def main():
             message = payload.message
         elif payload.action == PayloadAction.BOT_REPLY_DF.value:
             message = pd.read_json(payload.message)
+        elif payload.action == PayloadAction.BOT_REPLY_OPTIONS.value:
+            d = json.loads(payload.message)
+            message = []
+            for button in d.values():
+                message.append(button)
         streamlit_session._session_state['queue'].put(message)
         streamlit_session._handle_rerun_script_request()
 
@@ -120,31 +125,51 @@ def main():
         with st.chat_message(user_type[message[1]]):
             st.write(message[0])
 
+    first_message = True
     while not st.session_state['queue'].empty():
         message = st.session_state['queue'].get()
-        st.session_state['history'].append((message, 0))
-        with st.chat_message("assistant"):
-            if isinstance(message, str):
-                message_placeholder = st.empty()
-                full_response = ""
-                # Simulate stream of response with milliseconds delay
-                for chunk in message.split():
-                    full_response += chunk + " "
-                    time.sleep(0.04)
-                    # Add a blinking cursor to simulate typing
-                    message_placeholder.write(full_response + "▌")
-                message_placeholder.write(full_response)
-            else:
+        t = len(message) / 1000 * 3
+        if t > 3:
+            t = 3
+        elif t < 1 and first_message:
+            t = 1
+        first_message = False
+        if isinstance(message, list):
+            st.session_state['buttons'] = message
+        else:
+            st.session_state['history'].append((message, 0))
+            with st.chat_message("assistant"):
+                with st.spinner(''):
+                    time.sleep(t)
                 st.write(message)
+
+    if 'buttons' in st.session_state:
+        buttons = st.session_state['buttons']
+        cols = st.columns(1)
+        for i, option in enumerate(buttons):
+            if cols[0].button(option):
+                with st.chat_message("user"):
+                    st.write(option)
+                st.session_state.history.append((option, 1))
+                payload = Payload(action=PayloadAction.USER_MESSAGE,
+                                  message=option)
+                ws.send(json.dumps(payload, cls=PayloadEncoder))
+                del st.session_state['buttons']
+                break
 
     # React to user input
     if user_input := st.chat_input("What is up?"):
+        if 'buttons' in st.session_state:
+            del st.session_state['buttons']
         with st.chat_message("user"):
-            st.markdown(user_input)
+            st.write(user_input)
         st.session_state.history.append((user_input, 1))
         payload = Payload(action=PayloadAction.USER_MESSAGE,
                           message=user_input)
-        ws.send(json.dumps(payload, cls=PayloadEncoder))
+        try:
+            ws.send(json.dumps(payload, cls=PayloadEncoder))
+        except Exception as e:
+            st.error('Your message could not be sent. The connection is already closed')
 
     st.stop()
 

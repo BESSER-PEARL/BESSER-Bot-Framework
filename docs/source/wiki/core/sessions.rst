@@ -8,7 +8,7 @@ for some variables, etc. To handle this, we introduce the Session object.
 
 **A session is an object assigned to each user where it is stored private data.**
 
-If you dig into the Bot Framework's guts, you will see that some functions in the Bot Framework receive a Session object
+If you dig into the BBF's guts, you will see that some functions receive a Session object
 as a parameter. That is because these functions can modify the user session. Most of the session processes are done
 internally, so you don't need to worry about it.
 

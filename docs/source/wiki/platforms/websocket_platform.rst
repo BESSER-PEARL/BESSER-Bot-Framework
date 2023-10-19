@@ -52,10 +52,16 @@ After that, you can use the platform to send different kinds of messages to the 
 
 .. code:: python
 
-    websocket_platform.reply_dataframe(df)
+    websocket_platform.reply_dataframe(session, df)
+
+- List of options (buttons): Display a list of options as buttons and let the user choose one
+
+.. code:: python
+
+    websocket.reply_options(session, ['Yes', 'No'])
 
 
-We are working on other replies (buttons, files, media, charts...). They will be available soon, stay tuned!
+⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
 
 API References
 --------------

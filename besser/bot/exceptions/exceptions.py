@@ -1,3 +1,11 @@
+class BotNotTrainedError(Exception):
+
+    def __init__(self, bot):
+        message = f"Attempting to run the bot '{bot.name}', which has not been trained. Run Bot.train() or " \
+                  f"Bot.run(train=True)"
+        super().__init__(message)
+
+
 class StateNotFound(Exception):
 
     def __init__(self, bot, state):

@@ -79,7 +79,7 @@ class Intent:
         """Process the training sentences of the intent.
 
         Args:
-            nlp_engine (): the NLPEngine that handles the NLP processes of the bot
+            nlp_engine (NPLEngine): the NLPEngine that handles the NLP processes of the bot
         """
         self.processed_training_sentences = []
         for i in range(len(self.training_sentences)):
