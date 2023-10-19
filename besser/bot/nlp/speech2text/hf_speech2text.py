@@ -2,13 +2,15 @@ import io
 from typing import TYPE_CHECKING
 
 import librosa
-from transformers import AutoProcessor, TFAutoModelForSpeechSeq2Seq
+from transformers import AutoProcessor, TFAutoModelForSpeechSeq2Seq, logging
 
 from besser.bot import nlp
 from besser.bot.nlp.speech2text.speech2text import Speech2Text
 
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine
+
+logging.set_verbosity_error()
 
 
 class HFSpeech2Text(Speech2Text):
@@ -42,8 +44,6 @@ class HFSpeech2Text(Speech2Text):
         self._forced_decoder_ids = self._processor.get_decoder_prompt_ids(
             language=self._nlp_engine.get_property(nlp.NLP_LANGUAGE), task="transcribe"
         )
-        print(type(self._forced_decoder_ids))
-        print(type(self._model))
 
     def speech2text(self, speech: bytes):
         wav_stream = io.BytesIO(speech)
