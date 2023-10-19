@@ -1,6 +1,6 @@
 # BESSER Bot Framework
 
-The BESSER Bot Framework is part of the BESSER (BEtter Smart Software fastER) project. It aims to make the design and implementation of chatbots easier and accessible for everyone.
+The BESSER Bot Framework (BBF) is part of the BESSER (BEtter Smart Software fastER) project. It aims to make the design and implementation of chatbots easier and accessible for everyone.
 
 **Check out the official [documentation](https://besserbot-framework.readthedocs.io/en/latest/).**
 
