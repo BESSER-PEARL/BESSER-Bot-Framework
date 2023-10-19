@@ -1,3 +1,4 @@
+import os
 from typing import TYPE_CHECKING
 
 import keras
@@ -17,6 +18,8 @@ from besser.bot.nlp.preprocessing.text_preprocessing import process_text
 
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 class SimpleIntentClassifier(IntentClassifier):
