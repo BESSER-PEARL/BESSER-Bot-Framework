@@ -55,6 +55,18 @@ class TelegramPlatform(Platform):
         reset_handler = CommandHandler('reset', reset)
         self._handlers.append(reset_handler)
 
+        # Handler for voice messages
+        async def voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            session_id = str(update.effective_chat.id)
+            session = self._bot.get_or_create_session(session_id, self)
+            voice_file = await context.bot.get_file(update.message.voice.file_id)
+            voice_data = await voice_file.download_as_bytearray()
+            text = self._bot.nlp_engine.speech2text(bytes(voice_data))
+            self._bot.receive_message(session.id, text)
+
+        voice_handler = MessageHandler(filters.VOICE, voice)
+        self._handlers.append(voice_handler)
+
     @property
     def telegram_app(self):
         """telegram.ext._application.Application: The Telegram app."""

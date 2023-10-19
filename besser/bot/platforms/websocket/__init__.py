@@ -26,6 +26,17 @@ type: ``int``
 default value: ``8765``
 """
 
+WEBSOCKET_MAX_SIZE = Property(SECTION_WEBSOCKET, 'websocket.max_size', int, None)
+"""
+WebSocket's maximum size of incoming messages, in bytes. :obj:`None` disables the limit.
+
+name: ``websocket.max_size``
+
+type: ``int``
+
+default value: ``None``
+"""
+
 STREAMLIT_HOST = Property(SECTION_WEBSOCKET, 'streamlit.host', str, 'localhost')
 """
 The Streamlit UI host address. If you are using our default UI, you must define its address where you can access and 
