@@ -1,3 +1,4 @@
+import base64
 import json
 import queue
 import sys
@@ -7,6 +8,7 @@ import time
 import pandas as pd
 import streamlit as st
 import websocket
+from audio_recorder_streamlit import audio_recorder
 from streamlit.runtime import Runtime
 from streamlit.runtime.app_session import AppSession
 from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ctx
@@ -114,16 +116,31 @@ def main():
     ws = st.session_state['websocket']
 
     with st.sidebar:
-        reset_button = st.button(label="Reset bot")
-        if reset_button:
+
+        if reset_button := st.button(label="Reset bot"):
             st.session_state['history'] = []
             st.session_state['queue'] = queue.Queue()
             payload = Payload(action=PayloadAction.RESET)
             ws.send(json.dumps(payload, cls=PayloadEncoder))
 
+        if voice_bytes := audio_recorder(text=None, pause_threshold=2):
+            if 'last_voice_message' not in st.session_state or st.session_state['last_voice_message'] != voice_bytes:
+                st.session_state['last_voice_message'] = voice_bytes
+                # Encode the audio bytes to a base64 string
+                st.session_state.history.append((voice_bytes, 1))
+                voice_base64 = base64.b64encode(voice_bytes).decode('utf-8')
+                payload = Payload(action=PayloadAction.USER_VOICE, message=voice_base64)
+                try:
+                    ws.send(json.dumps(payload, cls=PayloadEncoder))
+                except Exception as e:
+                    st.error('Your message could not be sent. The connection is already closed')
+
     for message in st.session_state['history']:
         with st.chat_message(user_type[message[1]]):
-            st.write(message[0])
+            if isinstance(message[0], bytes):
+                st.audio(message[0], format="audio/wav")
+            else:
+                st.write(message[0])
 
     first_message = True
     while not st.session_state['queue'].empty():
