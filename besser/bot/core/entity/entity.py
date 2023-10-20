@@ -20,7 +20,7 @@ class Entity:
 
     Attributes:
         name (str): The entity's name
-        bool (base_entity): Weather the entity is base or not (i.e. custom)
+        base_entity (bool): Weather the entity is base or not (i.e. custom)
         entries (list[EntityEntry] or None): The entity entries. If base_entity, there are no entries (i.e. None)
     """
 
@@ -34,10 +34,8 @@ class Entity:
             entries = {}
         self.name: str = name
         self.base_entity: bool = base_entity
-        self.entries: list[EntityEntry] or None
-        if self.base_entity:
-            self.entries = None
-        else:
+        self.entries: list[EntityEntry] or None = None
+        if not self.base_entity:
             self.entries = []
             for value, synonyms in entries.items():
                 self.entries.append(EntityEntry(value, synonyms))

@@ -5,7 +5,6 @@ from configparser import ConfigParser
 from typing import Any, Callable
 
 from besser.bot.core.entity.entity import Entity
-from besser.bot.core.entity.entity_entry import EntityEntry
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
@@ -186,14 +185,14 @@ class Bot:
     def new_entity(self,
                    name: str,
                    base_entity: bool = False,
-                   entries: list[EntityEntry] or None = None
+                   entries: dict[str, list[str]] or None = None
                    ) -> Entity:
         """Create a new entity in the bot.
 
         Args:
             name (str): the entity name. It must be unique in the bot
             base_entity (bool): weather the entity is a base entity or not (i.e. a custom entity)
-            entries (list[EntityEntry]): the entity entries
+            entries (dict[str, list[str]] or None): the entity entries
 
         Returns:
             Entity: the entity
