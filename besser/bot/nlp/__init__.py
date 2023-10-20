@@ -74,3 +74,14 @@ type: ``float``
 default value: ``0.4``
 """
 
+NLP_STT_HF_MODEL = Property(SECTION_NLP, 'nlp.speech2text.hf.model', str, None)
+"""
+The name of the Hugging Face model for the HFSpeech2Text bot component. If none is provided, the component will not be 
+activated.
+
+name: ``nlp.speech2text.hf.model``
+
+type: ``str``
+
+default value: ``None``
+"""

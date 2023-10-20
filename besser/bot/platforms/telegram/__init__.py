@@ -8,7 +8,7 @@ TELEGRAM_TOKEN = Property(SECTION_TELEGRAM, 'telegram.token', str, None)
 """
 The Telegram Bot token. Used to connect to the Telegram Bot
 
-type: string
+type: ``str``
 
-default value: None
+default value: ``None``
 """
