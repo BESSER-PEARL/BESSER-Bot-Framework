@@ -5,11 +5,12 @@ import speech_recognition as sr
 
 from besser.bot import nlp
 from besser.bot.nlp.speech2text.speech2text import Speech2Text
-
+from besser.bot.exceptions.exceptions import SREngineNotFound
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine
 
-
+# Once implemented, add the other engines here
+engines = ["Google Speech Recognition"]
 
 class Speech_Recognition(Speech2Text):
     """Makes use of the python speech_recognition library.
@@ -29,6 +30,8 @@ class Speech_Recognition(Speech2Text):
 
     def __init__(self, nlp_engine: 'NLPEngine'):
         super().__init__(nlp_engine)
+        if self._nlp_engine.get_property(nlp.NLP_STT_SR_ENGINE) not in engines:
+            raise SREngineNotFound(self._nlp_engine.get_property(nlp.NLP_STT_SR_ENGINE), engines)
         self._sr_engine = self._nlp_engine.get_property(nlp.NLP_STT_SR_ENGINE)
         self._language = self._nlp_engine.get_property(nlp.NLP_STT_SR_LANGUAGE)
 
