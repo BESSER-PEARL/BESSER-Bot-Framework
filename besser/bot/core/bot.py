@@ -305,6 +305,10 @@ class Bot:
         # TODO: Raise exception SessionNotFound
         session.message = message
         session.predicted_intent = self._nlp_engine.predict_intent(session)
+        logging.info(f'Received message: {message}')
+        logging.info(f'Detected intent: {session.predicted_intent.intent.name}')
+        for parameter in session.predicted_intent.matched_parameters:
+            logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
 
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:
