@@ -11,6 +11,9 @@ from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleInte
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
 from besser.bot.nlp.preprocessing.pipelines import lang_map
+from besser.bot.nlp.speech2text.hf_speech2text import HFSpeech2Text
+from besser.bot.nlp.speech2text.speech2text import Speech2Text
+
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
     from besser.bot.core.state import State
@@ -29,12 +32,14 @@ class NLPEngine:
         _intent_classifiers (dict[State, IntentClassifier]): The collection of Intent Classifiers of the NLPEngine.
             There is one for each bot state (only states with transitions triggered by intent matching)
         _ner (NER or None): The NER (Named Entity Recognition) system of the NLPEngine
+        _speech2text (Speech2Text or None): The Speech-to-Text System of the NLPEngine
     """
 
     def __init__(self, bot: 'Bot'):
         self._bot: 'Bot' = bot
         self._intent_classifiers: dict['State', IntentClassifier] = {}
         self._ner: NER or None = None
+        self._speech2text: Speech2Text or None = None
 
     @property
     def ner(self):
@@ -44,12 +49,18 @@ class NLPEngine:
     def initialize(self) -> None:
         """Initialize the NLPEngine."""
         if self.get_property(nlp.NLP_LANGUAGE) in lang_map.values():
-            self._bot.set_property(nlp.NLP_LANGUAGE, list(lang_map.keys())[list(lang_map.values()).index(self.get_property(nlp.NLP_LANGUAGE))])
+            # Set the language to ISO 639-1 format (e.g., 'english' => 'en')
+            self._bot.set_property(
+                nlp.NLP_LANGUAGE,
+                list(lang_map.keys())[list(lang_map.values()).index(self.get_property(nlp.NLP_LANGUAGE))]
+            )
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
         # TODO: Only instantiate the NER if asked (maybe a bot does not need NER), via bot properties
         self._ner = SimpleNER(self, self._bot)
+        if self.get_property(nlp.NLP_STT_HF_MODEL):
+            self._speech2text = HFSpeech2Text(self)
 
     def get_property(self, prop: Property) -> Any:
         """Get a NLP property's value from the NLPEngine's bot.
@@ -120,3 +131,16 @@ class NLPEngine:
         if best_intent_prediction.score < intent_threshold:
             return None
         return best_intent_prediction
+
+    def speech2text(self, speech: bytes):
+        """Transcribe a voice audio into its corresponding text representation.
+
+        Args:
+            speech (bytes): the recorded voice that wants to be transcribed
+
+        Returns:
+            str: the speech transcription
+        """
+        text = self._speech2text.speech2text(speech)
+        logging.info(f"[Speech2Text] Transcribed audio message: '{text}'")
+        return self._speech2text.speech2text(speech)
