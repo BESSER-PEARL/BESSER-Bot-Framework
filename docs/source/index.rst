@@ -11,8 +11,9 @@ BESSER Bot Framework
    api
 
 
-The `BESSER Bot Framework (BBF) <https://github.com/BESSER-PEARL/bot-framework>`_ is part of the BESSER (BEtter Smart Software fastER) project at the Luxembourg Institute of Science
-and Technology (LIST). It aims to make the design and implementation of chatbots easier and accessible for everyone.
+The `BESSER Bot Framework (BBF) <https://github.com/BESSER-PEARL/bot-framework>`_ is part of the BESSER
+(Building Better Smart Software Faster) project at the Luxembourg Institute of Scienceand Technology (LIST).
+It aims to make the design and implementation of chatbots easier and accessible for everyone.
 
 Quickstart
 ----------
@@ -24,11 +25,11 @@ Requirements
 - Recommended: Create a virtual environment
   (e.g. `venv <https://docs.python.org/3/library/venv.html>`_,
   `conda <https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html>`_)
-- Install the `requirements <https://github.com/BESSER-PEARL/bot-framework/blob/main/requirements.txt>`_:
+- Install the `package <https://pypi.org/project/besser-bot-framework/>`_:
 
 .. code:: bash
 
-    pip install -r requirements.txt
+    pip install besser-bot-framework
 
 Where to start?
 ~~~~~~~~~~~~~~~
