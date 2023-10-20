@@ -74,7 +74,7 @@ class TelegramPlatform(Platform):
     def start(self) -> None:
         logging.info(f'{self._bot.name}\'s TelegramPlatform starting')
         self.running = True
-        self._telegram_app.run_polling()
+        self._telegram_app.run_polling(stop_signals=None)
 
     def stop(self):
         self._event_loop.stop()
