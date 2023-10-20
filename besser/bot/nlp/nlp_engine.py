@@ -12,6 +12,7 @@ from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
 from besser.bot.nlp.preprocessing.pipelines import lang_map
 from besser.bot.nlp.speech2text.hf_speech2text import HFSpeech2Text
+from besser.bot.nlp.speech2text.speech_recognition import Speech_Recognition
 from besser.bot.nlp.speech2text.speech2text import Speech2Text
 
 if TYPE_CHECKING:
@@ -61,6 +62,8 @@ class NLPEngine:
         self._ner = SimpleNER(self, self._bot)
         if self.get_property(nlp.NLP_STT_HF_MODEL):
             self._speech2text = HFSpeech2Text(self)
+        if self.get_property(nlp.NLP_STT_SR_ENGINE):
+            self._speech2text = Speech_Recognition(self)
 
     def get_property(self, prop: Property) -> Any:
         """Get a NLP property's value from the NLPEngine's bot.
@@ -143,4 +146,4 @@ class NLPEngine:
         """
         text = self._speech2text.speech2text(speech)
         logging.info(f"[Speech2Text] Transcribed audio message: '{text}'")
-        return self._speech2text.speech2text(speech)
+        return text
