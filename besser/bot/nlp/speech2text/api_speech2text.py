@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 # Once implemented, add the other engines here
 engines = ["Google Speech Recognition"]
 
-class Speech_Recognition(Speech2Text):
+
+class APISpeech2Text(Speech2Text):
     """Makes use of the python speech_recognition library.
 
     The library calls to different speech recognition engines/APIs.
