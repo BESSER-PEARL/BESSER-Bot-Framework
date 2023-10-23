@@ -24,3 +24,5 @@ pip install besser-bot-framework
 - [greetings_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/greetings_bot.py): Very simple bot for the first contact with the framework
 - [weather_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/weather_bot.py): Introducing entities
 - [telegram_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/telegram_bot.py): Introducing the [TelegramPlatform](https://besserbot-framework.readthedocs.io/en/latest/wiki/platforms/telegram_platform.html)
+
+For more example bots, check out the [BBF-bot-examples](https://github.com/BESSER-PEARL/BBF-bot-examples) repository!
