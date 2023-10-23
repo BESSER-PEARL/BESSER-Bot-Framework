@@ -97,15 +97,3 @@ type: ``str``
 
 default value: ``None``
 """
-
-NLP_STT_SR_LANGUAGE = Property(SECTION_NLP, 'nlp.speech2text.sr.engine.language', str, None)
-"""
-The chosen language for the speech recognition engine. Note that depending on the engine, a specific format needs to 
-be respected.
-
-name: ``nlp.speech2text.sr.engine.language``
-
-type: ``str``
-
-default value: ``None``
-"""

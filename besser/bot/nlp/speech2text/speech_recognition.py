@@ -25,7 +25,7 @@ class Speech_Recognition(Speech2Text):
 
     Attributes:
         _sr_engine (str): the chosen SR engine
-        _language (str): the chosen language in BCP-47 format
+        _language (str): the chosen language
     """
 
     def __init__(self, nlp_engine: 'NLPEngine'):
@@ -33,7 +33,7 @@ class Speech_Recognition(Speech2Text):
         if self._nlp_engine.get_property(nlp.NLP_STT_SR_ENGINE) not in engines:
             raise SREngineNotFound(self._nlp_engine.get_property(nlp.NLP_STT_SR_ENGINE), engines)
         self._sr_engine = self._nlp_engine.get_property(nlp.NLP_STT_SR_ENGINE)
-        self._language = self._nlp_engine.get_property(nlp.NLP_STT_SR_LANGUAGE)
+        self._language = self._nlp_engine.get_property(nlp.NLP_LANGUAGE)
 
     def speech2text(self, speech: bytes):
         wav_stream = io.BytesIO(speech)
