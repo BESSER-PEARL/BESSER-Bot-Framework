@@ -77,6 +77,11 @@ class WebSocketPlatform(Platform):
                         audio_bytes = base64.b64decode(payload.message.encode('utf-8'))
                         message = self._bot.nlp_engine.speech2text(audio_bytes)
                         self._bot.receive_message(session.id, message)
+                    elif payload.action == PayloadAction.USER_FILE.value:
+                        # Forward the base64 encoded file
+                        # maybe add file and or type to payload stuff
+                        file_base64 = payload.message.encode('utf-8')
+                        self._bot.receive_file(session.id, file_base64)
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:

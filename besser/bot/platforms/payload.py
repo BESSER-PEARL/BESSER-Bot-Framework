@@ -11,6 +11,9 @@ class PayloadAction(Enum):
 
     USER_VOICE = 'user_voice'
     """PayloadAction: Indicates that the payload's purpose is to send a user audio."""
+    
+    USER_FILE = 'user_file'
+    """PayloadAction: Indicates that the payload's purpose is to send a user file."""
 
     RESET = 'reset'
     """PayloadAction: Use the :class:`~besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform` on this

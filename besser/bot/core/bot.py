@@ -310,7 +310,22 @@ class Bot:
         for parameter in session.predicted_intent.matched_parameters:
             logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
+# what type is file?
+    def receive_file(self, session_id: str, file_base64) -> None:
+        """Receive a file from a specific session.
 
+
+        Args:
+            session_id (str): the session that sends the message to the bot
+            message (str): the message sent to the bot
+        """
+        session = self._sessions[session_id]
+        # TODO: Raise exception SessionNotFound
+        # keep previous message here? 
+        session.message = ""
+        logging.info(f'Received file')
+        session.current_state.receive_file(session)
+              
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:
         """Set the fallback body for all bot states.
 

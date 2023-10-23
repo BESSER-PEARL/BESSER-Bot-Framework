@@ -134,7 +134,16 @@ def main():
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
                 except Exception as e:
                     st.error('Your message could not be sent. The connection is already closed')
-
+        if uploaded_file := st.file_uploader("Choose a file", accept_multiple_files=False):
+            if 'last_file' not in st.session_state or st.session_state['last_file'] != uploaded_file:
+                st.session_state['last_file'] = uploaded_file
+                bytes_data = uploaded_file.read()
+                file_base64 = base64.b64encode(bytes_data).decode('utf-8')
+                payload = Payload(action=PayloadAction.USER_FILE, message=file_base64)
+                try:
+                    ws.send(json.dumps(payload, cls=PayloadEncoder))
+                except Exception as e:
+                    st.error('Your message could not be sent. The connection is already closed')
     for message in st.session_state['history']:
         with st.chat_message(user_type[message[1]]):
             if isinstance(message[0], bytes):

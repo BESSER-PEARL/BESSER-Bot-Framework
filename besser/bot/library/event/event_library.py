@@ -59,3 +59,20 @@ def variable_matches_operation(session: 'Session', event_params: dict) -> bool:
     operation: Callable[[Any, Any], bool] = event_params['operation']
     current_value: Any = session.get(var_name)
     return operation(current_value, target_value)
+
+
+def file_received(session: 'Session', event_params: dict) -> bool:
+    """
+    This event only returns True if the session variable "file" was set to true.
+
+    Args:
+        session (Session): the current user session
+        event_params (dict): the event parameters
+
+    Returns:
+        bool: always false
+    """
+    if session.get("file"):
+        session.delete("file")
+        return True
+    return False

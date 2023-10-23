@@ -8,7 +8,7 @@ from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
 from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
     DuplicatedIntentMatchingTransitionError, EventSignatureError, IntentNotFound, StateNotFound
-from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation
+from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation, file_received
 from besser.bot.library.event.event_template import event_template
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_body, default_fallback_body
@@ -257,6 +257,23 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=variable_matches_operation,
                                            event_params=event_params))
 
+    def when_file_received_go_to(self, dest: 'State') -> None:
+        """Create a new `file received` transition on this state.
+
+        When the bot is in a state and a file is received the bot will move to the transition's destination
+        state. If no other transition is specified, trigger the fallback state.
+
+        Args:
+            dest (State): the destination state
+        """
+        if dest not in self._bot.states:
+            raise StateNotFound(self._bot, dest)
+        for transition in self.transitions:
+            if transition.is_auto():
+                raise ConflictingAutoTransitionError(self._bot, self)
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=file_received,
+                                           event_params={}))
+
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).
 
@@ -283,6 +300,30 @@ class State:
                 logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
                               f"bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
+
+
+    def receive_file(self, session: Session) -> None:
+        """Receive a file from a user session.
+
+        When receiving a file it looks for the state's transition whose trigger event is to receive a file.
+        The fallback body is when no file transition was defined.
+
+        Args:
+            session (Session): the user session that sent the message
+        """
+        session.set("file", True)
+        for transition in self.transitions:
+            if transition.is_event_true(session):
+                session.move(transition)
+                return
+        # When no file transition is found (i.e. intent == fallback_intent), run the fallback body of the state
+        logging.info(f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
+        try:
+            self._fallback_body(session)
+        except Exception as _:
+            logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
+                            f"bot '{self._bot.name}'. See the attached exception:")
+            traceback.print_exc()
 
     def _check_next_transition(self, session: Session) -> None:
         """Check weather the first defined transition of the state is an `auto` transition, and if so, move to its
