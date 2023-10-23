@@ -62,7 +62,7 @@ class NLPEngine:
         self._ner = SimpleNER(self, self._bot)
         if self.get_property(nlp.NLP_STT_HF_MODEL):
             self._speech2text = HFSpeech2Text(self)
-        if self.get_property(nlp.NLP_STT_SR_ENGINE):
+        elif self.get_property(nlp.NLP_STT_SR_ENGINE):
             self._speech2text = Speech_Recognition(self)
 
     def get_property(self, prop: Property) -> Any:
