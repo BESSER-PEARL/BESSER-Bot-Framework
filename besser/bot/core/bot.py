@@ -311,7 +311,7 @@ class Bot:
             logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
 # what type is file?
-    def receive_file(self, session_id: str, file_base64) -> None:
+    def receive_file(self, session_id: str, json_file) -> None:
         """Receive a file from a specific session.
 
 
@@ -323,6 +323,8 @@ class Bot:
         # TODO: Raise exception SessionNotFound
         # keep previous message here? 
         session.message = ""
+        session.set("file", json_file)
+        session.set("file_received", True)
         logging.info(f'Received file')
         session.current_state.receive_file(session)
               

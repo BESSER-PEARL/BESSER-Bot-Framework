@@ -80,8 +80,9 @@ class WebSocketPlatform(Platform):
                     elif payload.action == PayloadAction.USER_FILE.value:
                         # Forward the base64 encoded file
                         # maybe add file and or type to payload stuff
-                        file_base64 = payload.message.encode('utf-8')
-                        self._bot.receive_file(session.id, file_base64)
+                        json_object = json.loads(payload.message)
+                        json_object["file_base64"] = json_object["file_base64"].encode('utf-8')
+                        self._bot.receive_file(session.id, json_object)
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:

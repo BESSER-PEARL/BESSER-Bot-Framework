@@ -138,8 +138,12 @@ def main():
             if 'last_file' not in st.session_state or st.session_state['last_file'] != uploaded_file:
                 st.session_state['last_file'] = uploaded_file
                 bytes_data = uploaded_file.read()
-                file_base64 = base64.b64encode(bytes_data).decode('utf-8')
-                payload = Payload(action=PayloadAction.USER_FILE, message=file_base64)
+                json_object = {
+                    "file_base64": base64.b64encode(bytes_data).decode('utf-8'),
+                    "name": uploaded_file.name,
+                    "type": uploaded_file.type
+                }
+                payload = Payload(action=PayloadAction.USER_FILE, message=json.dumps(json_object))
                 try:
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
                 except Exception as e:

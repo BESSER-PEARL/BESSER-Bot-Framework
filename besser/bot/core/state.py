@@ -311,7 +311,6 @@ class State:
         Args:
             session (Session): the user session that sent the message
         """
-        session.set("file", True)
         for transition in self.transitions:
             if transition.is_event_true(session):
                 session.move(transition)

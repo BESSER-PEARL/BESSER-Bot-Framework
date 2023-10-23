@@ -72,7 +72,11 @@ def file_received(session: 'Session', event_params: dict) -> bool:
     Returns:
         bool: always false
     """
-    if session.get("file"):
-        session.delete("file")
+    if session.get("file_received"):
+        session.delete("file_received")
+        if "allowed_types" in event_params.keys():
+            if session.get("file")["type"] in event_params["allowed_types"] or session.get("file")["type"] == event_params["allowed_types"]:
+                return True
+            return False
         return True
     return False
