@@ -85,3 +85,15 @@ type: ``str``
 
 default value: ``None``
 """
+
+NLP_STT_SR_ENGINE = Property(SECTION_NLP, 'nlp.speech2text.sr.engine', str, None)
+"""
+The name of the transcription engine for the Speech Recognition bot component. If none is provided, the component will not be 
+activated.
+
+name: ``nlp.speech2text.sr.engine``
+
+type: ``str``
+
+default value: ``None``
+"""
