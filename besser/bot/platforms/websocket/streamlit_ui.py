@@ -146,6 +146,7 @@ def main():
                 payload = Payload(action=PayloadAction.USER_FILE, message=json.dumps(json_object))
                 try:
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
+                    st.session_state.history.append((uploaded_file.name, 1))
                 except Exception as e:
                     st.error('Your message could not be sent. The connection is already closed')
     for message in st.session_state['history']:
