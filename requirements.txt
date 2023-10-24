@@ -7,6 +7,7 @@ numpy==1.26.1
 pandas==2.1.1
 python-telegram-bot==20.6
 snowballstemmer==2.2.0
+SpeechRecognition==3.10.0
 streamlit==1.27.2
 tensorflow==2.14.0
 text2num==2.5.0
