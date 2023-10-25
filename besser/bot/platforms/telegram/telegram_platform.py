@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import logging
 from typing import TYPE_CHECKING
 
@@ -66,6 +67,40 @@ class TelegramPlatform(Platform):
 
         voice_handler = MessageHandler(filters.VOICE, voice)
         self._handlers.append(voice_handler)
+        
+        # Handler for voice messages
+        async def file(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            session_id = str(update.effective_chat.id)
+            session = self._bot.get_or_create_session(session_id, self)
+            file_object = await context.bot.get_file(update.message.document.file_id)
+            file_data = await file_object.download_as_bytearray()
+            base64_data = base64.b64encode(file_data).decode()
+            json_object = {
+                "base64": base64_data,
+                "name": update.message.document.file_name,
+                "type": update.message.document.mime_type
+            }
+            self._bot.receive_file(session.id, json_file=json_object)
+
+        file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file)
+        self._handlers.append(file_handler)
+        
+        async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            session_id = str(update.effective_chat.id)
+            session = self._bot.get_or_create_session(session_id, self)
+            image_object = await context.bot.get_file(update.message.photo[-1].file_id)
+            image_data = await image_object.download_as_bytearray()
+            base64_data = base64.b64encode(image_data).decode()
+            # im not sure if it actually is png tbh
+            json_object = {
+                "base64": base64_data,
+                "name": update.message.photo[-1].file_id + ".jpg",
+                "type": "image/jpeg"
+            }
+            self._bot.receive_file(session.id, json_file=json_object)
+
+        image_handler = MessageHandler(filters.PHOTO, image)
+        self._handlers.append(image_handler)
 
     @property
     def telegram_app(self):
