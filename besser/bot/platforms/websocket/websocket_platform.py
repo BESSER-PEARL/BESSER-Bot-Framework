@@ -78,11 +78,9 @@ class WebSocketPlatform(Platform):
                         message = self._bot.nlp_engine.speech2text(audio_bytes)
                         self._bot.receive_message(session.id, message)
                     elif payload.action == PayloadAction.USER_FILE.value:
-                        # Forward the base64 encoded file
-                        # maybe add file and or type to payload stuff
-                        json_object = json.loads(payload.message)
-                        json_object["file_base64"] = json_object["file_base64"].encode('utf-8')
-                        self._bot.receive_file(session.id, json_object)
+                        file_object = json.loads(payload.message)
+                        file_object['base64'] = file_object['base64'].encode('utf-8')
+                        self._bot.receive_file(session.id, file_object)
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
@@ -136,6 +134,14 @@ class WebSocketPlatform(Platform):
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
+        self._send(session.id, payload)
+        
+    def reply_file(self, session: Session, file_object: str) -> None:
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        session.chat_history.append((file_object, 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
+                          message=file_object)
         self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame) -> None:

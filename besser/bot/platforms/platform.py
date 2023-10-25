@@ -61,3 +61,13 @@ class Platform(ABC):
             message (str): the message to send to the user
         """
         pass
+    
+    @abstractmethod
+    def reply_file(self, session: 'Session', json_file) -> None:
+        """Send a bot reply, i.e. a file, to a specific user.
+
+        Args:
+            session (Session): the user session
+            message (str): the message to send to the user
+        """
+        pass

@@ -49,6 +49,8 @@ def main():
         payload: Payload = Payload.decode(payload_str)
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
             message = payload.message
+        elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
+            message = payload.message
         elif payload.action == PayloadAction.BOT_REPLY_DF.value:
             message = pd.read_json(payload.message)
         elif payload.action == PayloadAction.BOT_REPLY_OPTIONS.value:
@@ -138,12 +140,12 @@ def main():
             if 'last_file' not in st.session_state or st.session_state['last_file'] != uploaded_file:
                 st.session_state['last_file'] = uploaded_file
                 bytes_data = uploaded_file.read()
-                json_object = {
-                    "file_base64": base64.b64encode(bytes_data).decode('utf-8'),
+                file_object = {
+                    "base64": base64.b64encode(bytes_data).decode('utf-8'),
                     "name": uploaded_file.name,
                     "type": uploaded_file.type
                 }
-                payload = Payload(action=PayloadAction.USER_FILE, message=json.dumps(json_object))
+                payload = Payload(action=PayloadAction.USER_FILE, message=json.dumps(file_object))
                 try:
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
                     st.session_state.history.append((uploaded_file.name, 1))
@@ -153,6 +155,12 @@ def main():
         with st.chat_message(user_type[message[1]]):
             if isinstance(message[0], bytes):
                 st.audio(message[0], format="audio/wav")
+            if isinstance(message[0], dict):
+                file_name = message[0]['name']
+                file_type = message[0]['type']
+                file =  base64.b64decode(message[0]['base64'].encode('utf-8'))
+                st.download_button(label= 'Download ' + file_name, file_name=file_name, data=file, mime=file_type, 
+                                   key=file_name + str(time.time()))
             else:
                 st.write(message[0])
 
@@ -167,6 +175,16 @@ def main():
         first_message = False
         if isinstance(message, list):
             st.session_state['buttons'] = message
+        elif isinstance(message, dict):
+            st.session_state['history'].append((message, 0))
+            with st.chat_message('assistant'):
+                with st.spinner(''):
+                    time.sleep(t)
+                file_name = message['name']
+                file_type = message['type']
+                file =  base64.b64decode(message['base64'].encode('utf-8'))
+                st.download_button(label= 'Download ' + file_name, file_name=file_name, data=file, mime=file_type,
+                                   key=file_name + str(time.time()))
         else:
             st.session_state['history'].append((message, 0))
             with st.chat_message("assistant"):
