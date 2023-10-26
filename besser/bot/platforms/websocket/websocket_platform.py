@@ -136,9 +136,36 @@ class WebSocketPlatform(Platform):
                           message=message)
         self._send(session.id, payload)
         
-    def reply_file(self, session: Session, file_object: str) -> None:
+    def reply_file(self, session: Session, file_path: str = None, file_data: bytes = None, file_name: str = None, file_type: str = None, 
+                   file_base64: dict = None) -> None:
+        """A bot file message (usually a reply to a user message) is sent to the session platform to show it to the user.
+
+        Note that at least one of file_path, file_data or file_base64 need to be set. 
+        Args:
+            file_path (str, optional): Path to the file.
+            file_data (bytes, optional): Raw file data.
+            file_info (dict, optional): JSON object containing file data, filename, and file type.
+        """
+        if file_path:
+            with open(file_path, 'rb') as file:
+                file_data = file.read()
+                file_name = file_path.split('/')[-1]
+                file_type = file_path.split('.')[-1]
+        elif file_base64:
+            file_data = base64.b64decode(file_base64)
+        else:
+            raise ValueError("Invalid input parameters")
+        if not file_name:
+            file_name = 'default_filename'
+        if not file_type:
+            file_type = 'file'
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
+        file_object = {
+            'base64': base64.b64encode(file_data).decode('utf-8'),
+            'name': file_name,
+            'type': file_type
+        }
         session.chat_history.append((file_object, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
                           message=file_object)
