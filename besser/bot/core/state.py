@@ -315,7 +315,7 @@ class State:
             if transition.is_event_true(session):
                 session.move(transition)
                 return
-        # When no file transition is found (i.e. intent == fallback_intent), run the fallback body of the state
+        # When no file transition is found, run the fallback body of the state
         logging.info(f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
         try:
             self._fallback_body(session)

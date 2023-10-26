@@ -310,14 +310,14 @@ class Bot:
         for parameter in session.predicted_intent.matched_parameters:
             logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
-# what type is file?
-    def receive_file(self, session_id: str, json_file) -> None:
+
+    def receive_file(self, session_id: str, json_file: dict) -> None:
         """Receive a file from a specific session.
 
 
         Args:
             session_id (str): the session that sends the message to the bot
-            message (str): the message sent to the bot
+            json_file (dict): the file sent to the bot
         """
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound

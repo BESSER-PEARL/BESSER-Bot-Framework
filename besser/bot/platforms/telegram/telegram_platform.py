@@ -91,7 +91,6 @@ class TelegramPlatform(Platform):
             image_object = await context.bot.get_file(update.message.photo[-1].file_id)
             image_data = await image_object.download_as_bytearray()
             base64_data = base64.b64encode(image_data).decode()
-            # im not sure if it actually is png tbh
             json_object = {
                 "base64": base64_data,
                 "name": update.message.photo[-1].file_id + ".jpg",
