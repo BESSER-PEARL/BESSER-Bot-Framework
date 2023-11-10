@@ -1,5 +1,4 @@
 import logging
-import base64
 from typing import Any, TYPE_CHECKING
 
 from besser.bot.core.transition import Transition
