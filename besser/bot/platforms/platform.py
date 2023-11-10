@@ -61,5 +61,3 @@ class Platform(ABC):
             message (str): the message to send to the user
         """
         pass
-    
-
