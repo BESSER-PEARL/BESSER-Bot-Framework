@@ -143,7 +143,7 @@ class TelegramPlatform(Platform):
         
     def reply_file(self, session: Session, file_path: str = None, file_data: bytes = None, file_name: str = None, file_type: str = None, 
                    file_base64: dict = None) -> None:
-        """A bot file message (usually a reply to a user message) is sent to the session platform to show it to the user.
+        """A bot file message (usually a reply to a user message) is sent to the user.
 
         Note that at least one of file_path, file_data or file_base64 need to be set. 
         Args:
