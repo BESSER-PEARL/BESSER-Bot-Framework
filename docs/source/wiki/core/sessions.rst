@@ -56,6 +56,8 @@ Let's see the different things we can do with a user session.
         age: int = session.get('age')
         # We can delete a variable:
         session.delete('age')
+        # Received files are also stored as part of the user sessions: 
+        file: File = session.file
 
 API References
 --------------

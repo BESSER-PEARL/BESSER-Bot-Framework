@@ -8,7 +8,7 @@ class File:
     Files are used to encapsulate information about the files exchanged in a bot conversation. They include
     attributes such as the file's name, type, and base64 representation.
     Note that at least one of path, data or base64 need to be set. 
-    
+
     Args:
         file_name (str): The name of the file.
         file_type (str): The type of the file.
@@ -23,7 +23,7 @@ class File:
     """
 
     def __init__(self, file_name: str = None, file_type: str = None, file_base64: str = None, file_path: str = None, file_data: bytes = None):
-    
+
         if file_path:
             with open(file_path, 'rb') as file:
                 file_data = file.read()
