@@ -82,7 +82,7 @@ will never be triggered.
 File transitions
 -----------------------------
 
-It is also possible to cause a transition in case a file is sent by the user.
+It is also possible to cause a transition in case a file is sent by the user with the event called 
 :any:`file_received <besser.bot.library.event.event_library.file_received>`. This event
 is only triggered if a user sent a file to a bot. 
 
