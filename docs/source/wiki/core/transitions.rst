@@ -79,6 +79,28 @@ One must be cautious when defining these transitions. Following the previous exa
 there must be a 'money' variable in the session (that has to be added in some state body), otherwise this transition
 will never be triggered.
 
+File transitions
+-----------------------------
+
+It is also possible to cause a transition in case a file is sent by the user.
+:any:`file_received <besser.bot.library.event.event_library.file_received>`. This event
+is only triggered if a user sent a file to a bot. 
+
+To create a transition triggered by this kind of event, simply add:
+
+.. code:: python
+
+    state1.when_file_received_go_to(state2)
+
+Note that it is also possible to define a list of allowed file types, such that bot creators can impose
+restrictions to what can be sent by users to avoid unwanted file types to be processed. 
+
+To add this rule to the transition, simply add:
+
+.. code:: python
+
+    state1.when_file_received_go_to(state2, allowed_types=["application/pdf", "image/png"])
+
 Automatic transitions
 ---------------------
 
