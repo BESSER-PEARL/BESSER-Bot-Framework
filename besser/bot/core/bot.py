@@ -10,6 +10,7 @@ from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
+from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
     DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
@@ -311,7 +312,7 @@ class Bot:
             logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
 
-    def receive_file(self, session_id: str, json_file: dict) -> None:
+    def receive_file(self, session_id: str, file: File) -> None:
         """Receive a file from a specific session.
 
 
@@ -322,10 +323,9 @@ class Bot:
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
         # keep previous message here? 
-        session.message = ""
-        session.set("file", json_file)
-        session.set("file_received", True)
-        logging.info(f'Received file')
+        session.message = file.name
+        session.file = file
+        logging.info('Received file')
         session.current_state.receive_file(session)
               
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:

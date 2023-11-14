@@ -17,7 +17,7 @@ from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.websocket import streamlit_ui
-
+from besser.bot.core.file import File
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
 
@@ -78,9 +78,7 @@ class WebSocketPlatform(Platform):
                         message = self._bot.nlp_engine.speech2text(audio_bytes)
                         self._bot.receive_message(session.id, message)
                     elif payload.action == PayloadAction.USER_FILE.value:
-                        file_object = json.loads(payload.message)
-                        file_object['base64'] = file_object['base64'].encode('utf-8')
-                        self._bot.receive_file(session.id, file_object)
+                        self._bot.receive_file(session.id, File.decode(payload.message))
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
@@ -136,8 +134,7 @@ class WebSocketPlatform(Platform):
                           message=message)
         self._send(session.id, payload)
         
-    def reply_file(self, session: Session, file_path: str = None, file_data: bytes = None, file_name: str = None, file_type: str = None, 
-                   file_base64: dict = None) -> None:
+    def reply_file(self, session: Session, file: File) -> None:
         """A bot file message (usually a reply to a user message) is sent to the user.
 
         Note that at least one of file_path, file_data or file_base64 need to be set. 
@@ -146,29 +143,9 @@ class WebSocketPlatform(Platform):
             file_data (bytes, optional): Raw file data.
             file_info (dict, optional): JSON object containing file data, filename, and file type.
         """
-        if file_path:
-            with open(file_path, 'rb') as file:
-                file_data = file.read()
-                file_name = file_path.split('/')[-1]
-                file_type = file_path.split('.')[-1]
-        elif file_base64:
-            file_data = base64.b64decode(file_base64)
-        else:
-            raise ValueError("Invalid input parameters")
-        if not file_name:
-            file_name = 'default_filename'
-        if not file_type:
-            file_type = 'file'
-        if session.platform is not self:
-            raise PlatformMismatchError(self, session)
-        file_object = {
-            'base64': base64.b64encode(file_data).decode('utf-8'),
-            'name': file_name,
-            'type': file_type
-        }
-        session.chat_history.append((file_object, 0))
+        session.chat_history.append((file.get_json_string(), 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
-                          message=file_object)
+                          message=file.to_dict())
         self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame) -> None:

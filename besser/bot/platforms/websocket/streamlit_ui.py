@@ -140,12 +140,8 @@ def main():
             if 'last_file' not in st.session_state or st.session_state['last_file'] != uploaded_file:
                 st.session_state['last_file'] = uploaded_file
                 bytes_data = uploaded_file.read()
-                file_object = {
-                    "base64": base64.b64encode(bytes_data).decode('utf-8'),
-                    "name": uploaded_file.name,
-                    "type": uploaded_file.type
-                }
-                payload = Payload(action=PayloadAction.USER_FILE, message=json.dumps(file_object))
+                file_object = File(file_base64=base64.b64encode(bytes_data).decode('utf-8'), file_name=uploaded_file.name, file_type=uploaded_file.type)
+                payload = Payload(action=PayloadAction.USER_FILE, message=file_object.get_json_string())
                 try:
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
                     st.session_state.history.append((uploaded_file.name, 1))
@@ -156,10 +152,11 @@ def main():
             if isinstance(message[0], bytes):
                 st.audio(message[0], format="audio/wav")
             if isinstance(message[0], dict):
-                file_name = message[0]['name']
-                file_type = message[0]['type']
-                file =  base64.b64decode(message[0]['base64'].encode('utf-8'))
-                st.download_button(label= 'Download ' + file_name, file_name=file_name, data=file, mime=file_type, 
+                file: File = File.from_dict(message[0])
+                file_name = file.name
+                file_type = file.type
+                file_data = base64.b64decode(file.base64.encode('utf-8'))
+                st.download_button(label= 'Download ' + file_name, file_name=file_name, data=file_data, mime=file_type, 
                                    key=file_name + str(time.time()))
             else:
                 st.write(message[0])
@@ -180,10 +177,11 @@ def main():
             with st.chat_message('assistant'):
                 with st.spinner(''):
                     time.sleep(t)
-                file_name = message['name']
-                file_type = message['type']
-                file =  base64.b64decode(message['base64'].encode('utf-8'))
-                st.download_button(label= 'Download ' + file_name, file_name=file_name, data=file, mime=file_type,
+                file: File = File.from_dict(message)
+                file_name = file.name
+                file_type = file.type
+                file_data = base64.b64decode(file.base64.encode('utf-8'))
+                st.download_button(label= 'Download ' + file_name, file_name=file_name, data=file_data, mime=file_type,
                                    key=file_name + str(time.time()))
         else:
             st.session_state['history'].append((message, 0))

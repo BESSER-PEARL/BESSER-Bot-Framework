@@ -37,6 +37,8 @@ def intent_matched(session: 'Session', event_params: dict) -> bool:
     Returns:
         bool: True if the 2 intents are the same, false otherwise
     """
+    if session.predicted_intent is None:
+        return False
     target_intent: Intent = event_params['intent']
     matched_intent: Intent = session.predicted_intent.intent
     return target_intent.name == matched_intent.name
@@ -70,12 +72,13 @@ def file_received(session: 'Session', event_params: dict) -> bool:
         event_params (dict): the event parameters
 
     Returns:
-        bool: always false
+        bool: True if session.file_flag was set and (if specified) the received file type correspondes to the allowed
+        types as defined in "allowed_types"
     """
-    if session.get("file_received"):
-        session.delete("file_received")
+    if session.file_flag:
+        session.file_flag = False
         if "allowed_types" in event_params.keys():
-            if session.get("file")["type"] in event_params["allowed_types"] or session.get("file")["type"] == event_params["allowed_types"]:
+            if session.file.type in event_params["allowed_types"] or session.file.type == event_params["allowed_types"]:
                 return True
             return False
         return True

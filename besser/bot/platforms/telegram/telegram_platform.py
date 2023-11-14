@@ -8,6 +8,7 @@ from telegram.ext import Application, ApplicationBuilder, BaseHandler, CommandHa
     filters
 
 from besser.bot.core.session import Session
+from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import PlatformMismatchError
 from besser.bot.platforms import telegram
 from besser.bot.platforms.payload import Payload, PayloadAction
@@ -75,12 +76,9 @@ class TelegramPlatform(Platform):
             file_object = await context.bot.get_file(update.message.document.file_id)
             file_data = await file_object.download_as_bytearray()
             base64_data = base64.b64encode(file_data).decode()
-            json_object = {
-                "base64": base64_data,
-                "name": update.message.document.file_name,
-                "type": update.message.document.mime_type
-            }
-            self._bot.receive_file(session.id, json_file=json_object)
+            file = File(file_name=update.message.document.file_name, file_type=update.message.document.mime_type, 
+                        file_base64=base64_data)
+            self._bot.receive_file(session.id, file=file)
 
         file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file)
         self._handlers.append(file_handler)
@@ -91,12 +89,9 @@ class TelegramPlatform(Platform):
             image_object = await context.bot.get_file(update.message.photo[-1].file_id)
             image_data = await image_object.download_as_bytearray()
             base64_data = base64.b64encode(image_data).decode()
-            json_object = {
-                "base64": base64_data,
-                "name": update.message.photo[-1].file_id + ".jpg",
-                "type": "image/jpeg"
-            }
-            self._bot.receive_file(session.id, json_file=json_object)
+            file = File(file_name=update.message.photo[-1].file_id + ".jpg", file_type="image/jpeg", 
+                        file_base64=base64_data)
+            self._bot.receive_file(session.id, file=file)
 
         image_handler = MessageHandler(filters.PHOTO, image)
         self._handlers.append(image_handler)
@@ -130,7 +125,7 @@ class TelegramPlatform(Platform):
             asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_message(chat_id=session_id, text=payload.message),
                                             loop)
         elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_document(chat_id=session_id, document=payload.message["data"],
+            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_document(chat_id=session_id, document=base64.b64decode(payload.message["base64"]),
                                                                         filename=payload.message["name"]), loop)
 
     def reply(self, session: Session, message: str) -> None:
@@ -141,8 +136,7 @@ class TelegramPlatform(Platform):
                           message=message)
         self._send(session.id, payload)
         
-    def reply_file(self, session: Session, file_path: str = None, file_data: bytes = None, file_name: str = None, file_type: str = None, 
-                   file_base64: dict = None) -> None:
+    def reply_file(self, session: Session, file: File) -> None:
         """A bot file message (usually a reply to a user message) is sent to the user.
 
         Note that at least one of file_path, file_data or file_base64 need to be set. 
@@ -151,29 +145,11 @@ class TelegramPlatform(Platform):
             file_data (bytes, optional): Raw file data.
             file_info (dict, optional): JSON object containing file data, filename, and file type.
         """
-        if file_path:
-            with open(file_path, 'rb') as file:
-                file_data = file.read()
-                file_name = file_path.split('/')[-1]
-                file_type = file_path.split('.')[-1]
-        elif file_base64:
-            file_data = base64.b64decode(file_base64)
-        elif not file_data:
-            raise ValueError("Invalid input parameters")
-        if not file_name:
-            file_name = 'default_filename'
-        if not file_type:
-            file_type = 'file'
-        file_object = {
-            'data': file_data,
-            'name': file_name,
-            'type': file_type
-        }
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append((file_object, 0))
+        session.chat_history.append((file.get_json_string(), 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
-                          message=file_object)
+                          message=file.to_dict())
         self._send(session.id, payload)
 
     def add_handler(self, handler: BaseHandler) -> None:

@@ -257,7 +257,7 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=variable_matches_operation,
                                            event_params=event_params))
 
-    def when_file_received_go_to(self, dest: 'State') -> None:
+    def when_file_received_go_to(self, dest: 'State', allowed_types: list[str] or str = None) -> None:
         """Create a new `file received` transition on this state.
 
         When the bot is in a state and a file is received the bot will move to the transition's destination
@@ -265,14 +265,19 @@ class State:
 
         Args:
             dest (State): the destination state
+            allowed_types (list[str] or str, optional): the allowed file types, non-conforming types will cause a
+            fallback message
         """
         if dest not in self._bot.states:
             raise StateNotFound(self._bot, dest)
         for transition in self.transitions:
             if transition.is_auto():
                 raise ConflictingAutoTransitionError(self._bot, self)
+        event_params = {}
+        if allowed_types:
+            event_params = {'allowed_types': allowed_types}
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=file_received,
-                                           event_params={}))
+                                           event_params=event_params))
 
     def receive_intent(self, session: Session) -> None:
         """Receive an intent from a user session (which is predicted from the user message).
