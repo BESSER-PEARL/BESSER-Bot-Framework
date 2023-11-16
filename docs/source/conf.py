@@ -21,7 +21,9 @@ project = config.get('metadata', 'description')
 author = config.get('metadata', 'author')
 release = config.get('metadata', 'version')
 year = datetime.date.today().year
-copyright = f'{year}, {author}'
+if year > 2023:
+    year = '2023 - ' + str(year)
+copyright = f'{year} {author}. All Rights Reserved'
 
 
 # -- General configuration ---------------------------------------------------
