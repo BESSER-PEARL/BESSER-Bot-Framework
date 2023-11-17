@@ -294,10 +294,12 @@ class State:
             return
         for transition in self.transitions:
             if transition.is_event_true(session):
+                session.flags['predicted_intent'] = False
                 session.move(transition)
                 return
+        session.flags['predicted_intent'] = False
         if predicted_intent.intent == fallback_intent:
-            # When no intent is matched (i.e. intent == fallback_intent), run the fallback body of the state
+            # When no transition is activated, run the fallback body of the state
             logging.info(f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
             try:
                 self._fallback_body(session)
@@ -305,7 +307,6 @@ class State:
                 logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
                               f"bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
-
 
     def receive_file(self, session: Session) -> None:
         """Receive a file from a user session.
@@ -318,9 +319,11 @@ class State:
         """
         for transition in self.transitions:
             if transition.is_event_true(session):
+                session.flags['file'] = False
                 session.move(transition)
                 return
-        # When no file transition is found, run the fallback body of the state
+        session.flags['file'] = False
+        # When no transition is activated, run the fallback body of the state
         logging.info(f"[{self._name}] Running fallback body {self._fallback_body.__name__}")
         try:
             self._fallback_body(session)

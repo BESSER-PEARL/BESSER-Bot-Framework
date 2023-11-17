@@ -30,8 +30,16 @@ class Session:
         _current_state (str): The current state in the bot for this session
         _dictionary (str): Storage of private data for this session
         _message (str): The last message sent to the bot by this session
-        predicted_intent (str): The last predicted intent for this session
+        _predicted_intent (str): The last predicted intent for this session
+        _file: File or None: The last file sent to the bot.
         chat_history (str): The session chat history
+        flags (dict[str, bool]): A dictionary of boolean flags.
+            A `predicted_intent flag` is set to true when an intent is received. When the evaluation of the
+            current state's transitions is done, the flag is set to false. It may happen that a transition different
+            from the one associated with this intent is triggered (e.g. one evaluating some condition). In the following
+            state, if there is a transition associated with the same intent, it should not be triggered as the time for
+            this intent passed (unless the same intent is detected, in such case the flag will be set to true again).
+            Another flag `file_flag` is used for the same purpose but for files sent by the user
     """
 
     def __init__(
@@ -46,10 +54,13 @@ class Session:
         self._current_state: 'State' = self._bot.initial_state()
         self._dictionary: dict[str, Any] = {}
         self._message: str or None = None
-        self.predicted_intent: IntentClassifierPrediction or None = None
-        self.chat_history: list[tuple[str, int]] = []
+        self._predicted_intent: IntentClassifierPrediction or None = None
         self._file: File or None = None
-        self.file_flag: bool = False
+        self.chat_history: list[tuple[str, int]] = []
+        self.flags: dict[str, bool] = {
+            'predicted_intent': False,
+            'file': False
+        }
 
     @property
     def id(self):
@@ -95,7 +106,22 @@ class Session:
         """
         self.chat_history.append((file.get_json_string(), 1))
         self._file = file
-        self.file_flag = True
+        self.flags['file'] = True
+
+    @property
+    def predicted_intent(self):
+        """str: The last predicted intent for this session."""
+        return self._predicted_intent
+
+    @predicted_intent.setter
+    def predicted_intent(self, predicted_intent: IntentClassifierPrediction):
+        """
+        Set the last predicted intent for this session.
+        Args:
+            predicted_intent (File): the last predicted intent
+        """
+        self._predicted_intent = predicted_intent
+        self.flags['predicted_intent'] = True
 
     def set(self, key: str, value: Any) -> None:
         """Set an entry to the session private data storage.

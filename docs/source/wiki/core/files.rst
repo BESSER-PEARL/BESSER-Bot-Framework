@@ -1,29 +1,23 @@
 Files
 =====
 
-The File class was added as a way to help with the definition of file objects that are both sent and received by users. 
+The :class:`File class <besser.bot.core.file.File>` was added as a way to help with the definition of file objects that are both sent and received by users.
 
 File Object Definition
 ----------------------
 A file object consists of 3 attributes: 
 
-.. code:: python
-
-        name (str): The name of the file.
-        type (str): The type of the file.
-        base64 (str): The base64 representation of the file.
+- name (str): The name of the file.
+- type (str): The type of the file.
+- base64 (str): The base64 representation of the file.
 
 Yet, to create a file object using the constructor, 3 options are possible. 
-If we look at the the constructor's parameters, we will notice that we have 3 different parameters that represent the actual file's data: 
 
-.. code:: python
+- Providing the file content as a base64 string
+- Providing a file path
+- Providing the raw file data, in bytes
 
-    Args:
-        file_name (str): The name of the file.
-        file_type (str): The type of the file.
-        file_base64 (str, optional): The base64 representation of the file.
-        file_path (str, optional): Path to the file.
-        file_data (bytes, optional): Raw file data.
+
 
 With this, we want to allow users to choose the option that is easiest to them and take care of the necessary conversion. 
 Thus, users can choose whether to set file_base64, file_path or file_data.
@@ -67,5 +61,5 @@ API References
 
 - File: :class:`besser.bot.core.file.File`
 - Bot.receive_file(): :meth:`besser.bot.core.bot.Bot.receive_file`
-- WebSocketPlatform.reply(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
+- WebSocketPlatform.reply_file(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
 - TelegramPlatform.reply_file(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_file`
