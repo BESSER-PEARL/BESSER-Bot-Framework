@@ -17,9 +17,9 @@ class File:
         file_data (bytes, optional): Raw file data.
 
     Attributes:
-        name (str): The name of the file.
-        type (str): The type of the file.
-        base64 (str): The base64 representation of the file.
+        _name (str): The name of the file.
+        _type (str): The type of the file.
+        _base64 (str): The base64 representation of the file.
     """
 
     def __init__(self, file_name: str = None, file_type: str = None, file_base64: str = None, file_path: str = None, file_data: bytes = None):
@@ -86,7 +86,7 @@ class File:
         file_name = file_dict['name']
         file_type = file_dict['type']
         file_base64 = file_dict['base64']
-        if (file_name and file_type and file_base64):
+        if file_name and file_type and file_base64:
             return File(file_name=file_name, file_type=file_type, file_base64=file_base64)
         return None
     
