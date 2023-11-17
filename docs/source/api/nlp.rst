@@ -18,5 +18,6 @@ nlp
    nlp/number
    nlp/pipelines
    nlp/text_preprocessing
+   nlp/api_speech2text
    nlp/hf_speech2text
    nlp/speech2text
