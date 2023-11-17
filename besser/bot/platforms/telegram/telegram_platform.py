@@ -137,13 +137,11 @@ class TelegramPlatform(Platform):
         self._send(session.id, payload)
         
     def reply_file(self, session: Session, file: File) -> None:
-        """A bot file message (usually a reply to a user message) is sent to the user.
+        """Send a file reply to a specific user
 
-        Note that at least one of file_path, file_data or file_base64 need to be set. 
         Args:
-            file_path (str, optional): Path to the file.
-            file_data (bytes, optional): Raw file data.
-            file_info (dict, optional): JSON object containing file data, filename, and file type.
+            session (Session): the user session
+            file (File): the file to send
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
