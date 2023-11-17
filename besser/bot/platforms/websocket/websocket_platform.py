@@ -3,6 +3,7 @@ import inspect
 import json
 import logging
 import os
+import plotly
 import subprocess
 import threading
 from typing import TYPE_CHECKING
@@ -18,6 +19,7 @@ from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.websocket import streamlit_ui
 from besser.bot.core.file import File
+
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
 
@@ -172,5 +174,18 @@ class WebSocketPlatform(Platform):
         message = json.dumps(d)
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_OPTIONS,
+                          message=message)
+        self._send(session.id, payload)
+
+    def reply_plotly(self, session: Session, plot: plotly.graph_objs.Figure) -> None:
+        """Send a Plotly figure as a bot reply, to a specific user.
+
+        Args:
+            session (Session): the user session
+            plot (plotly.graph_objs.Figure): the message to send to the user
+        """
+        message = plotly.io.to_json(plot)
+        session.chat_history.append((message, 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_PLOTLY,
                           message=message)
         self._send(session.id, payload)

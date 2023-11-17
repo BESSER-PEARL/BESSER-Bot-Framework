@@ -5,6 +5,7 @@ librosa==0.10.1
 nltk==3.8.1
 numpy==1.26.1
 pandas==2.1.1
+plotly==5.18.0
 python-telegram-bot==20.6
 snowballstemmer==2.2.0
 SpeechRecognition==3.10.0

@@ -32,6 +32,11 @@ class PayloadAction(Enum):
     object.
     """
 
+    BOT_REPLY_PLOTLY = 'bot_reply_plotly'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a 
+    :class:`plotly.graph_objs.Figure` object.
+    """
+
     BOT_REPLY_OPTIONS = 'bot_reply_options'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a list of strings, where 
     the user should select 1 of them.

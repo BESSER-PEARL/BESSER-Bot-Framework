@@ -6,6 +6,7 @@ import threading
 import time
 
 import pandas as pd
+import plotly
 import streamlit as st
 import websocket
 from audio_recorder_streamlit import audio_recorder
@@ -58,6 +59,9 @@ def main():
         elif payload.action == PayloadAction.BOT_REPLY_DF.value:
             content = pd.read_json(payload.message)
             t = 'dataframe'
+        elif payload.action == PayloadAction.BOT_REPLY_PLOTLY.value:
+            content = plotly.io.from_json(payload.message)
+            t = 'plotly'
         elif payload.action == PayloadAction.BOT_REPLY_OPTIONS.value:
             t = 'options'
             d = json.loads(payload.message)
@@ -173,7 +177,10 @@ def main():
     first_message = True
     while not st.session_state['queue'].empty():
         message = st.session_state['queue'].get()
-        t = len(message.content) / 1000 * 3
+        if hasattr(message, '__len__'):
+            t = len(message.content) / 1000 * 3
+        else:
+            t = 2
         if t > 3:
             t = 3
         elif t < 1 and first_message:
