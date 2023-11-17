@@ -11,6 +11,9 @@ class PayloadAction(Enum):
 
     USER_VOICE = 'user_voice'
     """PayloadAction: Indicates that the payload's purpose is to send a user audio."""
+    
+    USER_FILE = 'user_file'
+    """PayloadAction: Indicates that the payload's purpose is to send a user file."""
 
     RESET = 'reset'
     """PayloadAction: Use the :class:`~besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform` on this
@@ -19,6 +22,9 @@ class PayloadAction(Enum):
 
     BOT_REPLY_STR = 'bot_reply_str'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`str` object."""
+
+    BOT_REPLY_FILE = 'bot_reply_file'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`file.File` object."""
 
     BOT_REPLY_DF = 'bot_reply_dataframe'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`pandas.DataFrame`

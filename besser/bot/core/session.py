@@ -2,6 +2,7 @@ import logging
 from typing import Any, TYPE_CHECKING
 
 from besser.bot.core.transition import Transition
+from besser.bot.core.file import File
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 
 if TYPE_CHECKING:
@@ -47,6 +48,8 @@ class Session:
         self._message: str or None = None
         self.predicted_intent: IntentClassifierPrediction or None = None
         self.chat_history: list[tuple[str, int]] = []
+        self._file: File or None = None
+        self.file_flag: bool = False
 
     @property
     def id(self):
@@ -77,6 +80,22 @@ class Session:
         """
         self.chat_history.append((message, 1))
         self._message = message
+        
+    @property
+    def file(self):
+        """str: The last file sent to the bot."""
+        return self._file
+
+    @file.setter
+    def file(self, file: File):
+        """
+        Set the last file sent to the bot.
+        Args:
+            file (File): the file to set in the session
+        """
+        self.chat_history.append((file.get_json_string(), 1))
+        self._file = file
+        self.file_flag = True
 
     def set(self, key: str, value: Any) -> None:
         """Set an entry to the session private data storage.

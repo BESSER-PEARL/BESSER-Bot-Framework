@@ -17,7 +17,7 @@ from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.websocket import streamlit_ui
-
+from besser.bot.core.file import File
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
 
@@ -77,6 +77,8 @@ class WebSocketPlatform(Platform):
                         audio_bytes = base64.b64decode(payload.message.encode('utf-8'))
                         message = self._bot.nlp_engine.speech2text(audio_bytes)
                         self._bot.receive_message(session.id, message)
+                    elif payload.action == PayloadAction.USER_FILE.value:
+                        self._bot.receive_file(session.id, File.decode(payload.message))
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
@@ -130,6 +132,20 @@ class WebSocketPlatform(Platform):
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
+        self._send(session.id, payload)
+        
+    def reply_file(self, session: Session, file: File) -> None:
+        """A bot file message (usually a reply to a user message) is sent to the user.
+
+        Note that at least one of file_path, file_data or file_base64 need to be set. 
+        Args:
+            file_path (str, optional): Path to the file.
+            file_data (bytes, optional): Raw file data.
+            file_info (dict, optional): JSON object containing file data, filename, and file type.
+        """
+        session.chat_history.append((file.get_json_string(), 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
+                          message=file.to_dict())
         self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame) -> None:
