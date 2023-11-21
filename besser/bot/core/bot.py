@@ -115,7 +115,7 @@ class Bot:
                             f"{type(value)} value: {value}. The expected property value type is {prop.type}")
         if prop.section not in self._config.sections():
             self._config.add_section(prop.section)
-        self._config.set(prop.section, prop.name, value)
+        self._config.set(prop.section, prop.name, str(value))
 
     def new_state(self, name: str, initial: bool = False) -> State:
         """Create a new state in the bot.
