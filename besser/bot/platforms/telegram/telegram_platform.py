@@ -68,7 +68,7 @@ class TelegramPlatform(Platform):
 
         voice_handler = MessageHandler(filters.VOICE, voice)
         self._handlers.append(voice_handler)
-        
+
         # Handler for voice messages
         async def file(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
@@ -82,7 +82,7 @@ class TelegramPlatform(Platform):
 
         file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file)
         self._handlers.append(file_handler)
-        
+
         async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
             session = self._bot.get_or_create_session(session_id, self)
@@ -122,13 +122,16 @@ class TelegramPlatform(Platform):
     def _send(self, session_id: str, payload: Payload) -> None:
         loop = asyncio.get_event_loop()
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_message(chat_id=session_id, text=payload.message),
-                                            loop)
+            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_message(chat_id=session_id,
+                                                                                 text=payload.message), loop)
         elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_document(chat_id=session_id, document=base64.b64decode(payload.message["base64"]),
-                                                                        filename=payload.message["name"], caption=payload.message["caption"]), loop)
+            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_document(
+                chat_id=session_id, document=base64.b64decode(payload.message["base64"]),
+                filename=payload.message["name"], caption=payload.message["caption"]), loop)
         elif payload.action == PayloadAction.BOT_REPLY_IMAGE.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_photo(chat_id=session_id, photo=base64.b64decode(payload.message["base64"]), caption=payload.message["caption"]), loop)
+            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_photo(
+                chat_id=session_id, photo=base64.b64decode(payload.message["base64"]),
+                caption=payload.message["caption"]), loop)
 
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
@@ -137,7 +140,7 @@ class TelegramPlatform(Platform):
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
-        
+
     def reply_file(self, session: Session, file: File, message: str = None) -> None:
         """Send a file reply to a specific user
 
@@ -157,10 +160,10 @@ class TelegramPlatform(Platform):
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
                           message=file_dict)
         self._send(session.id, payload)
-        
+
     def reply_image(self, session: Session, file: File, message: str = None) -> None:
         """Send a file reply to a specific user
-        
+
         Args:
             session (Session): the user session
             file (File): the file to send
