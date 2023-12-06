@@ -2,6 +2,9 @@ from typing import TYPE_CHECKING
 
 from nltk.tokenize import word_tokenize
 
+import spellux
+from spacy.lang.lb import Luxembourgish
+
 from besser.bot import nlp
 from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map, lang_map_tokenizers
 
@@ -10,7 +13,7 @@ if TYPE_CHECKING:
 
 
 def process_text(text: str, nlp_engine: 'NLPEngine') -> str:
-    stemmer: bool = nlp_engine.get_property(nlp.NLP_STEMMER)
+    pre_processing: bool = nlp_engine.get_property(nlp.NLP_PRE_PROCESSING)
     language: str = nlp_engine.get_property(nlp.NLP_LANGUAGE)
 
     preprocessed_sentence: str = text
