@@ -141,8 +141,8 @@ class SimpleNER(NER):
             ner_sentence: str = message
             # Match custom entities
             processed_values: bool
-            stemmer = self._nlp_engine.get_property(nlp.NLP_STEMMER)
-            if stemmer:
+            pre_processing = self._nlp_engine.get_property(nlp.NLP_PRE_PROCESSING)
+            if pre_processing:
                 # Other conditions may be necessary to use the processed entity values
                 processed_values = True
             else:

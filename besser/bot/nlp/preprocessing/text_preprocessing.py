@@ -41,3 +41,4 @@ def stem_text(text: str, language: str) -> str:
 
     joined_string = ' '.join([str(item) for item in stemmed_sentence])
     return joined_string
+    print(joined_string)
