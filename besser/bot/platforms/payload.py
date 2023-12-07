@@ -26,6 +26,10 @@ class PayloadAction(Enum):
     BOT_REPLY_FILE = 'bot_reply_file'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`file.File` 
     object."""
+    
+    BOT_REPLY_IMAGE = 'bot_reply_image'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`file.File` 
+    object, specifically an image."""
 
     BOT_REPLY_DF = 'bot_reply_dataframe'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`pandas.DataFrame`
