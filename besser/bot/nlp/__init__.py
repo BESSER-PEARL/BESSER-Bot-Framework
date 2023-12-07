@@ -46,16 +46,16 @@ type: ``str``
 default value: ``Europe/Madrid``
 """
 
-NLP_STEMMER = Property(SECTION_NLP, 'nlp.stemmer', bool, True)
+NLP_PRE_PROCESSING = Property(SECTION_NLP, 'nlp.pre_processing', bool, True)
 """
-Weather to use a stemmer or not. `Stemming <https://en.wikipedia.org/wiki/Stemming>`_ is the process of reducing 
+Whether to use text pre-processing or not. `Stemming <https://en.wikipedia.org/wiki/Stemming>`_ is the process of reducing
 inflected (or sometimes derived) words to their word stem, base or root form.
 
 For example 'games' and 'gaming' are stemmed to 'game'.
 
 It can improve the NLP process by generalizing user inputs.
 
-name: ``nlp.stemmer``
+name: ``nlp.pre_processing``
 
 type: ``bool``
 
