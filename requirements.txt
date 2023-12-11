@@ -10,7 +10,7 @@ python-telegram-bot==20.6
 snowballstemmer==2.2.0
 spacy==3.7.2
 SpeechRecognition==3.10.0
-git+https://github.com/questoph/spellux
+spelllux @ git+https://github.com/questoph/spellux
 streamlit==1.27.2
 tensorflow==2.14.0
 text2num==2.5.0
