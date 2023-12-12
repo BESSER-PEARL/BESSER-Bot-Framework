@@ -48,6 +48,9 @@ def stem_text(text: str, language: str) -> str:
 
 
 def lemmatize_lux_text(text: str) -> str:
+    import spellux
+    from spacy.lang.lb import Luxembourgish
+
     nlp = Luxembourgish()
     doc = nlp(text)
     tokens = []
