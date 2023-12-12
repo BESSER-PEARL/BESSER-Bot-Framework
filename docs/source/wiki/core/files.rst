@@ -55,6 +55,8 @@ platform-specific function (not every platform might support it):
         websocket_platform.reply_file(session=session, file=file)
         # OR
         telegram_platform.reply_file(session=session, file=file)
+        # in case you want to add a caption to your file, you can also set the message parameter
+        telegram_platform.reply_file(session=session, file=file, message="Your Message")    
 
 API References
 --------------
