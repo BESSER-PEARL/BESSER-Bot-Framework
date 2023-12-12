@@ -1,9 +1,5 @@
 from typing import TYPE_CHECKING
-
 from nltk.tokenize import word_tokenize
-
-import spellux
-from spacy.lang.lb import Luxembourgish
 
 from besser.bot import nlp
 from besser.bot.nlp.preprocessing.pipelines import create_or_get_stemmer, lang_map, lang_map_tokenizers
@@ -52,6 +48,9 @@ def stem_text(text: str, language: str) -> str:
 
 
 def lemmatize_lux_text(text: str) -> str:
+    import spellux
+    from spacy.lang.lb import Luxembourgish
+
     nlp = Luxembourgish()
     doc = nlp(text)
     tokens = []
