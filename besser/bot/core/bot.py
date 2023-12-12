@@ -10,6 +10,7 @@ from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
+from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
     DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound
 from besser.bot.nlp.nlp_engine import NLPEngine
@@ -114,7 +115,7 @@ class Bot:
                             f"{type(value)} value: {value}. The expected property value type is {prop.type}")
         if prop.section not in self._config.sections():
             self._config.add_section(prop.section)
-        self._config.set(prop.section, prop.name, value)
+        self._config.set(prop.section, prop.name, str(value))
 
     def new_state(self, name: str, initial: bool = False) -> State:
         """Create a new state in the bot.
@@ -273,17 +274,18 @@ class Bot:
         """Stop the bot execution."""
         self._stop_platforms()
 
-    def reset(self, session_id: str) -> Session:
+    def reset(self, session_id: str) -> Session or None:
         """Reset the bot current state and memory for the specified session. Then, restart the bot again for this session.
 
         Args:
             session_id (str): the session to reset
 
         Returns:
-            Session: the reset session
+            Session or None: the reset session, or None if the provided session_id does not exist
         """
+        if session_id not in self._sessions:
+            return None
         session = self._sessions[session_id]
-        # TODO: Raise exception SessionNotFound
         new_session = Session(session_id, self, session.platform)
         self._sessions[session_id] = new_session
         logging.info(f'{self._name} restarted by user {session_id}')
@@ -304,8 +306,28 @@ class Bot:
         # TODO: Raise exception SessionNotFound
         session.message = message
         session.predicted_intent = self._nlp_engine.predict_intent(session)
+        logging.info(f'Received message: {message}')
+        logging.info(f'Detected intent: {session.predicted_intent.intent.name}')
+        for parameter in session.predicted_intent.matched_parameters:
+            logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
 
+    def receive_file(self, session_id: str, file: File) -> None:
+        """Receive a file from a specific session.
+
+
+        Args:
+            session_id (str): the session that sends the message to the bot
+            json_file (dict): the file sent to the bot
+        """
+        session = self._sessions[session_id]
+        # TODO: Raise exception SessionNotFound
+        # keep previous message here? 
+        session.message = file.name
+        session.file = file
+        logging.info('Received file')
+        session.current_state.receive_file(session)
+              
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:
         """Set the fallback body for all bot states.
 
@@ -347,7 +369,6 @@ class Bot:
         if session_id in self._sessions:
             return self._sessions[session_id]
         else:
-            # TODO: Raise exception SessionNotFound
             return None
 
     def new_session(self, session_id: str, platform: Platform) -> Session:
@@ -369,6 +390,12 @@ class Bot:
         session = Session(session_id, self, platform)
         self._sessions[session_id] = session
         session.current_state.run(session)
+        return session
+
+    def get_or_create_session(self, session_id: str, platform: Platform) -> Session:
+        session = self.get_session(session_id)
+        if session is None:
+            session = self.new_session(session_id, platform)
         return session
 
     def delete_session(self, session_id: str) -> None:

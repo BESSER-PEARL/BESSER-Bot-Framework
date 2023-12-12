@@ -84,9 +84,9 @@ class Intent:
         self.processed_training_sentences = []
         for i in range(len(self.training_sentences)):
             processed_sentence: str = self.training_sentences[i]
+            processed_sentence = process_text(processed_sentence, nlp_engine)
             for parameter in self.parameters:
                 # Replace parameter fragments by entity names
                 processed_sentence = replace_value_in_sentence(processed_sentence, parameter.fragment,
                                                                parameter.entity.name.upper())
-            processed_sentence = process_text(processed_sentence, nlp_engine)
             self.processed_training_sentences.append(processed_sentence)

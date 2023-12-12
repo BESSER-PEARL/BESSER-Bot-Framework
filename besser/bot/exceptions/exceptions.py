@@ -116,3 +116,12 @@ class IntentClassifierWithoutIntentsError(Exception):
         message = f"Attempting to create a {intent_classifier.__class__.__name__} in a state without intents: " \
                   f"{state.name}"
         super().__init__(message)
+
+
+class SREngineNotFound(Exception):
+
+    def __init__(self, engine, engines):
+        message = f"Chosen speech recognition engine \"{engine}\" is not supported, choose one of the following: \n" 
+        for engine in engines:
+            message += engine + "\n"
+        super().__init__(message)

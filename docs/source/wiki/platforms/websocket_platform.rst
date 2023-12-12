@@ -60,6 +60,13 @@ After that, you can use the platform to send different kinds of messages to the 
 
     websocket.reply_options(session, ['Yes', 'No'])
 
+- Plotly `figure <https://plotly.com/python-api-reference/generated/plotly.graph_objects.Figure.html>`_:
+
+.. code:: python
+
+    websocket_platform.reply_plotly(session, plot)
+
+
 
 ⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
 
@@ -68,7 +75,8 @@ API References
 
 - Bot: :class:`besser.bot.core.bot.Bot`
 - Bot.use_websocket_platform(): :meth:`besser.bot.core.bot.Bot.use_websocket_platform`
-
 - WebSocketPlatform: :class:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform`
 - WebSocketPlatform.reply(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply`
-- Session.reply_dataframe(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
+- WebSocketPlatform.reply_dataframe(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
+- WebSocketPlatform.reply_options(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
+- WebSocketPlatform.reply_plotly(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`

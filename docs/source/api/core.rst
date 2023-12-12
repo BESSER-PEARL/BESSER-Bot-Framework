@@ -5,6 +5,7 @@ core
 .. toctree::
 
    core/bot
+   core/file
    core/property
    core/session
    core/state

@@ -9,6 +9,12 @@ class PayloadAction(Enum):
     USER_MESSAGE = 'user_message'
     """PayloadAction: Indicates that the payload's purpose is to send a user message."""
 
+    USER_VOICE = 'user_voice'
+    """PayloadAction: Indicates that the payload's purpose is to send a user audio."""
+    
+    USER_FILE = 'user_file'
+    """PayloadAction: Indicates that the payload's purpose is to send a user file."""
+
     RESET = 'reset'
     """PayloadAction: Use the :class:`~besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform` on this
     bot.
@@ -17,9 +23,22 @@ class PayloadAction(Enum):
     BOT_REPLY_STR = 'bot_reply_str'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`str` object."""
 
+    BOT_REPLY_FILE = 'bot_reply_file'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`file.File` 
+    object."""
+    
+    BOT_REPLY_IMAGE = 'bot_reply_image'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`file.File` 
+    object, specifically an image."""
+
     BOT_REPLY_DF = 'bot_reply_dataframe'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`pandas.DataFrame`
     object.
+    """
+
+    BOT_REPLY_PLOTLY = 'bot_reply_plotly'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a 
+    :class:`plotly.graph_objs.Figure` object.
     """
 
     BOT_REPLY_OPTIONS = 'bot_reply_options'

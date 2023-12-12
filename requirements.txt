@@ -1,12 +1,19 @@
+audio-recorder-streamlit==0.0.8
 dateparser==1.1.8
 keras==2.14.0
+librosa==0.10.1
 nltk==3.8.1
 numpy==1.26.1
 pandas==2.1.1
+plotly==5.18.0
 python-telegram-bot==20.6
 snowballstemmer==2.2.0
+spacy==3.7.2
+SpeechRecognition==3.10.0
+spellux @ git+https://github.com/Aran30/spellux
 streamlit==1.27.2
 tensorflow==2.14.0
 text2num==2.5.0
+transformers==4.34.1
 websocket-client==1.6.4
 websockets==11.0.3

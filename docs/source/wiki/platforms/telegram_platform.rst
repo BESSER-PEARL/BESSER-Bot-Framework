@@ -76,6 +76,22 @@ Our Telegram Platform has 2 built in handlers.
 - One to handle all user text messages (that simply captures the messages and sends them to the bot).
 - A *reset* handler that resets the bot when the user writes the command ``/reset``.
 
+
+Telegram Functions
+------------------
+
+Images
+~~~~~~~
+Besides replying with files using reply_file, it is also possible to reply with an image with a specific message format (similar to when a user sends an image they just took with Telegram's in-app functionality).
+To do so, you can use following function: 
+
+.. code:: python
+
+    telegram_platform.reply_image(file=f, session=session)
+    # in case you want to add a caption to your image, you can also set the message parameter
+    telegram_platform.reply_image(file=f, session=session, message="Your Message")    
+
+
 API References
 --------------
 
@@ -85,3 +101,4 @@ API References
 - TelegramPlatform: :class:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform`
 - TelegramPlatform.add_handler(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.add_handler`
 - TelegramPlatform.reply(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply`
+- TelegramPlatform.reply_image(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_image`

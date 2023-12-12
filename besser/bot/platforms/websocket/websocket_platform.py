@@ -1,7 +1,9 @@
+import base64
 import inspect
 import json
 import logging
 import os
+import plotly
 import subprocess
 import threading
 from typing import TYPE_CHECKING
@@ -16,6 +18,7 @@ from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.websocket import streamlit_ui
+from besser.bot.core.file import File
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
@@ -71,6 +74,13 @@ class WebSocketPlatform(Platform):
                     payload: Payload = Payload.decode(payload_str)
                     if payload.action == PayloadAction.USER_MESSAGE.value:
                         self._bot.receive_message(session.id, payload.message)
+                    elif payload.action == PayloadAction.USER_VOICE.value:
+                        # Decode the base64 string to get audio bytes
+                        audio_bytes = base64.b64decode(payload.message.encode('utf-8'))
+                        message = self._bot.nlp_engine.speech2text(audio_bytes)
+                        self._bot.receive_message(session.id, message)
+                    elif payload.action == PayloadAction.USER_FILE.value:
+                        self._bot.receive_file(session.id, File.decode(payload.message))
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
@@ -85,7 +95,12 @@ class WebSocketPlatform(Platform):
     def initialize(self) -> None:
         self._host = self._bot.get_property(websocket.WEBSOCKET_HOST)
         self._port = self._bot.get_property(websocket.WEBSOCKET_PORT)
-        self._websocket_server = serve(self._message_handler, self._host, self._port)
+        self._websocket_server = serve(
+            handler=self._message_handler,
+            host=self._host,
+            port=self._port,
+            max_size=self._bot.get_property(websocket.WEBSOCKET_MAX_SIZE)
+        )
 
     def start(self) -> None:
         if self._use_ui:
@@ -120,6 +135,18 @@ class WebSocketPlatform(Platform):
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
+        
+    def reply_file(self, session: Session, file: File) -> None:
+        """Send a file reply to a specific user
+
+        Args:
+            session (Session): the user session
+            file (File): the file to send
+        """
+        session.chat_history.append((file.get_json_string(), 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
+                          message=file.to_dict())
+        self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame) -> None:
         """Send a DataFrame bot reply, i.e. a table, to a specific user.
@@ -147,5 +174,18 @@ class WebSocketPlatform(Platform):
         message = json.dumps(d)
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_OPTIONS,
+                          message=message)
+        self._send(session.id, payload)
+
+    def reply_plotly(self, session: Session, plot: plotly.graph_objs.Figure) -> None:
+        """Send a Plotly figure as a bot reply, to a specific user.
+
+        Args:
+            session (Session): the user session
+            plot (plotly.graph_objs.Figure): the message to send to the user
+        """
+        message = plotly.io.to_json(plot)
+        session.chat_history.append((message, 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_PLOTLY,
                           message=message)
         self._send(session.id, payload)

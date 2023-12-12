@@ -21,3 +21,4 @@ Table of contents
    core/entities
    core/transitions
    core/sessions
+   core/files
