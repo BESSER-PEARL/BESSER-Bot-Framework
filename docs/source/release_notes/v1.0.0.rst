@@ -7,7 +7,7 @@ New Features:
 - :doc:`Sending and Receiving files <../Wiki/core/files`
 - Added support of plotly bot messages
 - Added function to stop a running bot
-Speech2Text
+
 Improvements: 
 -------------
 - Improved Luxembourgish preprocessing by using lemmatizer provided by https://github.com/questoph/spellux
