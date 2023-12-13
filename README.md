@@ -18,6 +18,9 @@ the design and implementation of chatbots easier and accessible for everyone.
 ```bash
 pip install besser-bot-framework
 ```
+Note that if you want to set your bot's language to Luxembourgish and are using the package installed with pip, you will need to manually install the [spellux](https://github.com/questoph/spellux) library. 
+If you clone this project, installing the requirements from the requirements.txt file is enough.
+
 
 ### Example bots
 
