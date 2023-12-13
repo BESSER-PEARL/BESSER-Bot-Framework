@@ -3,8 +3,8 @@ Version 1.0.0
 
 New Features: 
 -------------
-- :doc:`Speech2Text <../Wiki/additional_features>` support using HF openai/whisper-* models or Google Speech Recognition API
-- :doc:`Sending and Receiving files <../Wiki/core/files`
+- :doc:`Speech2Text <../wiki/additional_features>` support using HF openai/whisper-* models or Google Speech Recognition API
+- :doc:`Sending and Receiving files <../wiki/core/files>`
 - Added support of plotly bot messages
 - Added function to stop a running bot
 
