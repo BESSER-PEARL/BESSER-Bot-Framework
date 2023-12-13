@@ -8,12 +8,17 @@ BESSER Bot Framework
    your_first_bot
    wiki
    examples
+   release_notes
    api
 
 
 The `BESSER Bot Framework (BBF) <https://github.com/BESSER-PEARL/bot-framework>`_ is part of the BESSER
 (Building Better Smart Software Faster) project at the Luxembourg Institute of Science and Technology (LIST).
 It aims to make the design and implementation of chatbots easier and accessible for everyone.
+
+Latest Release: :doc:`Version 1.0.0 <release_notes/v1.0.0>`
+-----------------------------------------------------------
+.. include:: release_notes/v1.0.0.rst
 
 Quickstart
 ----------
