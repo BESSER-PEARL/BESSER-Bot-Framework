@@ -15,4 +15,5 @@ Table of contents
    wiki/core
    wiki/platforms
    wiki/languages
+   wiki/additional_features
    wiki/configuration_properties
