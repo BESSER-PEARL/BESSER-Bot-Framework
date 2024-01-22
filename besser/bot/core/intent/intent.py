@@ -22,25 +22,29 @@ class Intent:
         name (str): the intent's name
         training_sentences (list[str] or None): the intent's training sentences
         parameters (list[IntentParameter] or None): the intent's parameters
+        description (str or None): a description of the intent, optional
 
     Attributes:
         name (str): The intent's name
         training_sentences (list[str]): The intent's training sentences
         processed_training_sentences (list[str] or None): Processed training sentences are stored for intent prediction
         parameters (list[IntentParameter]): The intent's parameters
+        description (str or None): a description of the intent, optional
     """
 
     def __init__(
             self,
             name: str,
             training_sentences: list[str] or None = None,
-            parameters: list[IntentParameter] or None = None
+            parameters: list[IntentParameter] or None = None,
+            description: str or None = None
     ):
         if parameters is None:
             parameters = []
         if training_sentences is None:
             training_sentences = []
         self.name: str = name
+        self.description: str = description
         self.training_sentences: list[str] = training_sentences
         self.processed_training_sentences: list[str] or None = None
         self.parameters: list[IntentParameter] = parameters
