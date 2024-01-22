@@ -90,3 +90,23 @@ class Intent:
                 processed_sentence = replace_value_in_sentence(processed_sentence, parameter.fragment,
                                                                parameter.entity.name.upper())
             self.processed_training_sentences.append(processed_sentence)
+
+    def to_json(self) -> dict:
+        """Returns the intent content in a JSON format.
+
+        Returns:
+            dict: The intent content.
+        """
+        intent_dict = {
+            'training_sentences': self.training_sentences,
+            'description': self.description,
+            'parameters': []
+        }
+        for parameter in self.parameters:
+            parameter_dict = {
+                'name': parameter.name,
+                'fragment': parameter.fragment,
+                'entity': parameter.entity.name
+            }
+            intent_dict['parameters'].append(parameter_dict)
+        return intent_dict
