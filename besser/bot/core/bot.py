@@ -153,19 +153,21 @@ class Bot:
     def new_intent(self,
                    name: str,
                    training_sentences: list[str],
-                   parameters: list[IntentParameter] or None = None
+                   parameters: list[IntentParameter] or None = None,
+                   description: str or None = None,
                    ) -> Intent:
         """Create a new intent in the bot.
 
         Args:
             name (str): the intent name. It must be unique in the bot
             training_sentences (list[str]): the intent's training sentences
-            parameters (list[IntentParameter] or None)
+            parameters (list[IntentParameter] or None): the intent parameters, optional
+            description (str or None): a description of the intent, optional
 
         Returns:
             Intent: the intent
         """
-        new_intent = Intent(name, training_sentences, parameters)
+        new_intent = Intent(name, training_sentences, parameters, description)
         if new_intent in self.intents:
             raise DuplicatedIntentError(self, new_intent)
         self.intents.append(new_intent)
@@ -188,7 +190,8 @@ class Bot:
     def new_entity(self,
                    name: str,
                    base_entity: bool = False,
-                   entries: dict[str, list[str]] or None = None
+                   entries: dict[str, list[str]] or None = None,
+                   description: str or None = None
                    ) -> Entity:
         """Create a new entity in the bot.
 
@@ -196,11 +199,12 @@ class Bot:
             name (str): the entity name. It must be unique in the bot
             base_entity (bool): weather the entity is a base entity or not (i.e. a custom entity)
             entries (dict[str, list[str]] or None): the entity entries
+            description (str or None): a description of the entity, optional
 
         Returns:
             Entity: the entity
         """
-        new_entity = Entity(name, base_entity, entries)
+        new_entity = Entity(name, base_entity, entries, description)
         if new_entity in self.entities:
             raise DuplicatedEntityError(self, new_entity)
         self.entities.append(new_entity)
