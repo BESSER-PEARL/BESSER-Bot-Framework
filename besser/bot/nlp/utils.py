@@ -1,3 +1,4 @@
+import json
 import re
 
 
@@ -25,3 +26,12 @@ def replace_temp_value_in_sentence(sentence: str, frag: str, repl: str) -> str:
 def find_first_temp(sentence: str) -> str:
     regex = re.compile(r'/temp[0-9]+/')
     return regex.search(sentence).group()
+
+
+def find_json(text: str) -> dict:
+    text = re.sub(r"([^']*)'([^']*[^'])", r'\1"\2', text)
+    start = text.find('{')
+    end = text.rfind('}') + 1
+    json_string = text[start:end]
+    print(json_string)
+    return json.loads(json_string)

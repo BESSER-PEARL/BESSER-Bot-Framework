@@ -23,7 +23,6 @@ class File:
     """
 
     def __init__(self, file_name: str = None, file_type: str = None, file_base64: str = None, file_path: str = None, file_data: bytes = None):
-
         if file_path:
             with open(file_path, 'rb') as file:
                 file_data = file.read()

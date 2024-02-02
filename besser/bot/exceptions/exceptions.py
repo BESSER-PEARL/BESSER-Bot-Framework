@@ -121,7 +121,15 @@ class IntentClassifierWithoutIntentsError(Exception):
 class SREngineNotFound(Exception):
 
     def __init__(self, engine, engines):
-        message = f"Chosen speech recognition engine \"{engine}\" is not supported, choose one of the following: \n" 
+        message = f"Chosen speech recognition engine \"{engine}\" is not supported, choose one of the following: \n"
         for engine in engines:
             message += engine + "\n"
+        super().__init__(message)
+
+
+class LLMSuiteNotFound(Exception):
+    def __init__(self, suite, suites):
+        message = f"Chosen LLM suite \"{suite}\" is not supported, choose one of the following: \n"
+        for suite in suites:
+            message += suite + "\n"
         super().__init__(message)
