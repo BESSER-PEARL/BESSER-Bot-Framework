@@ -2,7 +2,7 @@ from enum import Enum
 
 from besser.bot.core.entity.entity import Entity
 
-_PREFIX = '@sys.'
+_PREFIX = 'base.'
 
 
 class BaseEntities(Enum):
@@ -27,11 +27,23 @@ ordered_base_entities = [
 an intent with a number and a date-time parameter, the number is searched after date-times have been searched since a
 date-time can contain numbers and matching first a number would interfere in the date-time entity."""
 
-number_entity = Entity(BaseEntities.NUMBER.value, base_entity=True)
+number_entity = Entity(
+    name=BaseEntities.NUMBER.value,
+    base_entity=True,
+    description='An entity that matches any number'
+)
 """The `number` base entity."""
 
-datetime_entity = Entity(BaseEntities.DATETIME.value, base_entity=True)
+datetime_entity = Entity(
+    name=BaseEntities.DATETIME.value,
+    base_entity=True,
+    description='An entity that matches any date, time or datetime value'
+)
 """The `date-time` base entity."""
 
-any_entity = Entity(BaseEntities.ANY.value, base_entity=True)
+any_entity = Entity(
+    name=BaseEntities.ANY.value,
+    base_entity=True,
+    description='An entity that matches any text'
+)
 """The `any` base entity."""
