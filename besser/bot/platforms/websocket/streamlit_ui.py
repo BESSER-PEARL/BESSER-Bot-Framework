@@ -45,6 +45,14 @@ def session_monitoring(interval: int):
 
 
 def main():
+    st.set_page_config(
+        page_title="Streamlit Chat - Demo",
+        page_icon=":robot:"
+    )
+    st.header("Chat Demo")
+    st.markdown("[Github](https://github.com/BESSER-PEARL/BESSER-Bot-Framework)")
+    # User input component. Must be declared before history writing
+    user_input = st.chat_input("What is up?")
 
     def on_message(ws, payload_str):
         # https://github.com/streamlit/streamlit/issues/2838
@@ -87,18 +95,10 @@ def main():
     def on_pong(ws, data):
         pass
 
-    st.set_page_config(
-        page_title="Streamlit Chat - Demo",
-        page_icon=":robot:"
-    )
-
     user_type = {
         0: 'assistant',
         1: 'user'
     }
-
-    st.header("Chat Demo")
-    st.markdown("[Github](https://github.com/BESSER-PEARL/bot-framework)")
 
     if 'history' not in st.session_state:
         st.session_state['history'] = []
@@ -221,8 +221,7 @@ def main():
                 del st.session_state['buttons']
                 break
 
-    # React to user input
-    if user_input := st.chat_input("What is up?"):
+    if user_input:
         if 'buttons' in st.session_state:
             del st.session_state['buttons']
         with st.chat_message("user"):
