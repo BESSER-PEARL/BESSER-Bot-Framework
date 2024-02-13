@@ -45,10 +45,6 @@ def session_monitoring(interval: int):
 
 
 def main():
-    st.set_page_config(
-        page_title="Streamlit Chat - Demo",
-        page_icon=":robot:"
-    )
     st.header("Chat Demo")
     st.markdown("[Github](https://github.com/BESSER-PEARL/BESSER-Bot-Framework)")
     # User input component. Must be declared before history writing
