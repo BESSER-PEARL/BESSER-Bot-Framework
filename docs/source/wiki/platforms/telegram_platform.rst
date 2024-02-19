@@ -40,6 +40,19 @@ After that, you can use the platform to send different kinds of messages to the 
 
     telegram_platform.reply(session, 'Hello!')
 
+- Files:
+
+.. code:: python
+
+    file = File(file_name="name", file_type="type", file_base64="file_base64")
+    telegram_platform.reply_file(session, file, message='Optional caption')
+
+- Images:
+
+.. code:: python
+
+    telegram_platform.reply_image(file=f, session=session, message='Optional caption') # the file must be an image
+
 .. note::
 
     The bot cannot detect when a user opens the Telegram chat window. Therefore, to start the conversation, it is needed
@@ -71,25 +84,13 @@ This is an example handler function that will be executed when bot receives the 
 
     telegram_platform.add_handler(help_handler)
 
-Our Telegram Platform has 2 built in handlers.
+Our Telegram Platform has the following built in handlers:
 
 - One to handle all user text messages (that simply captures the messages and sends them to the bot).
 - A *reset* handler that resets the bot when the user writes the command ``/reset``.
-
-
-Telegram Functions
-------------------
-
-Images
-~~~~~~~
-Besides replying with files using reply_file, it is also possible to reply with an image with a specific message format (similar to when a user sends an image they just took with Telegram's in-app functionality).
-To do so, you can use following function: 
-
-.. code:: python
-
-    telegram_platform.reply_image(file=f, session=session)
-    # in case you want to add a caption to your image, you can also set the message parameter
-    telegram_platform.reply_image(file=f, session=session, message="Your Message")    
+- A voice message handler (you need to set the :doc:`../nlp/speech2text` component to enable voice messages)
+- A file handler to receive files from the user
+- An image handler to receive images from the user (images are a subset of files)
 
 
 API References
@@ -98,7 +99,9 @@ API References
 - Bot: :class:`besser.bot.core.bot.Bot`
 - Bot.get_session(): :meth:`besser.bot.core.bot.Bot.get_session`
 - Bot.use_telegram_platform(): :meth:`besser.bot.core.bot.Bot.use_telegram_platform`
+- File: :class:`besser.bot.core.file.File`
 - TelegramPlatform: :class:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform`
 - TelegramPlatform.add_handler(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.add_handler`
 - TelegramPlatform.reply(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply`
+- TelegramPlatform.reply_file(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_file`
 - TelegramPlatform.reply_image(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_image`
