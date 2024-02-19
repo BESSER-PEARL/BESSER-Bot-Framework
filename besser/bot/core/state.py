@@ -317,8 +317,8 @@ class State:
             try:
                 self._fallback_body(session)
             except Exception as _:
-                logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
-                              f"bot '{self._bot.name}'. See the attached exception:")
+                logging.error(f"An error occurred while executing '{self._fallback_body.__name__}' of state "
+                              f"'{self._name}' in bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
 
     def receive_file(self, session: Session) -> None:
@@ -341,8 +341,8 @@ class State:
         try:
             self._fallback_body(session)
         except Exception as _:
-            logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
-                            f"bot '{self._bot.name}'. See the attached exception:")
+            logging.error(f"An error occurred while executing '{self._fallback_body.__name__}' of state"
+                          f"'{self._name}' in bot '{self._bot.name}'. See the attached exception:")
             traceback.print_exc()
 
     def _check_next_transition(self, session: Session) -> None:

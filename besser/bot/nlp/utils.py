@@ -33,5 +33,4 @@ def find_json(text: str) -> dict:
     start = text.find('{')
     end = text.rfind('}') + 1
     json_string = text[start:end]
-    print(json_string)
     return json.loads(json_string)

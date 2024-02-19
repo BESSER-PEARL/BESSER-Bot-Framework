@@ -40,6 +40,7 @@ class TelegramPlatform(Platform):
         self._event_loop: asyncio.AbstractEventLoop = None
         self._handlers: list[BaseHandler] = []
 
+        # Handler for text messages
         async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
             session = self._bot.get_or_create_session(session_id, self)
@@ -69,7 +70,7 @@ class TelegramPlatform(Platform):
         voice_handler = MessageHandler(filters.VOICE, voice)
         self._handlers.append(voice_handler)
 
-        # Handler for voice messages
+        # Handler for file messages
         async def file(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
             session = self._bot.get_or_create_session(session_id, self)
@@ -83,6 +84,7 @@ class TelegramPlatform(Platform):
         file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file)
         self._handlers.append(file_handler)
 
+        # Handler for image messages
         async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
             session = self._bot.get_or_create_session(session_id, self)
@@ -147,7 +149,7 @@ class TelegramPlatform(Platform):
         Args:
             session (Session): the user session
             file (File): the file to send
-            message (str, optional): message to be attachted to file, 1024 char limit
+            message (str, optional): message to be attached to file, 1024 char limit
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
@@ -162,12 +164,12 @@ class TelegramPlatform(Platform):
         self._send(session.id, payload)
 
     def reply_image(self, session: Session, file: File, message: str = None) -> None:
-        """Send a file reply to a specific user
+        """Send an image reply to a specific user
 
         Args:
             session (Session): the user session
-            file (File): the file to send
-            message (str, optional): message to be attachted to file, 1024 char limit
+            file (File): the file to send (the image)
+            message (str, optional): message to be attached to file, 1024 char limit
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)

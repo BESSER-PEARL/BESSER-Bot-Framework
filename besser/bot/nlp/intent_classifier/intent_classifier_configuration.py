@@ -93,14 +93,20 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
     different LLM suites, that can be directly imported and used in a bot.
 
     Args:
-        use_intent_descriptions (str): weather to include the intent descriptions in the LLM prompt
-        use_training_sentences (dict): weather to include the intent training sentences in the LLM prompt
+        llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
+            huggingface-inference-api, replicate)
+        parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
+        use_intent_descriptions (bool): weather to include the intent descriptions in the LLM prompt
+        use_training_sentences (bool): weather to include the intent training sentences in the LLM prompt
         use_entity_descriptions (bool): weather to include the entity descriptions in the LLM prompt
         use_entity_synonyms (bool): weather to include the entity value's synonyms in the LLM prompt
 
     Attributes:
-        use_intent_descriptions (str): weather to include the intent descriptions in the LLM prompt
-        use_training_sentences (dict): weather to include the intent training sentences in the LLM prompt
+        llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
+            huggingface-inference-api, replicate)
+        parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
+        use_intent_descriptions (bool): weather to include the intent descriptions in the LLM prompt
+        use_training_sentences (bool): weather to include the intent training sentences in the LLM prompt
         use_entity_descriptions (bool): weather to include the entity descriptions in the LLM prompt
         use_entity_synonyms (bool): weather to include the entity value's synonyms in the LLM prompt
     """

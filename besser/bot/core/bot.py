@@ -343,7 +343,7 @@ class Bot:
 
         Args:
             session_id (str): the session that sends the message to the bot
-            json_file (dict): the file sent to the bot
+            file (File): the file sent to the bot
         """
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
@@ -397,7 +397,7 @@ class Bot:
         else:
             return None
 
-    def new_session(self, session_id: str, platform: Platform) -> Session:
+    def _new_session(self, session_id: str, platform: Platform) -> Session:
         """Create a new session for the bot.
 
         Args:
@@ -421,7 +421,7 @@ class Bot:
     def get_or_create_session(self, session_id: str, platform: Platform) -> Session:
         session = self.get_session(session_id)
         if session is None:
-            session = self.new_session(session_id, platform)
+            session = self._new_session(session_id, platform)
         return session
 
     def delete_session(self, session_id: str) -> None:

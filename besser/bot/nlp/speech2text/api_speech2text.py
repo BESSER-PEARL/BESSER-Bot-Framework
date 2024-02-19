@@ -1,4 +1,5 @@
 import io
+import logging
 from typing import TYPE_CHECKING
 
 import speech_recognition as sr
@@ -9,7 +10,7 @@ from besser.bot.exceptions.exceptions import SREngineNotFound
 if TYPE_CHECKING:
     from besser.bot.nlp.nlp_engine import NLPEngine
 
-# Once implemented, add the other engines here
+# TODO: Once implemented, add the other engines here
 engines = ["Google Speech Recognition"]
 
 
@@ -18,7 +19,7 @@ class APISpeech2Text(Speech2Text):
 
     The library calls to different speech recognition engines/APIs.
 
-    Currently supports: 
+    Currently, supports:
         Google Speech Recognition
 
     Args:
@@ -53,8 +54,8 @@ class APISpeech2Text(Speech2Text):
                     else:
                         text = r.recognize_google(audio_data, language=self._language)
                 
-            except:
+            except Exception as e:
                 # Currently throws an error when starting the bot
                 # Or when trying to create an audio file on firefox
-                print("Empty audio file")
+                logging.error('Empty audio file"')
         return text
