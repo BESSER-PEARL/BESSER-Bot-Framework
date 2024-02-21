@@ -15,6 +15,8 @@ Each bot state has its own intent classifier. This is because each intent classi
 intents allowed in its state. This way, you can choose the intent classifier that better suits for each state depending
 on the needs. Let's see how to configure this.
 
+.. _intent-classifier-configuration:
+
 Configuration
 -------------
 

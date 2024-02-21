@@ -1,0 +1,14 @@
+Version 1.1.0
+=============
+
+New Features
+-------------
+- New Intent Classifier: :any:`llm-intent-classifier`, supports OpenAI, HuggingFace and Replicate LLMs
+- New :any:`Intent Classifier Configuration <intent-classifier-configuration>`, assigned to each state to allow intent classifier customization for each state.
+- New attribute 'description' in Intent and Entity, can be used instead of training sentences and entity values when using
+  the LLMIntentClassifier
+
+Improvements
+-------------
+- Fixed Streamlit UI bug (when a new message was written, the scrolling position was restarted to the top of the page)
+- Added :doc:`NLP <../wiki/nlp>` docs
