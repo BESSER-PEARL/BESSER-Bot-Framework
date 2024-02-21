@@ -1,14 +1,14 @@
 Version 1.0.0
 =============
 
-New Features: 
+New Features
 -------------
-- :doc:`Speech2Text <../wiki/additional_features>` support using HF openai/whisper-* models or Google Speech Recognition API
+- :doc:`Speech2Text <../wiki/nlp/speech2text>` support using HF openai/whisper-* models or Google Speech Recognition API
 - :doc:`Sending and Receiving files <../wiki/core/files>`
 - Added support of plotly bot messages
 - Added function to stop a running bot
 
-Improvements: 
+Improvements
 -------------
 - Improved Luxembourgish preprocessing by using lemmatizer provided by https://github.com/questoph/spellux
 - More efficient behavior in case of duplicated sessions
