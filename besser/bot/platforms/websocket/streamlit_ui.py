@@ -103,7 +103,15 @@ def main():
         st.session_state['queue'] = queue.Queue()
 
     if 'websocket' not in st.session_state:
-        ws = websocket.WebSocketApp("ws://localhost:8765/",
+        try:
+            # We get the websocket host and port from the script arguments
+            host = sys.argv[1]
+            port = sys.argv[2]
+        except Exception as e:
+            # If they are not provided, we use default values
+            host = 'localhost'
+            port = '8765'
+        ws = websocket.WebSocketApp(f"ws://{host}:{port}/",
                                     on_open=on_open,
                                     on_message=on_message,
                                     on_error=on_error,

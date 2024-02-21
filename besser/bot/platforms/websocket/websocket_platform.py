@@ -107,9 +107,14 @@ class WebSocketPlatform(Platform):
         if self._use_ui:
             def run_streamlit() -> None:
                 """Run the Streamlit UI in a dedicated thread."""
-                subprocess.run(["streamlit", "run", os.path.abspath(inspect.getfile(streamlit_ui)),
-                                "--server.address", self._bot.get_property(websocket.STREAMLIT_HOST),
-                                "--server.port", str(self._bot.get_property(websocket.STREAMLIT_PORT))])
+                subprocess.run([
+                    "streamlit", "run",
+                    "--server.address", self._bot.get_property(websocket.STREAMLIT_HOST),
+                    "--server.port", str(self._bot.get_property(websocket.STREAMLIT_PORT)),
+                    os.path.abspath(inspect.getfile(streamlit_ui)),
+                    self._bot.get_property(websocket.WEBSOCKET_HOST),
+                    str(self._bot.get_property(websocket.WEBSOCKET_PORT))
+                ])
 
             thread = threading.Thread(target=run_streamlit)
             logging.info(f'Running Streamlit UI in another thread')
