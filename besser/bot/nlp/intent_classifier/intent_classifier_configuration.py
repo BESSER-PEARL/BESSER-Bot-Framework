@@ -24,12 +24,12 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
 
     Args:
         num_words (int): Max num of words to keep in the index of words
-        lower (bool): Weather to transform the sentences to lowercase or not
+        lower (bool): whether to transform the sentences to lowercase or not
         oov_token (str): Token for the out of vocabulary words
         num_epochs (int): Number of epochs to be run during training
         embedding_dim (int): Number of embedding dimensions to be used when embedding the words
         input_max_num_tokens (int): Max length for the vector representing a sentence
-        discard_oov_sentences (bool): Weather to automatically assign zero probabilities to sentences with all tokens
+        discard_oov_sentences (bool): whether to automatically assign zero probabilities to sentences with all tokens
             being oov ones or not
         check_exact_prediction_match (bool): Whether to check for exact match between the sentence to predict and one of
             the training sentences or not
@@ -39,12 +39,12 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
 
     Attributes:
         num_words (int): Max num of words to keep in the index of words
-        lower (bool): Weather to transform the sentences to lowercase or not
+        lower (bool): whether to transform the sentences to lowercase or not
         oov_token (str): Token for the out of vocabulary words
         num_epochs (int): Number of epochs to be run during training
         embedding_dim (int): Number of embedding dimensions to be used when embedding the words
         input_max_num_tokens (int): Max length for the vector representing a sentence
-        discard_oov_sentences (bool): Weather to automatically assign zero probabilities to sentences with all tokens
+        discard_oov_sentences (bool): whether to automatically assign zero probabilities to sentences with all tokens
             being oov ones or not
         check_exact_prediction_match (bool): Whether to check for exact match between the sentence to predict and one of
             the training sentences or not
@@ -96,19 +96,19 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
         llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
             huggingface-inference-api, replicate)
         parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
-        use_intent_descriptions (bool): weather to include the intent descriptions in the LLM prompt
-        use_training_sentences (bool): weather to include the intent training sentences in the LLM prompt
-        use_entity_descriptions (bool): weather to include the entity descriptions in the LLM prompt
-        use_entity_synonyms (bool): weather to include the entity value's synonyms in the LLM prompt
+        use_intent_descriptions (bool): whether to include the intent descriptions in the LLM prompt
+        use_training_sentences (bool): whether to include the intent training sentences in the LLM prompt
+        use_entity_descriptions (bool): whether to include the entity descriptions in the LLM prompt
+        use_entity_synonyms (bool): whether to include the entity value's synonyms in the LLM prompt
 
     Attributes:
         llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
             huggingface-inference-api, replicate)
         parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
-        use_intent_descriptions (bool): weather to include the intent descriptions in the LLM prompt
-        use_training_sentences (bool): weather to include the intent training sentences in the LLM prompt
-        use_entity_descriptions (bool): weather to include the entity descriptions in the LLM prompt
-        use_entity_synonyms (bool): weather to include the entity value's synonyms in the LLM prompt
+        use_intent_descriptions (bool): whether to include the intent descriptions in the LLM prompt
+        use_training_sentences (bool): whether to include the intent training sentences in the LLM prompt
+        use_entity_descriptions (bool): whether to include the entity descriptions in the LLM prompt
+        use_entity_synonyms (bool): whether to include the entity value's synonyms in the LLM prompt
     """
     OPENAI_LLM_SUITE = 'openai'
     HUGGINGFACE_LLM_SUITE = 'huggingface'
