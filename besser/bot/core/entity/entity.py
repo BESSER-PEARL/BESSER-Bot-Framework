@@ -17,22 +17,26 @@ class Entity:
         name (str): the entity's name
         base_entity (bool): weather the entity is base or not (i.e. custom)
         entries (dict[str, list[str]] or None): the entity entries. If base_entity, there are no entries (i.e. None)
+        description (str or None): a description of the entity, optional
 
     Attributes:
         name (str): The entity's name
         base_entity (bool): Weather the entity is base or not (i.e. custom)
         entries (list[EntityEntry] or None): The entity entries. If base_entity, there are no entries (i.e. None)
+        description (str or None): a description of the entity, optional
     """
 
     def __init__(
             self,
             name: str,
             base_entity: bool = False,
-            entries: dict[str, list[str]] or None = None
+            entries: dict[str, list[str]] or None = None,
+            description: str or None = None
     ):
         if entries is None:
             entries = {}
         self.name: str = name
+        self.description = description
         self.base_entity: bool = base_entity
         self.entries: list[EntityEntry] or None = None
         if not self.base_entity:
@@ -61,3 +65,22 @@ class Entity:
                 entry.processed_synonyms = []
                 for synonym in entry.synonyms:
                     entry.processed_synonyms.append(process_text(synonym, nlp_engine))
+
+    def to_json(self) -> dict:
+        """Returns the entity content in a JSON format.
+
+        Returns:
+            dict: The entity content.
+        """
+        entity_json = {
+            'base_entity': self.base_entity,
+            'entries': []
+        }
+        if not self.base_entity:
+            for entry in self.entries:
+                entry_dict = {
+                    'value': entry.value,
+                    'synonyms': entry.synonyms
+                }
+                entity_json['entries'].append(entry_dict)
+        return entity_json

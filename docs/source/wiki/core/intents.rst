@@ -89,6 +89,21 @@ Then, we can create a transition that is triggered when the user intent matches 
 
     initial_state.when_intent_matched_go_to(weather_intent, handle_weather_state)
 
+Intent descriptions
+-------------------
+
+If you want to use the :any:`llm-intent-classifier`, you can create an intent without training sentences. Instead, you
+just would need to provide a description for that intent, although you can still add training sentences to it. This is
+an example intent with a description:
+
+.. code:: python
+
+    help_intent = bot.new_intent(
+        name='help_intent',
+        description='The user needs help to be able to use the chatbot properly or to find some information'
+    )
+
+
 Reading the intent prediction results
 -------------------------------------
 

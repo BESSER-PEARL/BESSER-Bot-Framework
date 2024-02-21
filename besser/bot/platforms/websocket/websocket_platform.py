@@ -66,7 +66,7 @@ class WebSocketPlatform(Platform):
                 conn (ServerConnection): the user connection
             """
             self._connections[str(conn.id)] = conn
-            session = self._bot.new_session(str(conn.id), self)
+            session = self._bot.get_or_create_session(str(conn.id), self)
             try:
                 for payload_str in conn:
                     if not self.running:
@@ -90,6 +90,7 @@ class WebSocketPlatform(Platform):
             finally:
                 logging.info(f'Session finished')
                 self._bot.delete_session(session.id)
+                del self._connections[session.id]
         self._message_handler = message_handler
 
     def initialize(self) -> None:

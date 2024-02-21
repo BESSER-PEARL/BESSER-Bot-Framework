@@ -5,8 +5,11 @@ from besser.bot import nlp
 from besser.bot.core.property import Property
 from besser.bot.core.session import Session
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
+from besser.bot.nlp.intent_classifier.intent_classifier_configuration import LLMIntentClassifierConfiguration, \
+    SimpleIntentClassifierConfiguration
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction, \
     fallback_intent_prediction
+from besser.bot.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
@@ -57,7 +60,10 @@ class NLPEngine:
             )
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
-                self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
+                if isinstance(state.ic_config, SimpleIntentClassifierConfiguration):
+                    self._intent_classifiers[state] = SimpleIntentClassifier(self, state)
+                elif isinstance(state.ic_config, LLMIntentClassifierConfiguration):
+                    self._intent_classifiers[state] = LLMIntentClassifier(self, state)
         # TODO: Only instantiate the NER if asked (maybe a bot does not need NER), via bot properties
         self._ner = SimpleNER(self, self._bot)
         if self.get_property(nlp.NLP_STT_HF_MODEL):

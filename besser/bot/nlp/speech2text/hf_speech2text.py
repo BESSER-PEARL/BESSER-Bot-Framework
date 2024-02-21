@@ -36,6 +36,8 @@ class HFSpeech2Text(Speech2Text):
 
     def __init__(self, nlp_engine: 'NLPEngine'):
         super().__init__(nlp_engine)
+        # TODO: USE PIPELINE TO ALLOW ALL STT MODELS
+        # https://huggingface.co/docs/transformers/pipeline_tutorial
         self._model_name: str = self._nlp_engine.get_property(nlp.NLP_STT_HF_MODEL)
         self._processor = AutoProcessor.from_pretrained(self._model_name)
         self._model = TFAutoModelForSpeechSeq2Seq.from_pretrained(self._model_name)

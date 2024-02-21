@@ -13,7 +13,7 @@ Table of contents
    :maxdepth: 1
 
    wiki/core
+   wiki/nlp
    wiki/platforms
    wiki/languages
-   wiki/additional_features
    wiki/configuration_properties

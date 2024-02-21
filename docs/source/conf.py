@@ -55,11 +55,11 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_title = f"{project} {release}"
-html_logo = "img/logo.png"
-#html_theme_options = {
-#    "light_logo": "logo-light-mode.png",
-#    "dark_logo": "logo-dark-mode.png",
-#}
+# html_logo = "img/besser_logo_light.svg"
+html_theme_options = {
+    "light_logo": "besser_logo_light.svg",
+    "dark_logo": "besser_logo_dark.png"
+}
 html_theme = 'furo'
 html_static_path = ['_static']
 

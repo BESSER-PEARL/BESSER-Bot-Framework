@@ -12,6 +12,8 @@ from besser.bot.library.event.event_library import auto, intent_matched, variabl
 from besser.bot.library.event.event_template import event_template
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_body, default_fallback_body
+from besser.bot.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
+    SimpleIntentClassifierConfiguration
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 
 if TYPE_CHECKING:
@@ -28,6 +30,7 @@ class State:
         bot (Bot): the bot the state belongs to
         name (str): the state's name
         initial (bool): weather the state is initial or not
+        ic_config (IntentClassifierConfiguration): the intent classifier configuration of the state
 
     Attributes:
         _bot (Bot): The bot the state belongs to
@@ -39,6 +42,7 @@ class State:
             :class:`~besser.bot.core.session.Session`. It will be run whenever the bot tries to move to another state,
             but it can't (e.g. an intent is matched but none of the current state's transitions are triggered on that
             intent)
+        _ic_config (IntentClassifierConfiguration): the intent classifier configuration of the state
         _transition_counter (int): Count the number of transitions of this state. Used to name the transitions.
         intents (list[Intent]): The state intents, i.e. those that can be matched from a specific state
         transitions (list[Transition]): The state's transitions to other states
@@ -48,13 +52,17 @@ class State:
             self,
             bot: 'Bot',
             name: str,
-            initial: bool = False
+            initial: bool = False,
+            ic_config: IntentClassifierConfiguration or None = None
     ):
         self._bot: 'Bot' = bot
         self._name: str = name
         self._initial: bool = initial
         self._body: Callable[[Session], None] = default_body
         self._fallback_body: Callable[[Session], None] = default_fallback_body
+        if not ic_config:
+            ic_config = SimpleIntentClassifierConfiguration()
+        self._ic_config = ic_config
         self._transition_counter: int = 0
         self.intents: list[Intent] = []
         self.transitions: list[Transition] = []
@@ -73,6 +81,11 @@ class State:
     def initial(self):
         """bool: The initial status of the state (initial or non-initial)."""
         return self._initial
+
+    @property
+    def ic_config(self):
+        """IntentClassifierConfiguration: the intent classifier configuration of the state."""
+        return self._ic_config
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -304,8 +317,8 @@ class State:
             try:
                 self._fallback_body(session)
             except Exception as _:
-                logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
-                              f"bot '{self._bot.name}'. See the attached exception:")
+                logging.error(f"An error occurred while executing '{self._fallback_body.__name__}' of state "
+                              f"'{self._name}' in bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
 
     def receive_file(self, session: Session) -> None:
@@ -328,8 +341,8 @@ class State:
         try:
             self._fallback_body(session)
         except Exception as _:
-            logging.error(f"An error occurred while executing '{self._body.__name__}' of state '{self._name}' in "
-                            f"bot '{self._bot.name}'. See the attached exception:")
+            logging.error(f"An error occurred while executing '{self._fallback_body.__name__}' of state"
+                          f"'{self._name}' in bot '{self._bot.name}'. See the attached exception:")
             traceback.print_exc()
 
     def _check_next_transition(self, session: Session) -> None:

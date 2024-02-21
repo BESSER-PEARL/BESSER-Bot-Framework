@@ -13,6 +13,8 @@ from besser.bot.core.state import State
 from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
     DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound
+from besser.bot.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
+    SimpleIntentClassifierConfiguration
 from besser.bot.nlp.nlp_engine import NLPEngine
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
@@ -31,6 +33,8 @@ class Bot:
         _platforms_threads (list[threading.Thread]): The threads where the platforms are run
         _nlp_engine (NLPEngine): The bot NLP engine
         _config (ConfigParser): The bot configuration parameters
+        _default_ic_config (IntentClassifierConfiguration): the intent classifier configuration used by default for the
+            bot states
         _sessions (dict[str, Session]): The bot sessions
         _trained (bool): Weather the bot has been trained or not. It must be trained before it starts its execution.
         states (list[State]): The bot states
@@ -47,6 +51,7 @@ class Bot:
         self._platforms_threads: list[threading.Thread] = []
         self._nlp_engine = NLPEngine(self)
         self._config: ConfigParser = ConfigParser()
+        self._default_ic_config: IntentClassifierConfiguration = SimpleIntentClassifierConfiguration()
         self._sessions: dict[str, Session] = {}
         self._trained: bool = False
         self.states: list[State] = []
@@ -117,17 +122,33 @@ class Bot:
             self._config.add_section(prop.section)
         self._config.set(prop.section, prop.name, str(value))
 
-    def new_state(self, name: str, initial: bool = False) -> State:
+    def set_default_ic_config(self, ic_config: IntentClassifierConfiguration):
+        """Set the default intent classifier configuration.
+
+        Args:
+            ic_config (IntentClassifierConfiguration): the intent classifier configuration
+        """
+        self._default_ic_config = ic_config
+
+    def new_state(self,
+                  name: str,
+                  initial: bool = False,
+                  ic_config: IntentClassifierConfiguration or None = None
+                  ) -> State:
         """Create a new state in the bot.
 
         Args:
             name (str): the state name. It must be unique in the bot.
             initial (bool): weather the state is initial or not. A bot must have 1 initial state.
+            ic_config (IntentClassifierConfiguration or None): the intent classifier configuration for the state.
+                If None is provided, the bot's default one will be assigned to the state.
 
         Returns:
             State: the state
         """
-        new_state = State(self, name, initial)
+        if not ic_config:
+            ic_config = self._default_ic_config
+        new_state = State(self, name, initial, ic_config)
         if new_state in self.states:
             raise DuplicatedStateError(self, new_state)
         if initial and self.initial_state():
@@ -152,20 +173,22 @@ class Bot:
 
     def new_intent(self,
                    name: str,
-                   training_sentences: list[str],
-                   parameters: list[IntentParameter] or None = None
+                   training_sentences: list[str] or None = None,
+                   parameters: list[IntentParameter] or None = None,
+                   description: str or None = None,
                    ) -> Intent:
         """Create a new intent in the bot.
 
         Args:
             name (str): the intent name. It must be unique in the bot
-            training_sentences (list[str]): the intent's training sentences
-            parameters (list[IntentParameter] or None)
+            training_sentences (list[str] or None): the intent's training sentences
+            parameters (list[IntentParameter] or None): the intent parameters, optional
+            description (str or None): a description of the intent, optional
 
         Returns:
             Intent: the intent
         """
-        new_intent = Intent(name, training_sentences, parameters)
+        new_intent = Intent(name, training_sentences, parameters, description)
         if new_intent in self.intents:
             raise DuplicatedIntentError(self, new_intent)
         self.intents.append(new_intent)
@@ -188,7 +211,8 @@ class Bot:
     def new_entity(self,
                    name: str,
                    base_entity: bool = False,
-                   entries: dict[str, list[str]] or None = None
+                   entries: dict[str, list[str]] or None = None,
+                   description: str or None = None
                    ) -> Entity:
         """Create a new entity in the bot.
 
@@ -196,11 +220,12 @@ class Bot:
             name (str): the entity name. It must be unique in the bot
             base_entity (bool): weather the entity is a base entity or not (i.e. a custom entity)
             entries (dict[str, list[str]] or None): the entity entries
+            description (str or None): a description of the entity, optional
 
         Returns:
             Entity: the entity
         """
-        new_entity = Entity(name, base_entity, entries)
+        new_entity = Entity(name, base_entity, entries, description)
         if new_entity in self.entities:
             raise DuplicatedEntityError(self, new_entity)
         self.entities.append(new_entity)
@@ -318,7 +343,7 @@ class Bot:
 
         Args:
             session_id (str): the session that sends the message to the bot
-            json_file (dict): the file sent to the bot
+            file (File): the file sent to the bot
         """
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
@@ -335,7 +360,8 @@ class Bot:
         scenarios (e.g. when no intent is matched, the current state's fallback is run). This method simply sets the
         same fallback body to all bot states.
 
-        See also: :func:`~besser.bot.core.state.State.set_fallback_body`
+        See also:
+            :func:`~besser.bot.core.state.State.set_fallback_body`
 
         Args:
             body (Callable[[Session], None]): the fallback body
@@ -371,7 +397,7 @@ class Bot:
         else:
             return None
 
-    def new_session(self, session_id: str, platform: Platform) -> Session:
+    def _new_session(self, session_id: str, platform: Platform) -> Session:
         """Create a new session for the bot.
 
         Args:
@@ -395,7 +421,7 @@ class Bot:
     def get_or_create_session(self, session_id: str, platform: Platform) -> Session:
         session = self.get_session(session_id)
         if session is None:
-            session = self.new_session(session_id, platform)
+            session = self._new_session(session_id, platform)
         return session
 
     def delete_session(self, session_id: str) -> None:

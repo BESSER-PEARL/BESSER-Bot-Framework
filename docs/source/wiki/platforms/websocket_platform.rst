@@ -66,9 +66,21 @@ After that, you can use the platform to send different kinds of messages to the 
 
     websocket_platform.reply_plotly(session, plot)
 
+- Files:
+
+.. code:: python
+
+    file = File(file_name="name", file_type="type", file_base64="file_base64")
+    websocket_platform.reply_file(session, file)
 
 
 ⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
+
+The WebSocket platform allows the following kinds of user messages:
+
+- Text messages
+- Voice messages
+- Files
 
 API References
 --------------
@@ -78,5 +90,6 @@ API References
 - WebSocketPlatform: :class:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform`
 - WebSocketPlatform.reply(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply`
 - WebSocketPlatform.reply_dataframe(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
+- WebSocketPlatform.reply_file(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
 - WebSocketPlatform.reply_options(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
 - WebSocketPlatform.reply_plotly(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`

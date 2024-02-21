@@ -22,7 +22,7 @@ telegram_platform = bot.use_telegram_platform()
 
 # Adding a custom handler for the Telegram Application: command /help
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    session = bot.get_session(str(update.effective_chat.id))
+    session = bot.get_or_create_session(str(update.effective_chat.id), telegram_platform)
     session.reply('I am a bot, tell me something!')
 help_handler = CommandHandler('help', help)
 telegram_platform.add_handler(help_handler)

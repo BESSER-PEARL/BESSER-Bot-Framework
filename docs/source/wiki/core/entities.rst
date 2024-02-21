@@ -25,6 +25,24 @@ case, you could also get a complete list of cities in a country and create an en
 
 In :any:`intents-with-parameters`, we explain how to embed entities in intent parameters.
 
+Entity descriptions
+-------------------
+
+If you want to use the :any:`llm-intent-classifier`, you can create an entity without values. Instead, you
+just would need to provide a description for that entity, although you can still add values to it. This is
+an example intent with a description:
+
+.. code:: python
+
+    email_entity = bot.new_entity(
+        name='email_entity',
+        description='An entity containing email addresses',
+    )
+
+In this example, the LLM Intent Classifier will be able to recognize and extract email addresses from user messages.
+
+.. _base-entities:
+
 Base entities
 -------------
 

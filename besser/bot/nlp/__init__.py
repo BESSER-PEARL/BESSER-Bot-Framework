@@ -51,6 +51,10 @@ NLP_PRE_PROCESSING = Property(SECTION_NLP, 'nlp.pre_processing', bool, True)
 Whether to use text pre-processing or not. `Stemming <https://en.wikipedia.org/wiki/Stemming>`_ is the process of reducing
 inflected (or sometimes derived) words to their word stem, base or root form.
 
+Currently, only :class:`~besser.bot.nlp.intent_classifier.simple_intent_classifier.SimpleIntentClassifier` and
+:class:`~besser.bot.nlp.ner.simple_ner.SimpleNER` use this property. If
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier` is used, this property is ignored.
+
 For example 'games' and 'gaming' are stemmed to 'game'.
 
 It can improve the NLP process by generalizing user inputs.
@@ -88,10 +92,82 @@ default value: ``None``
 
 NLP_STT_SR_ENGINE = Property(SECTION_NLP, 'nlp.speech2text.sr.engine', str, None)
 """
-The name of the transcription engine for the Speech Recognition bot component. If none is provided, the component will not be 
-activated.
+The name of the transcription engine for the Speech Recognition bot component. If none is provided, the component will
+not be activated.
 
 name: ``nlp.speech2text.sr.engine``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+OPENAI_API_KEY = Property(SECTION_NLP, 'nlp.openai.api_key', str, None)
+"""
+The OpenAI API key, necessary to use an OpenAI LLM in
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+
+name: ``nlp.openai.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+NLP_INTENT_OPENAI_MODEL_NAME = Property(SECTION_NLP, 'nlp.intent.openai.model_name', str, None)
+"""
+The name of the OpenAI model that wants to be used with
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+
+name: ``nlp.intent.openai.model_name``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+HF_API_KEY = Property(SECTION_NLP, 'nlp.hf.api_key', str, None)
+"""
+The HuggingFace (Inference) API key, necessary to use a HuggingFace Inference API LLM in
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+
+name: ``nlp.hf.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+NLP_INTENT_HF_MODEL_NAME = Property(SECTION_NLP, 'nlp.intent.hf.model_name', str, None)
+"""
+The name of the HuggingFace model that wants to be used with
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+
+name: ``nlp.intent.hf.model_name``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+REPLICATE_API_KEY = Property(SECTION_NLP, 'nlp.replicate.api_key', str, None)
+"""
+The Replicate API key, necessary to use a Replicate LLM in
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+
+name: ``nlp.replicate.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+NLP_INTENT_REPLICATE_MODEL_NAME = Property(SECTION_NLP, 'nlp.intent.replicate.model_name', str, None)
+"""
+The name of the Replicate model that wants to be used with
+:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+
+name: ``nlp.intent.replicate.model_name``
 
 type: ``str``
 
