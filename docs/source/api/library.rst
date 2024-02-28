@@ -4,6 +4,7 @@ library
 
 .. toctree::
 
+   library/metabot
    library/base_entities
    library/event_library
    library/event_template

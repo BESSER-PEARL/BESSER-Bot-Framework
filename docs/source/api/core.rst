@@ -14,3 +14,5 @@ core
    core/entity_entry
    core/intent
    core/intent_parameter
+   core/meta_bot
+   core/meta_session

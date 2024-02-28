@@ -26,6 +26,7 @@ class Bot:
 
     Args:
         name (str): The bot's name
+        description (str or None): An optional bot description
 
     Attributes:
         _name (str): The bot name
@@ -37,6 +38,7 @@ class Bot:
             bot states
         _sessions (dict[str, Session]): The bot sessions
         _trained (bool): Weather the bot has been trained or not. It must be trained before it starts its execution.
+        description (str or None): A description of the bot
         states (list[State]): The bot states
         intents (list[Intent]): The bot intents
         entities (list[Entity]): The bot entities
@@ -54,6 +56,7 @@ class Bot:
         self._default_ic_config: IntentClassifierConfiguration = SimpleIntentClassifierConfiguration()
         self._sessions: dict[str, Session] = {}
         self._trained: bool = False
+        self.description: str or None = None
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
@@ -74,6 +77,15 @@ class Bot:
     def config(self):
         """ConfigParser: The bot configuration parameters."""
         return self._config
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self._name == other.name
+        else:
+            return False
+
+    def __hash__(self):
+        return hash(self._name)
 
     def load_properties(self, path: str) -> None:
         """Read a properties file and store its properties in the bot configuration.
@@ -327,7 +339,7 @@ class Bot:
             session_id (str): the session that sends the message to the bot
             message (str): the message sent to the bot
         """
-        session = self._sessions[session_id]
+        session = self.get_session(session_id)
         # TODO: Raise exception SessionNotFound
         session.message = message
         session.predicted_intent = self._nlp_engine.predict_intent(session)

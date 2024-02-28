@@ -78,11 +78,27 @@ class BodySignatureError(Exception):
         super().__init__(message)
 
 
+class MetaBotBodySignatureError(Exception):
+
+    def __init__(self, metabot, body, body_template_signature, body_signature):
+        message = f"Expected parameters in body method '{body.__name__}' in metabot '{metabot.name}' " \
+                  f"are {body_template_signature}, got {body_signature} instead"
+        super().__init__(message)
+
+
 class EventSignatureError(Exception):
 
     def __init__(self, bot, event, event_template_signature, event_signature):
         message = f"Expected parameters in event method '{event.__name__}' in bot " \
                   f"'{bot.name}' are {event_template_signature}, got {event_signature} instead"
+        super().__init__(message)
+
+
+class MetaBotPredictionSignatureError(Exception):
+
+    def __init__(self, metabot, function, function_template_signature, function_signature):
+        message = f"Expected parameters in prediction function '{function.__name__}' in metabot '{metabot.name}' " \
+                  f"are {function_template_signature}, got {function_signature} instead"
         super().__init__(message)
 
 
