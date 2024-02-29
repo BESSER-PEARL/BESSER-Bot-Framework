@@ -249,6 +249,22 @@ class TelegramPlatform(Platform):
                           message=file_dict)
         self._send(session.id, payload)
 
+    def reply_location(self, session: Session, latitude: str, longitude: str) -> None:
+        """Send a location reply to a specific user.
+
+        Args:
+            session (Session): the user session
+            latitude (str): the latitude of the location
+            longitude (str): the longitude of the location
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        location_dict = {'latitude': latitude, 'longitude': longitude}
+        session.chat_history.append((str(location_dict), 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_LOCATION,
+                          message=location_dict)
+        self._send(session.id, payload)
+
     def add_handler(self, handler: BaseHandler) -> None:
         """
         Add a custom Telegram handler for the bot.
