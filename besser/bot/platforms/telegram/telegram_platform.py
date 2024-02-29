@@ -47,7 +47,7 @@ class TelegramPlatform(Platform):
             text = update.message.text
             self._bot.receive_message(session.id, text)
 
-        message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), message)
+        message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), message, block=False)
         self._handlers.append(message_handler)
 
         # Handler for reset command
@@ -55,7 +55,7 @@ class TelegramPlatform(Platform):
             session_id = str(update.effective_chat.id)
             self._bot.reset(session_id)
 
-        reset_handler = CommandHandler('reset', reset)
+        reset_handler = CommandHandler('reset', reset, block=False)
         self._handlers.append(reset_handler)
 
         # Handler for voice messages
@@ -67,7 +67,7 @@ class TelegramPlatform(Platform):
             text = self._bot.nlp_engine.speech2text(bytes(voice_data))
             self._bot.receive_message(session.id, text)
 
-        voice_handler = MessageHandler(filters.VOICE, voice)
+        voice_handler = MessageHandler(filters.VOICE, voice, block=False)
         self._handlers.append(voice_handler)
 
         # Handler for file messages
@@ -81,7 +81,7 @@ class TelegramPlatform(Platform):
                         file_base64=base64_data)
             self._bot.receive_file(session.id, file=file)
 
-        file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file)
+        file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file, block=False)
         self._handlers.append(file_handler)
 
         # Handler for image messages
@@ -95,7 +95,7 @@ class TelegramPlatform(Platform):
                         file_base64=base64_data)
             self._bot.receive_file(session.id, file=file)
 
-        image_handler = MessageHandler(filters.PHOTO, image)
+        image_handler = MessageHandler(filters.PHOTO, image, block=False)
         self._handlers.append(image_handler)
 
     @property
@@ -106,7 +106,7 @@ class TelegramPlatform(Platform):
     def initialize(self) -> None: # Hide Info logging messages
         logging.getLogger("httpx").setLevel(logging.WARNING)
         self._telegram_app = ApplicationBuilder().token(
-            self._bot.get_property(telegram.TELEGRAM_TOKEN)).build()
+            self._bot.get_property(telegram.TELEGRAM_TOKEN)).concurrent_updates(True).build()
         self._telegram_app.add_handlers(self._handlers)
         self._event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._event_loop)
