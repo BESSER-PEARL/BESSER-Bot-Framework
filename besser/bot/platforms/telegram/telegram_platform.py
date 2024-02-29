@@ -21,8 +21,9 @@ if TYPE_CHECKING:
 class TelegramPlatform(Platform):
     """The Telegram Platform allows a bot to interact via Telegram.
 
-    It includes a `message handler` to handle all text inputs except commands (i.e. messages starting with '/')
-    and a `reset handler`, triggered by the `/reset` command, to reset the bot session.
+    It includes a `message handler` to handle all text inputs except commands (i.e. messages starting with '/'),
+    `voice`, `file` and `image` handlers and a `reset handler`, triggered by the `/reset` command, to reset the bot
+    session.
 
     Args:
         bot (Bot): the bot the platform belongs to
@@ -43,9 +44,9 @@ class TelegramPlatform(Platform):
         # Handler for text messages
         async def message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
-            session = self._bot.get_or_create_session(session_id, self)
+            session = await asyncio.to_thread(self._bot.get_or_create_session, session_id, self)
             text = update.message.text
-            self._bot.receive_message(session.id, text)
+            await asyncio.to_thread(self._bot.receive_message, session.id, text)
 
         message_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), message, block=False)
         self._handlers.append(message_handler)
@@ -53,7 +54,7 @@ class TelegramPlatform(Platform):
         # Handler for reset command
         async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
-            self._bot.reset(session_id)
+            await asyncio.to_thread(self._bot.reset, session_id)
 
         reset_handler = CommandHandler('reset', reset, block=False)
         self._handlers.append(reset_handler)
@@ -61,11 +62,11 @@ class TelegramPlatform(Platform):
         # Handler for voice messages
         async def voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
-            session = self._bot.get_or_create_session(session_id, self)
+            session = await asyncio.to_thread(self._bot.get_or_create_session, session_id, self)
             voice_file = await context.bot.get_file(update.message.voice.file_id)
             voice_data = await voice_file.download_as_bytearray()
             text = self._bot.nlp_engine.speech2text(bytes(voice_data))
-            self._bot.receive_message(session.id, text)
+            await asyncio.to_thread(self._bot.receive_message, session.id, text)
 
         voice_handler = MessageHandler(filters.VOICE, voice, block=False)
         self._handlers.append(voice_handler)
@@ -73,13 +74,15 @@ class TelegramPlatform(Platform):
         # Handler for file messages
         async def file(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
-            session = self._bot.get_or_create_session(session_id, self)
+            session = await asyncio.to_thread(self._bot.get_or_create_session, session_id, self)
             file_object = await context.bot.get_file(update.message.document.file_id)
             file_data = await file_object.download_as_bytearray()
             base64_data = base64.b64encode(file_data).decode()
-            file = File(file_name=update.message.document.file_name, file_type=update.message.document.mime_type, 
-                        file_base64=base64_data)
-            self._bot.receive_file(session.id, file=file)
+            f = File(
+                file_name=update.message.document.file_name, file_type=update.message.document.mime_type,
+                file_base64=base64_data
+            )
+            await asyncio.to_thread(self._bot.receive_file, session.id, file=f)
 
         file_handler = MessageHandler(filters.ATTACHMENT & (~filters.PHOTO), file, block=False)
         self._handlers.append(file_handler)
@@ -87,13 +90,15 @@ class TelegramPlatform(Platform):
         # Handler for image messages
         async def image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             session_id = str(update.effective_chat.id)
-            session = self._bot.get_or_create_session(session_id, self)
+            session = await asyncio.to_thread(self._bot.get_or_create_session, session_id, self)
             image_object = await context.bot.get_file(update.message.photo[-1].file_id)
             image_data = await image_object.download_as_bytearray()
             base64_data = base64.b64encode(image_data).decode()
-            file = File(file_name=update.message.photo[-1].file_id + ".jpg", file_type="image/jpeg", 
-                        file_base64=base64_data)
-            self._bot.receive_file(session.id, file=file)
+            f = File(
+                file_name=update.message.photo[-1].file_id + ".jpg", file_type="image/jpeg",
+                file_base64=base64_data
+            )
+            await asyncio.to_thread(self._bot.receive_file, session.id, file=f)
 
         image_handler = MessageHandler(filters.PHOTO, image, block=False)
         self._handlers.append(image_handler)
@@ -103,7 +108,8 @@ class TelegramPlatform(Platform):
         """telegram.ext._application.Application: The Telegram app."""
         return self._telegram_app
 
-    def initialize(self) -> None: # Hide Info logging messages
+    def initialize(self) -> None:
+        # Hide Info logging messages
         logging.getLogger("httpx").setLevel(logging.WARNING)
         self._telegram_app = ApplicationBuilder().token(
             self._bot.get_property(telegram.TELEGRAM_TOKEN)).concurrent_updates(True).build()
@@ -122,18 +128,42 @@ class TelegramPlatform(Platform):
         logging.info(f'{self._bot.name}\'s TelegramPlatform stopped')
 
     def _send(self, session_id: str, payload: Payload) -> None:
-        loop = asyncio.get_event_loop()
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_message(chat_id=session_id,
-                                                                                 text=payload.message), loop)
+            asyncio.run_coroutine_threadsafe(
+                self._telegram_app.bot.send_message(
+                    chat_id=session_id,
+                    text=payload.message
+                ),
+                self._event_loop
+            )
         elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_document(
-                chat_id=session_id, document=base64.b64decode(payload.message["base64"]),
-                filename=payload.message["name"], caption=payload.message["caption"]), loop)
+            asyncio.run_coroutine_threadsafe(
+                self._telegram_app.bot.send_document(
+                    chat_id=session_id,
+                    document=base64.b64decode(payload.message["base64"]),
+                    filename=payload.message["name"],
+                    caption=payload.message["caption"]
+                ),
+                self._event_loop
+            )
         elif payload.action == PayloadAction.BOT_REPLY_IMAGE.value:
-            asyncio.run_coroutine_threadsafe(self._telegram_app.bot.send_photo(
-                chat_id=session_id, photo=base64.b64decode(payload.message["base64"]),
-                caption=payload.message["caption"]), loop)
+            asyncio.run_coroutine_threadsafe(
+                self._telegram_app.bot.send_photo(
+                    chat_id=session_id,
+                    photo=base64.b64decode(payload.message["base64"]),
+                    caption=payload.message["caption"]
+                ),
+                self._event_loop
+            )
+        elif payload.action == PayloadAction.BOT_REPLY_LOCATION.value:
+            asyncio.run_coroutine_threadsafe(
+                self._telegram_app.bot.send_location(
+                    chat_id=session_id,
+                    latitude=payload.message['latitude'],
+                    longitude=payload.message['longitude'],
+                ),
+                self._event_loop
+            )
 
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
