@@ -117,6 +117,24 @@ class TelegramPlatform(Platform):
         image_handler = MessageHandler(filters.PHOTO, image, block=False)
         self._handlers.append(image_handler)
 
+    def __getattr__(self, name: str):
+        """All methods in :class:`telegram.ext._extbot.ExtBot` (that extends :class:`telegram._bot.Bot`) can be used
+        from the TelegramPlatform.
+
+        Args:
+            name (str): the name of the function to call
+        """
+        def method_proxy(*args, **kwargs):
+            # Forward the method call to the (telegram) bot
+            method = getattr(self._telegram_app.bot, name, None)
+            if method:
+                future = asyncio.run_coroutine_threadsafe(method(*args, **kwargs), self._event_loop)
+                _wait_future(future)
+                return future.result()
+            else:
+                raise AttributeError(f"'{self._telegram_app.bot.__class__}' object has no attribute '{name}'")
+        return method_proxy
+
     @property
     def telegram_app(self):
         """telegram.ext._application.Application: The Telegram app."""
