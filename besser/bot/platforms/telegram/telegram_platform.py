@@ -1,6 +1,8 @@
 import asyncio
 import base64
 import logging
+import threading
+from concurrent.futures import Future
 from typing import TYPE_CHECKING
 
 from telegram import Update
@@ -16,6 +18,18 @@ from besser.bot.platforms.platform import Platform
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
+
+
+def _wait_future(future: Future):
+    """
+    Wait for a future (an asynchronous coroutine) to be finished.
+
+    Args:
+        future (Future): the Future to wait for
+    """
+    event = threading.Event()
+    future.add_done_callback((lambda ft: event.set()))
+    event.wait()
 
 
 class TelegramPlatform(Platform):
@@ -129,7 +143,7 @@ class TelegramPlatform(Platform):
 
     def _send(self, session_id: str, payload: Payload) -> None:
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
-            asyncio.run_coroutine_threadsafe(
+            future = asyncio.run_coroutine_threadsafe(
                 self._telegram_app.bot.send_message(
                     chat_id=session_id,
                     text=payload.message
@@ -137,7 +151,7 @@ class TelegramPlatform(Platform):
                 self._event_loop
             )
         elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
-            asyncio.run_coroutine_threadsafe(
+            future = asyncio.run_coroutine_threadsafe(
                 self._telegram_app.bot.send_document(
                     chat_id=session_id,
                     document=base64.b64decode(payload.message["base64"]),
@@ -147,7 +161,7 @@ class TelegramPlatform(Platform):
                 self._event_loop
             )
         elif payload.action == PayloadAction.BOT_REPLY_IMAGE.value:
-            asyncio.run_coroutine_threadsafe(
+            future = asyncio.run_coroutine_threadsafe(
                 self._telegram_app.bot.send_photo(
                     chat_id=session_id,
                     photo=base64.b64decode(payload.message["base64"]),
@@ -156,7 +170,7 @@ class TelegramPlatform(Platform):
                 self._event_loop
             )
         elif payload.action == PayloadAction.BOT_REPLY_LOCATION.value:
-            asyncio.run_coroutine_threadsafe(
+            future = asyncio.run_coroutine_threadsafe(
                 self._telegram_app.bot.send_location(
                     chat_id=session_id,
                     latitude=payload.message['latitude'],
@@ -164,6 +178,10 @@ class TelegramPlatform(Platform):
                 ),
                 self._event_loop
             )
+        else:
+            future = None
+        if future is not None:
+            _wait_future(future)
 
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
