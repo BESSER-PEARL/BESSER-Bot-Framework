@@ -249,7 +249,7 @@ class TelegramPlatform(Platform):
                           message=file_dict)
         self._send(session.id, payload)
 
-    def reply_location(self, session: Session, latitude: str, longitude: str) -> None:
+    def reply_location(self, session: Session, latitude: float, longitude: float) -> None:
         """Send a location reply to a specific user.
 
         Args:
