@@ -149,6 +149,8 @@ class WebSocketPlatform(Platform):
             session (Session): the user session
             file (File): the file to send
         """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
         session.chat_history.append((file.get_json_string(), 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
                           message=file.to_dict())
@@ -161,6 +163,8 @@ class WebSocketPlatform(Platform):
             session (Session): the user session
             df (pandas.DataFrame): the message to send to the user
         """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
         message = df.to_json()
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_DF,
@@ -174,6 +178,8 @@ class WebSocketPlatform(Platform):
             session (Session): the user session
             options (list[str]): the list of options to send to the user
         """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
         d = {}
         for i, button in enumerate(options):
             d[i] = button
@@ -190,8 +196,26 @@ class WebSocketPlatform(Platform):
             session (Session): the user session
             plot (plotly.graph_objs.Figure): the message to send to the user
         """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
         message = plotly.io.to_json(plot)
         session.chat_history.append((message, 0))
         payload = Payload(action=PayloadAction.BOT_REPLY_PLOTLY,
                           message=message)
+        self._send(session.id, payload)
+
+    def reply_location(self, session: Session, latitude: float, longitude: float) -> None:
+        """Send a location reply to a specific user.
+
+        Args:
+            session (Session): the user session
+            latitude (str): the latitude of the location
+            longitude (str): the longitude of the location
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        location_dict = {'latitude': latitude, 'longitude': longitude}
+        session.chat_history.append((str(location_dict), 0))
+        payload = Payload(action=PayloadAction.BOT_REPLY_LOCATION,
+                          message=location_dict)
         self._send(session.id, payload)

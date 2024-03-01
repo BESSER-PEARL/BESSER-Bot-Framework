@@ -66,6 +66,12 @@ def main():
         elif payload.action == PayloadAction.BOT_REPLY_PLOTLY.value:
             content = plotly.io.from_json(payload.message)
             t = 'plotly'
+        elif payload.action == PayloadAction.BOT_REPLY_LOCATION.value:
+            content = {
+                'latitude': [payload.message['latitude']],
+                'longitude': [payload.message['longitude']]
+            }
+            t = 'location'
         elif payload.action == PayloadAction.BOT_REPLY_OPTIONS.value:
             t = 'options'
             d = json.loads(payload.message)
@@ -175,6 +181,8 @@ def main():
                 file_data = base64.b64decode(file.base64.encode('utf-8'))
                 st.download_button(label='Download ' + file_name, file_name=file_name, data=file_data, mime=file_type,
                                    key=file_name + str(time.time()))
+            elif message.type == 'location':
+                st.map(message.content)
             else:
                 st.write(message.content)
 
@@ -203,6 +211,9 @@ def main():
                 file_data = base64.b64decode(file.base64.encode('utf-8'))
                 st.download_button(label='Download ' + file_name, file_name=file_name, data=file_data, mime=file_type,
                                    key=file_name + str(time.time()))
+        elif message.type == 'location':
+            st.session_state['history'].append(message)
+            st.map(message.content)
         else:
             st.session_state['history'].append(message)
             with st.chat_message("assistant"):
