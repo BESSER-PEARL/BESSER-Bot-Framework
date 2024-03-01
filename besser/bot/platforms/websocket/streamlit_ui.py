@@ -45,7 +45,13 @@ def session_monitoring(interval: int):
 
 
 def main():
-    st.header("Chat Demo")
+    try:
+        # We get the websocket host and port from the script arguments
+        bot_name = sys.argv[1]
+    except Exception as e:
+        # If they are not provided, we use default values
+        bot_name = 'Chatbot Demo'
+    st.header(bot_name)
     st.markdown("[Github](https://github.com/BESSER-PEARL/BESSER-Bot-Framework)")
     # User input component. Must be declared before history writing
     user_input = st.chat_input("What is up?")
@@ -111,8 +117,8 @@ def main():
     if 'websocket' not in st.session_state:
         try:
             # We get the websocket host and port from the script arguments
-            host = sys.argv[1]
-            port = sys.argv[2]
+            host = sys.argv[2]
+            port = sys.argv[3]
         except Exception as e:
             # If they are not provided, we use default values
             host = 'localhost'

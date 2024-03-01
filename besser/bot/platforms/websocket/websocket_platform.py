@@ -112,6 +112,7 @@ class WebSocketPlatform(Platform):
                     "--server.address", self._bot.get_property(websocket.STREAMLIT_HOST),
                     "--server.port", str(self._bot.get_property(websocket.STREAMLIT_PORT)),
                     os.path.abspath(inspect.getfile(streamlit_ui)),
+                    self._bot.name,
                     self._bot.get_property(websocket.WEBSOCKET_HOST),
                     str(self._bot.get_property(websocket.WEBSOCKET_PORT))
                 ])
