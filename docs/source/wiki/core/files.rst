@@ -23,7 +23,8 @@ With this, we want to allow users to choose the option that is easiest to them a
 Thus, users can choose whether to set file_base64, file_path or file_data.
 
 Receiving and Sending Files
----------------
+---------------------------
+
 If a developer wants to add the handling of receiving files to a platform, apart from the platform specific
 implementation (that is independent of the BBF), the received file will need to be transformed into a file object
 and forwarded to the running bot as follows ("bot" will be the running bot instance that should be available
