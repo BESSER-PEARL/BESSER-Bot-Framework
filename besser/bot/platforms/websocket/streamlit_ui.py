@@ -45,7 +45,13 @@ def session_monitoring(interval: int):
 
 
 def main():
-    st.header("Chat Demo")
+    try:
+        # We get the websocket host and port from the script arguments
+        bot_name = sys.argv[1]
+    except Exception as e:
+        # If they are not provided, we use default values
+        bot_name = 'Chatbot Demo'
+    st.header(bot_name)
     st.markdown("[Github](https://github.com/BESSER-PEARL/BESSER-Bot-Framework)")
     # User input component. Must be declared before history writing
     user_input = st.chat_input("What is up?")
@@ -66,6 +72,12 @@ def main():
         elif payload.action == PayloadAction.BOT_REPLY_PLOTLY.value:
             content = plotly.io.from_json(payload.message)
             t = 'plotly'
+        elif payload.action == PayloadAction.BOT_REPLY_LOCATION.value:
+            content = {
+                'latitude': [payload.message['latitude']],
+                'longitude': [payload.message['longitude']]
+            }
+            t = 'location'
         elif payload.action == PayloadAction.BOT_REPLY_OPTIONS.value:
             t = 'options'
             d = json.loads(payload.message)
@@ -105,8 +117,8 @@ def main():
     if 'websocket' not in st.session_state:
         try:
             # We get the websocket host and port from the script arguments
-            host = sys.argv[1]
-            port = sys.argv[2]
+            host = sys.argv[2]
+            port = sys.argv[3]
         except Exception as e:
             # If they are not provided, we use default values
             host = 'localhost'
@@ -175,6 +187,8 @@ def main():
                 file_data = base64.b64decode(file.base64.encode('utf-8'))
                 st.download_button(label='Download ' + file_name, file_name=file_name, data=file_data, mime=file_type,
                                    key=file_name + str(time.time()))
+            elif message.type == 'location':
+                st.map(message.content)
             else:
                 st.write(message.content)
 
@@ -203,6 +217,9 @@ def main():
                 file_data = base64.b64decode(file.base64.encode('utf-8'))
                 st.download_button(label='Download ' + file_name, file_name=file_name, data=file_data, mime=file_type,
                                    key=file_name + str(time.time()))
+        elif message.type == 'location':
+            st.session_state['history'].append(message)
+            st.map(message.content)
         else:
             st.session_state['history'].append(message)
             with st.chat_message("assistant"):
