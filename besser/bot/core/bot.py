@@ -383,7 +383,7 @@ class Bot:
         logging.info(f'{self._name} training finished')
         self._trained = True
 
-    def get_session(self, session_id: str) -> Session or None:
+    def _get_session(self, session_id: str) -> Session or None:
         """Get a bot session.
 
         Args:
@@ -419,7 +419,7 @@ class Bot:
         return session
 
     def get_or_create_session(self, session_id: str, platform: Platform) -> Session:
-        session = self.get_session(session_id)
+        session = self._get_session(session_id)
         if session is None:
             session = self._new_session(session_id, platform)
         return session

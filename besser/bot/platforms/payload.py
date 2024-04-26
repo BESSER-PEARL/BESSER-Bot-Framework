@@ -46,6 +46,11 @@ class PayloadAction(Enum):
     the user should select 1 of them.
     """
 
+    BOT_REPLY_LOCATION = 'bot_reply_location'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a location, which is a
+    dictionary composed by a latitude and a longitude.
+    """
+
 
 class Payload:
     """Represents a payload object used for encoding and decoding messages between a bot and any other external agent.
@@ -56,7 +61,7 @@ class Payload:
         """Decode a JSON payload string into a :class:`Payload` object.
 
         Args:
-            payload_str (str): A JSON-encoded payload string.
+            payload_str (str or dict): A JSON-encoded payload string.
 
         Returns:
             Payload or None: A Payload object if the decoding is successful,
@@ -70,9 +75,9 @@ class Payload:
                 return Payload(action, payload_message)
         return None
 
-    def __init__(self, action: PayloadAction, message: str = None):
+    def __init__(self, action: PayloadAction, message: str or dict = None):
         self.action: str = action.value
-        self.message: str = message
+        self.message: str or dict = message
 
 
 class PayloadEncoder(json.JSONEncoder):
