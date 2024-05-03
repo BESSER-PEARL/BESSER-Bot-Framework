@@ -4,6 +4,8 @@ import threading
 from configparser import ConfigParser
 from typing import Any, Callable
 
+from besser.bot.db import DB_MONITORING
+from besser.bot.db.monitoring_db import MonitoringDB
 from besser.bot.core.entity.entity import Entity
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
@@ -36,7 +38,9 @@ class Bot:
         _default_ic_config (IntentClassifierConfiguration): the intent classifier configuration used by default for the
             bot states
         _sessions (dict[str, Session]): The bot sessions
-        _trained (bool): Weather the bot has been trained or not. It must be trained before it starts its execution.
+        _trained (bool): Whether the bot has been trained or not. It must be trained before it starts its execution.
+        _monitoring_db (MonitoringDB): The monitoring component of the bot that communicates with a database to store
+            usage information for later visualization or analysis
         states (list[State]): The bot states
         intents (list[Intent]): The bot intents
         entities (list[Entity]): The bot entities
@@ -54,6 +58,7 @@ class Bot:
         self._default_ic_config: IntentClassifierConfiguration = SimpleIntentClassifierConfiguration()
         self._sessions: dict[str, Session] = {}
         self._trained: bool = False
+        self._monitoring_db: MonitoringDB = None
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
@@ -290,6 +295,12 @@ class Bot:
             self.train()
         if not self._trained:
             raise BotNotTrainedError(self)
+        if self.get_property(DB_MONITORING):
+            if not self._monitoring_db:
+                self._monitoring_db = MonitoringDB()
+            self._monitoring_db.connect_to_db(self)
+            if self._monitoring_db.connected:
+                self._monitoring_db.initialize_db()
         self._run_platforms()
         if sleep:
             idle = threading.Event()
@@ -298,6 +309,8 @@ class Bot:
     def stop(self) -> None:
         """Stop the bot execution."""
         self._stop_platforms()
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            self._monitoring_db.close_connection()
 
     def reset(self, session_id: str) -> Session or None:
         """Reset the bot current state and memory for the specified session. Then, restart the bot again for this session.
@@ -331,6 +344,7 @@ class Bot:
         # TODO: Raise exception SessionNotFound
         session.message = message
         session.predicted_intent = self._nlp_engine.predict_intent(session)
+        self._monitoring_db_insert_intent_prediction(session)
         logging.info(f'Received message: {message}')
         logging.info(f'Detected intent: {session.predicted_intent.intent.name}')
         for parameter in session.predicted_intent.matched_parameters:
@@ -422,6 +436,7 @@ class Bot:
         session = self._get_session(session_id)
         if session is None:
             session = self._new_session(session_id, platform)
+            self._monitoring_db_insert_session(session)
         return session
 
     def delete_session(self, session_id: str) -> None:
@@ -454,3 +469,23 @@ class Bot:
         telegram_platform = TelegramPlatform(self)
         self._platforms.append(telegram_platform)
         return telegram_platform
+
+    def _monitoring_db_insert_session(self, session: Session) -> None:
+        """Insert a session record into the monitoring database.
+
+        Args:
+            session (Session): the session of the current user
+        """
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            thread = threading.Thread(target=self._monitoring_db.insert_session, args=(session,))
+            thread.start()
+
+    def _monitoring_db_insert_intent_prediction(self, session: Session) -> None:
+        """Insert an intent prediction record into the monitoring database.
+
+        Args:
+            session (Session): the session of the current user
+        """
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            thread = threading.Thread(target=self._monitoring_db.insert_intent_prediction, args=(session,))
+            thread.start()
