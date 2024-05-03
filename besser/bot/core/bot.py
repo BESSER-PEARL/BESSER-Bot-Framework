@@ -144,7 +144,7 @@ class Bot:
 
         Args:
             name (str): the state name. It must be unique in the bot.
-            initial (bool): weather the state is initial or not. A bot must have 1 initial state.
+            initial (bool): whether the state is initial or not. A bot must have 1 initial state.
             ic_config (IntentClassifierConfiguration or None): the intent classifier configuration for the state.
                 If None is provided, the bot's default one will be assigned to the state.
 
@@ -223,7 +223,7 @@ class Bot:
 
         Args:
             name (str): the entity name. It must be unique in the bot
-            base_entity (bool): weather the entity is a base entity or not (i.e. a custom entity)
+            base_entity (bool): whether the entity is a base entity or not (i.e. a custom entity)
             entries (dict[str, list[str]] or None): the entity entries
             description (str or None): a description of the entity, optional
 
@@ -288,8 +288,8 @@ class Bot:
         """Start the execution of the bot.
 
         Args:
-            train (bool): weather to train the bot or not
-            sleep (bool): weather to sleep after running the bot or not, which means that this function will not return
+            train (bool): whether to train the bot or not
+            sleep (bool): whether to sleep after running the bot or not, which means that this function will not return
         """
         if train:
             self.train()

@@ -15,13 +15,13 @@ class Entity:
 
     Args:
         name (str): the entity's name
-        base_entity (bool): weather the entity is base or not (i.e. custom)
+        base_entity (bool): whether the entity is base or not (i.e. custom)
         entries (dict[str, list[str]] or None): the entity entries. If base_entity, there are no entries (i.e. None)
         description (str or None): a description of the entity, optional
 
     Attributes:
         name (str): The entity's name
-        base_entity (bool): Weather the entity is base or not (i.e. custom)
+        base_entity (bool): Whether the entity is base or not (i.e. custom)
         entries (list[EntityEntry] or None): The entity entries. If base_entity, there are no entries (i.e. None)
         description (str or None): a description of the entity, optional
     """

@@ -37,13 +37,13 @@ class WebSocketPlatform(Platform):
 
     Args:
         bot (Bot): the bot the platform belongs to
-        use_ui (bool): weather to use the built-in UI or not
+        use_ui (bool): whether to use the built-in UI or not
 
     Attributes:
         _bot (Bot): The bot the platform belongs to
         _host (str): The WebSocket host address (e.g. `localhost`)
         _port (int): The WebSocket port (e.g. `8765`)
-        _use_ui (bool): Weather to use the built-in UI or not
+        _use_ui (bool): Whether to use the built-in UI or not
         _connections (dict[str, ServerConnection]): The list of active connections (i.e. users connected to the bot)
         _websocket_server (WebSocketServer or None): The WebSocket server instance
         _message_handler (Callable[[ServerConnection], None]): The function that handles the user connections
@@ -120,7 +120,7 @@ class WebSocketPlatform(Platform):
             thread = threading.Thread(target=run_streamlit)
             logging.info(f'Running Streamlit UI in another thread')
             thread.start()
-            #
+            # To avoid re-running the streamlit process, set self._use_ui to False
             self._use_ui = False
         logging.info(f'{self._bot.name}\'s WebSocketPlatform starting at ws://{self._host}:{self._port}')
         self.running = True
@@ -132,8 +132,9 @@ class WebSocketPlatform(Platform):
         logging.info(f'{self._bot.name}\'s WebSocketPlatform stopped')
 
     def _send(self, session_id, payload: Payload) -> None:
-        conn = self._connections[session_id]
-        conn.send(json.dumps(payload, cls=PayloadEncoder))
+        if session_id in self._connections:
+            conn = self._connections[session_id]
+            conn.send(json.dumps(payload, cls=PayloadEncoder))
 
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
