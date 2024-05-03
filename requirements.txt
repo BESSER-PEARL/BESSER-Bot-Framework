@@ -7,6 +7,7 @@ numpy==1.26.1
 openai==1.8.0
 pandas==2.1.1
 plotly==5.18.0
+psycopg2-binary==2.9.9
 python-telegram-bot==20.6
 replicate==0.23.1
 requests==2.31.0
@@ -14,6 +15,7 @@ snowballstemmer==2.2.0
 spacy==3.7.2
 SpeechRecognition==3.10.0
 spellux @ git+https://github.com/Aran30/spellux
+sqlalchemy==2.0.29
 streamlit==1.27.2
 tensorflow==2.14.0
 text2num==2.5.0
