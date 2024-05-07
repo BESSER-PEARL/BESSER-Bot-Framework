@@ -4,6 +4,7 @@ import threading
 from configparser import ConfigParser
 from typing import Any, Callable
 
+from besser.bot.core.transition import Transition
 from besser.bot.db import DB_MONITORING
 from besser.bot.db.monitoring_db import MonitoringDB
 from besser.bot.core.entity.entity import Entity
@@ -488,4 +489,14 @@ class Bot:
         """
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
             thread = threading.Thread(target=self._monitoring_db.insert_intent_prediction, args=(session,))
+            thread.start()
+
+    def _monitoring_db_insert_transition(self, session: Session, transition: Transition) -> None:
+        """Insert a transition record into the monitoring database.
+
+        Args:
+            session (Session): the session of the current user
+        """
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            thread = threading.Thread(target=self._monitoring_db.insert_transition, args=(session, transition))
             thread.start()

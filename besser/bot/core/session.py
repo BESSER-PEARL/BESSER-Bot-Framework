@@ -160,6 +160,7 @@ class Session:
             transition (Transition): the transition that points to the bot state to move
         """
         logging.info(transition.log())
+        self._bot._monitoring_db_insert_transition(self, transition)
         if any(transition.dest is global_state for global_state in self._bot.global_state_component):
             self.set("prev_state", self.current_state)
         self._current_state = transition.dest

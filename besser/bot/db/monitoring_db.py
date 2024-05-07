@@ -8,8 +8,10 @@ from sqlalchemy import Connection, create_engine, Column, String, Integer, Uniqu
 from sqlalchemy.orm import declarative_base
 
 from besser.bot.core.session import Session
+from besser.bot.core.transition import Transition
 from besser.bot.db import DB_MONITORING_DIALECT, DB_MONITORING_PORT, DB_MONITORING_HOST, DB_MONITORING_DATABASE, \
     DB_MONITORING_USERNAME, DB_MONITORING_PASSWORD
+from besser.bot.library.event.event_library import intent_matched, variable_matches_operation
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
@@ -23,6 +25,9 @@ TABLE_INTENT_PREDICTION = 'intent_prediction'
 
 TABLE_PARAMETER = 'parameter'
 """The name of the database table that contains the parameter records"""
+
+TABLE_TRANSITION = 'transition'
+"""The name of the database table that contains the transition records"""
 
 
 class MonitoringDB:
@@ -71,6 +76,7 @@ class MonitoringDB:
             bot_name = Column(String, nullable=False)
             session_id = Column(String, nullable=False)
             platform_name = Column(String, nullable=False)
+            timestamp = Column(DateTime, nullable=False)
             __table_args__ = (
                 UniqueConstraint('bot_name', 'session_id'),
             )
@@ -93,6 +99,16 @@ class MonitoringDB:
             value = Column(String)
             info = Column(String)
 
+        class TableTransition(Base):
+            __tablename__ = TABLE_TRANSITION
+            id = Column(Integer, primary_key=True, autoincrement=True)
+            session_id = Column(Integer, ForeignKey(f'{TABLE_SESSION}.id'), nullable=False)
+            source_state = Column(String, nullable=False)
+            dest_state = Column(String, nullable=False)
+            event = Column(String, nullable=False)
+            info = Column(String)
+            timestamp = Column(DateTime, nullable=False)
+
         Base.metadata.create_all(self.conn)
         self.conn.commit()
 
@@ -105,8 +121,9 @@ class MonitoringDB:
         table = Table(TABLE_SESSION, MetaData(), autoload_with=self.conn)
         stmt = insert(table).values(
             bot_name=session._bot.name,
+            session_id=session.id,
             platform_name=session.platform.__class__.__name__,
-            session_id=session.id
+            timestamp=datetime.now(),
         )
         self.run_statement(stmt)
 
@@ -124,10 +141,10 @@ class MonitoringDB:
             timestamp=datetime.now(),
             intent_classifier=session._bot.nlp_engine._intent_classifiers[session.current_state].__class__.__name__,
             intent=session.predicted_intent.intent.name,
-            score=session.predicted_intent.score
+            score=float(session.predicted_intent.score)
         )
         result = self.conn.execute(stmt.returning(table.c.id))  # Not committed until all parameters have been inserted
-        intent_prediction_id = result.fetchone()[0]
+        intent_prediction_id = int(result.fetchone()[0])
         table = Table(TABLE_PARAMETER, MetaData(), autoload_with=self.conn)
         rows_to_insert = [
             {
@@ -142,6 +159,31 @@ class MonitoringDB:
             self.run_statement(stmt)
         else:
             self.conn.commit()
+
+    def insert_transition(self, session: Session, transition: Transition):
+        """Insert a new transition record into the transitions table of the monitoring database.
+
+        Args:
+            session (Session): the session the transition belongs to
+            transition (Transition): the transition to insert into the database
+        """
+        table = Table(TABLE_TRANSITION, MetaData(), autoload_with=self.conn)
+        session_entry = self.select_session(session)
+        if transition.event == intent_matched:
+            transition_info = transition.event_params['intent'].name
+        elif transition.event == variable_matches_operation:
+            transition_info = f'{transition.event_params["var_name"]} {transition.event_params["operation"].__name__} {transition.event_params["target"]}'
+        else:
+            transition_info = ''
+        stmt = insert(table).values(
+            session_id=int(session_entry['id'][0]),
+            source_state=transition.source.name,
+            dest_state=transition.dest.name,
+            event=transition.event.__name__,
+            info=transition_info,
+            timestamp=datetime.now(),
+        )
+        self.run_statement(stmt)
 
     def select_session(self, session: Session) -> pd.DataFrame:
         """Retrieves a session record from the sessions table of the database.
@@ -194,4 +236,5 @@ class MonitoringDB:
     def close_connection(self) -> None:
         """Close the connection to the monitoring database"""
         self.conn.close()
+        self.conn.engine.dispose()
         self.connected = False
