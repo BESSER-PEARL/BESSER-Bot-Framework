@@ -124,6 +124,7 @@ generate_api_rst_files('../../', 'besser/bot/core', './api/core')
 generate_api_rst_files('../../', 'besser/bot/exceptions', './api/exceptions')
 generate_api_rst_files('../../', 'besser/bot/library', './api/library')
 generate_api_rst_files('../../', 'besser/bot/nlp', './api/nlp')
+generate_api_rst_files('../../', 'besser/bot/db', './api/db')
 generate_api_rst_files('../../', 'besser/bot/platforms', './api/platforms')
 
 
@@ -152,4 +153,4 @@ def linkcode_resolve(domain, info):
         return None
     start, end = lines[1], lines[1] + len(lines[0]) - 1
     filename = info['module'].replace('.', '/')
-    return f"https://github.com/BESSER-PEARL/bot-framework/blob/main/{filename}.py#L{start}-L{end}"
+    return f"https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/{release}/{filename}.py#L{start}-L{end}"
