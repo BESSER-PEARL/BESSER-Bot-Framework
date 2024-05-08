@@ -16,7 +16,7 @@ class Platform(ABC):
     This class serves as a template to implement platforms.
 
      Attributes:
-        running (bool): Weather the platform is running or not
+        running (bool): Whether the platform is running or not
     """
 
     def __init__(self):

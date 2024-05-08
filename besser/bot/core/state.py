@@ -29,13 +29,13 @@ class State:
     Args:
         bot (Bot): the bot the state belongs to
         name (str): the state's name
-        initial (bool): weather the state is initial or not
+        initial (bool): whether the state is initial or not
         ic_config (IntentClassifierConfiguration): the intent classifier configuration of the state
 
     Attributes:
         _bot (Bot): The bot the state belongs to
         _name (str): The state name
-        _initial (bool): Weather the state is initial or not
+        _initial (bool): Whether the state is initial or not
         _body (Callable[[Session], None]): The state body. It is a callable that takes as argument a
             :class:`~besser.bot.core.session.Session`. It will be run whenever the bot moves to this state.
         _fallback_body (Callable[[Session], None]): The state fallback body. It is a callable that takes as argument a
@@ -346,7 +346,7 @@ class State:
             traceback.print_exc()
 
     def _check_next_transition(self, session: Session) -> None:
-        """Check weather the first defined transition of the state is an `auto` transition, and if so, move to its
+        """Check whether the first defined transition of the state is an `auto` transition, and if so, move to its
         destination state.
 
         This method is intended to be called after running the body of a state.

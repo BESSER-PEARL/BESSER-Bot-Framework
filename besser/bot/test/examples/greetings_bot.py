@@ -36,7 +36,7 @@ good_intent = bot.new_intent('good_intent', [
     'fine',
 ])
 
-bad_intent= bot.new_intent('bad_intent', [
+bad_intent = bot.new_intent('bad_intent', [
     'bad',
     'awful',
 ])

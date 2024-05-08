@@ -15,5 +15,6 @@ Table of contents
    wiki/core
    wiki/nlp
    wiki/platforms
-   wiki/languages
+   wiki/db
    wiki/configuration_properties
+   wiki/languages
