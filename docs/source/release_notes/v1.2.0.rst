@@ -1,0 +1,12 @@
+Version 1.2.0
+=============
+
+New Features
+-------------
+- Added full Telegram wrapper in the TelegramPlatform, allowing to use any Telegram functionality with BBF bots.
+- Added reply_location in WebSocketPlatform and TelegramPlatform. The bots can now send locations as messages.
+- Added :doc:`Monitoring DB <../wiki/db/monitoring_db>`.
+
+Improvements
+-------------
+- Fixed concurrency and asynchronicity issues in TelegramPlatform
