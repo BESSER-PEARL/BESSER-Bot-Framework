@@ -74,6 +74,14 @@ Telegram Platform
 .. automodule:: besser.bot.platforms.telegram
    :members:
 
+.. _properties-database:
+
+Database
+--------
+
+.. automodule:: besser.bot.db
+   :members:
+
 API References
 --------------
 

@@ -6,12 +6,12 @@ class Message:
     Args:
         t (str): The type of the message
         content (Any): The message content
-        is_user (bool): Weather the message comes from the user (true) or the chatbot (false)
+        is_user (bool): Whether the message comes from the user (true) or the chatbot (false)
 
     Attributes:
         type (str): The type of the message
         content (Any): The message content
-        is_user (bool): Weather the message comes from the user (true) or the chatbot (false)
+        is_user (bool): Whether the message comes from the user (true) or the chatbot (false)
     """
 
     def __init__(self, t: str, content, is_user: bool):

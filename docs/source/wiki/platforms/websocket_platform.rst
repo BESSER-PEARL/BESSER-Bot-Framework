@@ -73,6 +73,12 @@ After that, you can use the platform to send different kinds of messages to the 
     file = File(file_name="name", file_type="type", file_base64="file_base64")
     websocket_platform.reply_file(session, file)
 
+- Locations:
+
+.. code:: python
+
+    latitude, longitude = 49.50177449302207, 5.94862573528648
+    websocket_platform.reply_location(session, latitude, longitude)
 
 ⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
 
@@ -91,5 +97,6 @@ API References
 - WebSocketPlatform.reply(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply`
 - WebSocketPlatform.reply_dataframe(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
 - WebSocketPlatform.reply_file(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
+- WebSocketPlatform.reply_location(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_location`
 - WebSocketPlatform.reply_options(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
 - WebSocketPlatform.reply_plotly(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`

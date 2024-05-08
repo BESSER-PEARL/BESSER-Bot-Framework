@@ -33,7 +33,7 @@ def get_custom_entity_values_dict(
 
     Args:
         intent (Intent): the target intent
-        processed_values (bool): weather to retrieve the entities processed values or not
+        processed_values (bool): whether to retrieve the entities processed values or not
 
     Returns:
         dict[str, tuple[list[IntentParameter], str]]: the dictionary
