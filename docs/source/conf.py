@@ -153,4 +153,4 @@ def linkcode_resolve(domain, info):
         return None
     start, end = lines[1], lines[1] + len(lines[0]) - 1
     filename = info['module'].replace('.', '/')
-    return f"https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/{release}/{filename}.py#L{start}-L{end}"
+    return f"https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/v{release}/{filename}.py#L{start}-L{end}"
