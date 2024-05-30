@@ -1,6 +1,6 @@
 audio-recorder-streamlit==0.0.8
 dateparser==1.1.8
-keras==2.14.0
+keras==3.3.3
 librosa==0.10.1
 nltk==3.8.1
 numpy==1.26.1
@@ -17,7 +17,7 @@ SpeechRecognition==3.10.0
 spellux @ git+https://github.com/Aran30/spellux
 sqlalchemy==2.0.29
 streamlit==1.27.2
-tensorflow==2.14.0
+tensorflow==2.16.1
 text2num==2.5.0
 transformers==4.37.0
 websocket-client==1.6.4

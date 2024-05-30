@@ -1,3 +1,6 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Hide Tensorflow logs
+
 import logging
 from typing import Any, TYPE_CHECKING
 
