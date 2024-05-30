@@ -24,8 +24,6 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
 
     Args:
         num_words (int): Max num of words to keep in the index of words
-        lower (bool): whether to transform the sentences to lowercase or not
-        oov_token (str): Token for the out of vocabulary words
         num_epochs (int): Number of epochs to be run during training
         embedding_dim (int): Number of embedding dimensions to be used when embedding the words
         input_max_num_tokens (int): Max length for the vector representing a sentence
@@ -39,8 +37,6 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
 
     Attributes:
         num_words (int): Max num of words to keep in the index of words
-        lower (bool): whether to transform the sentences to lowercase or not
-        oov_token (str): Token for the out of vocabulary words
         num_epochs (int): Number of epochs to be run during training
         embedding_dim (int): Number of embedding dimensions to be used when embedding the words
         input_max_num_tokens (int): Max length for the vector representing a sentence
@@ -57,8 +53,6 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
     def __init__(
             self,
             num_words: int = 1000,
-            lower: bool = True,
-            oov_token: str = '<OOV>',
             num_epochs: int = 300,
             embedding_dim: int = 128,
             input_max_num_tokens: int = 15,
@@ -70,8 +64,6 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
     ):
         super().__init__()
         self.num_words: int = num_words
-        self.lower: bool = lower
-        self.oov_token: str = oov_token
         self.num_epochs: int = num_epochs
         self.embedding_dim: int = embedding_dim
         self.input_max_num_tokens: int = input_max_num_tokens

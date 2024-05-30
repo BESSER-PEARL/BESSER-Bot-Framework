@@ -1,13 +1,11 @@
-import os
 from typing import TYPE_CHECKING
 
-import keras
 import numpy as np
 from keras import Sequential
-from keras.layers import Dense, Embedding, GlobalAveragePooling1D
-from keras.losses import SparseCategoricalCrossentropy
-from keras.preprocessing.text import Tokenizer
-from keras.utils import pad_sequences
+from keras.src.layers import TextVectorization, Dense, Embedding, GlobalAveragePooling1D
+from keras.src.losses import SparseCategoricalCrossentropy
+from keras.src.optimizers import Adam
+from keras.src.utils import pad_sequences
 
 from besser.bot.core.intent.intent import Intent
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
@@ -18,8 +16,6 @@ from besser.bot.nlp.preprocessing.text_preprocessing import process_text
 if TYPE_CHECKING:
     from besser.bot.core.state import State
     from besser.bot.nlp.nlp_engine import NLPEngine
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 class SimpleIntentClassifier(IntentClassifier):
@@ -32,7 +28,7 @@ class SimpleIntentClassifier(IntentClassifier):
         state (State): the state the intent classifier belongs to
 
     Attributes:
-        _tokenizer (`Tokenizer <https://www.tensorflow.org/api_docs/python/tf/keras/preprocessing/text/Tokenizer>`_):
+        _tokenizer (`TextVectorization <https://www.tensorflow.org/api_docs/python/tf/keras/layers/TextVectorization>`_):
             The intent classifier tokenizer
         _model (`Sequential <https://www.tensorflow.org/api_docs/python/tf/keras/Sequential>`_):
             The intent classifier language model
@@ -47,15 +43,14 @@ class SimpleIntentClassifier(IntentClassifier):
             state: 'State'
     ):
         super().__init__(nlp_engine, state)
-        self._tokenizer: Tokenizer = Tokenizer(
-            num_words=self._state.ic_config.num_words,
-            lower=self._state.ic_config.lower,
-            oov_token=self._state.ic_config.oov_token
+        self._tokenizer = TextVectorization(
+            max_tokens=self._state.ic_config.num_words,
+            standardize='lower_and_strip_punctuation',
+            output_sequence_length=self._state.ic_config.input_max_num_tokens
         )
         self._model: Sequential = Sequential([
             Embedding(input_dim=self._state.ic_config.num_words,
-                      output_dim=self._state.ic_config.embedding_dim,
-                      input_length=self._state.ic_config.input_max_num_tokens),
+                      output_dim=self._state.ic_config.embedding_dim),
             GlobalAveragePooling1D(),
             Dense(24, activation=self._state.ic_config.activation_hidden_layers),
             Dense(24, activation=self._state.ic_config.activation_hidden_layers),
@@ -85,17 +80,13 @@ class SimpleIntentClassifier(IntentClassifier):
             )
             self.__intent_label_mapping[index_intent] = intent
 
-        self._tokenizer.fit_on_texts(self.__total_training_sentences)
-        self.__total_training_sequences = pad_sequences(
-            self._tokenizer.texts_to_sequences(self.__total_training_sentences),
-            maxlen=self._state.ic_config.input_max_num_tokens,
-            padding='post',
-            truncating='post'
+        self._tokenizer.adapt(self.__total_training_sentences)
+        self.__total_training_sequences = self._tokenizer(
+            self.__total_training_sentences,
         )
-
         self._model.compile(
             loss=SparseCategoricalCrossentropy(),
-            optimizer=keras.optimizers.Adam(learning_rate=self._state.ic_config.lr),
+            optimizer=Adam(learning_rate=self._state.ic_config.lr),
             metrics=['accuracy']
         )
 
@@ -114,7 +105,7 @@ class SimpleIntentClassifier(IntentClassifier):
         for (ner_sentence, intents) in ner_prediction.ner_sentences.items():
             # DOUBLE STEMMING AVOIDED
             sentences = [ner_sentence]
-            sequences = self._tokenizer.texts_to_sequences(sentences)
+            sequences = self._tokenizer(sentences)
             padded = pad_sequences(
                 sequences,
                 maxlen=self._state.ic_config.input_max_num_tokens,
