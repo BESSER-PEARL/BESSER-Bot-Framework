@@ -86,13 +86,13 @@ class Intent:
             nlp_engine (NPLEngine): the NLPEngine that handles the NLP processes of the bot
         """
         self.processed_training_sentences = []
-        for i in range(len(self.training_sentences)):
-            processed_sentence: str = self.training_sentences[i]
-            processed_sentence = process_text(processed_sentence, nlp_engine)
+        for sentence in self.training_sentences:
+            processed_sentence = sentence
             for parameter in self.parameters:
                 # Replace parameter fragments by entity names
                 processed_sentence = replace_value_in_sentence(processed_sentence, parameter.fragment,
                                                                parameter.entity.name.upper())
+            processed_sentence = process_text(processed_sentence, nlp_engine)
             self.processed_training_sentences.append(processed_sentence)
 
     def to_json(self) -> dict:
