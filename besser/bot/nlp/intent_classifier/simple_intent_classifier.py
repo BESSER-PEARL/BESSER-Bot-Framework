@@ -113,7 +113,7 @@ class SimpleIntentClassifier(IntentClassifier):
                 truncating='post'
             )
             run_full_prediction: bool = True
-            if self._state.ic_config.discard_oov_sentences and all(i == 1 for i in sequences[0]):
+            if self._state.ic_config.discard_oov_sentences and all(i in [0, 1] for i in sequences[0]):
                 # The sentence to predict consists of only out of vocabulary tokens,
                 # so we can automatically assign a zero probability to all classes
                 prediction = np.zeros(len(self._state.intents))

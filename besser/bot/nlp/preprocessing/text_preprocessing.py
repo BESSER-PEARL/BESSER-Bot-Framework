@@ -13,7 +13,7 @@ def process_text(text: str, nlp_engine: 'NLPEngine') -> str:
     language: str = nlp_engine.get_property(nlp.NLP_LANGUAGE)
 
     preprocessed_sentence: str = text
-    preprocessed_sentence = preprocessed_sentence.replace('_', ' ')
+    # preprocessed_sentence = preprocessed_sentence.replace('_', ' ')
     if pre_processing:
         # TODO: remove punctuation signs
         if language != "lb":
