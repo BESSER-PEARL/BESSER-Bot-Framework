@@ -8,7 +8,7 @@ openai==1.24.0
 pandas==2.1.1
 plotly==5.18.0
 psycopg2-binary==2.9.9
-python-telegram-bot==20.6
+python-telegram-bot==21.0
 replicate==0.23.1
 requests==2.31.0
 snowballstemmer==2.2.0
