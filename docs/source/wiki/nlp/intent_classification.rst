@@ -40,10 +40,11 @@ This is how you can create an intent classifier configuration:
 
 .. code:: python
 
+    from besser.bot.nlp import llm
     from besser.bot.nlp.intent_classifier.intent_classifier_configuration import LLMIntentClassifierConfiguration
 
     openai_config = LLMIntentClassifierConfiguration(
-        llm_suite=LLMIntentClassifierConfiguration.OPENAI_LLM_SUITE,
+        llm_suite=llm.OPENAI_LLM_SUITE,
         parameters={
             "seed": None,
             "top_p": 1,

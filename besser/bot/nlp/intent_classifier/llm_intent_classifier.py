@@ -10,9 +10,8 @@ from openai import OpenAI
 from transformers import pipeline
 
 from besser.bot import nlp
-from besser.bot.nlp import NLP_LANGUAGE
+from besser.bot.nlp import NLP_LANGUAGE, llm
 from besser.bot.nlp.intent_classifier.intent_classifier import IntentClassifier
-from besser.bot.nlp.intent_classifier.intent_classifier_configuration import LLMIntentClassifierConfiguration
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.ner.matched_parameter import MatchedParameter
 from besser.bot.nlp.utils import find_json
@@ -159,13 +158,13 @@ The output format is JSON, not List.
     def predict(self, message: str) -> list[IntentClassifierPrediction]:
         try:
             prompt = self._generate_prompt(message)
-            if self._state.ic_config.llm_suite == LLMIntentClassifierConfiguration.OPENAI_LLM_SUITE:
+            if self._state.ic_config.llm_suite == llm.OPENAI_LLM_SUITE:
                 answer = self.predict_openai(prompt)
-            elif self._state.ic_config.llm_suite == LLMIntentClassifierConfiguration.HUGGINGFACE_LLM_SUITE:
+            elif self._state.ic_config.llm_suite == llm.HUGGINGFACE_LLM_SUITE:
                 answer = self.predict_huggingface(prompt)
-            elif self._state.ic_config.llm_suite == LLMIntentClassifierConfiguration.HUGGINGFACE_INFERENCE_API_LLM_SUITE:
+            elif self._state.ic_config.llm_suite == llm.HUGGINGFACE_INFERENCE_API_LLM_SUITE:
                 answer = self.predict_huggingface_inference_api(prompt)
-            elif self._state.ic_config.llm_suite == LLMIntentClassifierConfiguration.REPLICATE_LLM_SUITE:
+            elif self._state.ic_config.llm_suite == llm.REPLICATE_LLM_SUITE:
                 answer = self.predict_replicate(prompt)
             else:
                 return []

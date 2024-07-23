@@ -1,6 +1,7 @@
 from abc import ABC
 
 from besser.bot.exceptions.exceptions import LLMSuiteNotFound
+from besser.bot.nlp import llm
 
 
 class IntentClassifierConfiguration(ABC):
@@ -99,11 +100,6 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
         use_entity_descriptions (bool): whether to include the entity descriptions in the LLM prompt
         use_entity_synonyms (bool): whether to include the entity value's synonyms in the LLM prompt
     """
-    OPENAI_LLM_SUITE = 'openai'
-    HUGGINGFACE_LLM_SUITE = 'huggingface'
-    HUGGINGFACE_INFERENCE_API_LLM_SUITE = 'huggingface-inference-api'
-    REPLICATE_LLM_SUITE = 'replicate'
-    suites = [OPENAI_LLM_SUITE, HUGGINGFACE_LLM_SUITE, HUGGINGFACE_INFERENCE_API_LLM_SUITE, REPLICATE_LLM_SUITE]
 
     def __init__(
             self,
@@ -115,11 +111,11 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
             use_entity_synonyms: bool = False
     ):
         super().__init__()
-        if llm_suite not in LLMIntentClassifierConfiguration.suites:
-            raise LLMSuiteNotFound(llm_suite, LLMIntentClassifierConfiguration.suites)
-        self.llm_suite = llm_suite
-        self.parameters = parameters
-        self.use_intent_descriptions = use_intent_descriptions
-        self.use_training_sentences = use_training_sentences
-        self.use_entity_descriptions = use_entity_descriptions
-        self.use_entity_synonyms = use_entity_synonyms
+        if llm_suite not in llm.suites:
+            raise LLMSuiteNotFound(llm_suite, llm.suites)
+        self.llm_suite: str = llm_suite
+        self.parameters: dict = parameters
+        self.use_intent_descriptions: bool = use_intent_descriptions
+        self.use_training_sentences: bool = use_training_sentences
+        self.use_entity_descriptions: bool = use_entity_descriptions
+        self.use_entity_synonyms: bool = use_entity_synonyms

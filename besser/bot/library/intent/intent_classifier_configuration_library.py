@@ -1,7 +1,8 @@
+from besser.bot.nlp import llm
 from besser.bot.nlp.intent_classifier.intent_classifier_configuration import LLMIntentClassifierConfiguration
 
 openai_config = LLMIntentClassifierConfiguration(
-    llm_suite=LLMIntentClassifierConfiguration.OPENAI_LLM_SUITE,
+    llm_suite=llm.OPENAI_LLM_SUITE,
     parameters={
         "seed": None,
         "top_p": 1,
@@ -18,7 +19,7 @@ Parameters documentation: https://platform.openai.com/docs/api-reference/chat/cr
 """
 
 hf_config = LLMIntentClassifierConfiguration(
-    llm_suite=LLMIntentClassifierConfiguration.HUGGINGFACE_LLM_SUITE,
+    llm_suite=llm.HUGGINGFACE_LLM_SUITE,
     parameters={},
     use_intent_descriptions=True,
     use_training_sentences=False,
@@ -31,7 +32,7 @@ Parameters documentation: https://huggingface.co/docs/transformers/main_classes/
 """
 
 hf_api_config = LLMIntentClassifierConfiguration(
-    llm_suite=LLMIntentClassifierConfiguration.HUGGINGFACE_INFERENCE_API_LLM_SUITE,
+    llm_suite=llm.HUGGINGFACE_INFERENCE_API_LLM_SUITE,
     parameters={
         "top_k": None,
         "top_p": None,
@@ -58,7 +59,7 @@ Parameters documentation: https://huggingface.co/docs/api-inference/detailed_par
 """
 
 replicate_config = LLMIntentClassifierConfiguration(
-    llm_suite=LLMIntentClassifierConfiguration.REPLICATE_LLM_SUITE,
+    llm_suite=llm.REPLICATE_LLM_SUITE,
     parameters={
         # TODO: Find parameters docs
         "debug": False,
