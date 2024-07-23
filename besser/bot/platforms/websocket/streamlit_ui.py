@@ -16,8 +16,8 @@ from streamlit.runtime.scriptrunner import add_script_run_ctx, get_script_run_ct
 from streamlit.web import cli as stcli
 
 from besser.bot.core.file import File
+from besser.bot.core.message import Message, MessageType
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
-from besser.bot.platforms.websocket.message import Message
 
 # Time interval to check if a streamlit session is still active, in seconds
 SESSION_MONITORING_INTERVAL = 10
@@ -62,29 +62,29 @@ def main():
         payload: Payload = Payload.decode(payload_str)
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
             content = payload.message
-            t = 'str'
+            t = MessageType.STR
         elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
             content = payload.message
-            t = 'file'
+            t = MessageType.FILE
         elif payload.action == PayloadAction.BOT_REPLY_DF.value:
             content = pd.read_json(payload.message)
-            t = 'dataframe'
+            t = MessageType.DATAFRAME
         elif payload.action == PayloadAction.BOT_REPLY_PLOTLY.value:
             content = plotly.io.from_json(payload.message)
-            t = 'plotly'
+            t = MessageType.PLOTLY
         elif payload.action == PayloadAction.BOT_REPLY_LOCATION.value:
             content = {
                 'latitude': [payload.message['latitude']],
                 'longitude': [payload.message['longitude']]
             }
-            t = 'location'
+            t = MessageType.LOCATION
         elif payload.action == PayloadAction.BOT_REPLY_OPTIONS.value:
-            t = 'options'
+            t = MessageType.OPTIONS
             d = json.loads(payload.message)
             content = []
             for button in d.values():
                 content.append(button)
-        message = Message(t, content, is_user=False)
+        message = Message(t=t, content=content, is_user=False)
         streamlit_session._session_state['queue'].put(message)
         streamlit_session._handle_rerun_script_request()
 
@@ -156,7 +156,7 @@ def main():
             if 'last_voice_message' not in st.session_state or st.session_state['last_voice_message'] != voice_bytes:
                 st.session_state['last_voice_message'] = voice_bytes
                 # Encode the audio bytes to a base64 string
-                voice_message = Message(t='audio', content=voice_bytes, is_user=True)
+                voice_message = Message(t=MessageType.AUDIO, content=voice_bytes, is_user=True)
                 st.session_state.history.append(voice_message)
                 voice_base64 = base64.b64encode(voice_bytes).decode('utf-8')
                 payload = Payload(action=PayloadAction.USER_VOICE, message=voice_base64)
@@ -170,7 +170,7 @@ def main():
                 bytes_data = uploaded_file.read()
                 file_object = File(file_base64=base64.b64encode(bytes_data).decode('utf-8'), file_name=uploaded_file.name, file_type=uploaded_file.type)
                 payload = Payload(action=PayloadAction.USER_FILE, message=file_object.get_json_string())
-                file_message = Message(t='file', content=file_object.to_dict(), is_user=True)
+                file_message = Message(t=MessageType.FILE, content=file_object.to_dict(), is_user=True)
                 st.session_state.history.append(file_message)
                 try:
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
@@ -234,7 +234,7 @@ def main():
             if cols[0].button(option):
                 with st.chat_message("user"):
                     st.write(option)
-                message = Message(t='str', content=option, is_user=True)
+                message = Message(t=MessageType.STR, content=option, is_user=True)
                 st.session_state.history.append(message)
                 payload = Payload(action=PayloadAction.USER_MESSAGE,
                                   message=option)
@@ -247,7 +247,7 @@ def main():
             del st.session_state['buttons']
         with st.chat_message("user"):
             st.write(user_input)
-        message = Message(t='str', content=user_input, is_user=True)
+        message = Message(t=MessageType.STR, content=user_input, is_user=True)
         st.session_state.history.append(message)
         payload = Payload(action=PayloadAction.USER_MESSAGE,
                           message=user_input)

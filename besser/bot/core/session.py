@@ -1,6 +1,7 @@
 import logging
 from typing import Any, TYPE_CHECKING
 
+from besser.bot.core.message import Message, MessageType
 from besser.bot.core.transition import Transition
 from besser.bot.core.file import File
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
@@ -56,7 +57,7 @@ class Session:
         self._message: str or None = None
         self._predicted_intent: IntentClassifierPrediction or None = None
         self._file: File or None = None
-        self.chat_history: list[tuple[str, int]] = []
+        self.chat_history: list[Message] = []
         self.flags: dict[str, bool] = {
             'predicted_intent': False,
             'file': False
@@ -89,7 +90,7 @@ class Session:
         Args:
             message (str): the message to set in the session
         """
-        self.chat_history.append((message, 1))
+        self.chat_history.append(Message(t=MessageType.STR, content=message, is_user=True))
         self._message = message
         
     @property
@@ -104,7 +105,7 @@ class Session:
         Args:
             file (File): the file to set in the session
         """
-        self.chat_history.append((file.get_json_string(), 1))
+        self.chat_history.append(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=True))
         self._file = file
         self.flags['file'] = True
 
