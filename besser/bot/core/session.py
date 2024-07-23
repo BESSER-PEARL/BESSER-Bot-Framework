@@ -153,7 +153,7 @@ class Session:
         """
         del self._dictionary[key]
 
-    def move(self, transition: Transition):
+    def move(self, transition: Transition) -> None:
         """Move to another bot state.
 
         Args:

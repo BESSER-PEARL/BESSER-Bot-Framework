@@ -44,9 +44,10 @@ class TelegramPlatform(Platform):
 
     Attributes:
         _bot (Bot): The bot the platform belongs to
-        _telegram_app (Application): The Telegram Application
+        _telegram_app (telegram.ext.Application): The Telegram Application
         _event_loop (asyncio.AbstractEventLoop): The event loop that runs the asynchronous tasks of the Telegram
             Application
+        _handlers (list[telegram.ext.BaseHandler]): List of telegram bot handlers
     """
     def __init__(self, bot: 'Bot'):
         super().__init__()

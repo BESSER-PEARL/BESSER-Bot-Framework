@@ -58,7 +58,7 @@ class Intent:
     def __hash__(self):
         return hash(self.name)
 
-    def parameter(self, name: str, fragment: str, entity: Entity):
+    def parameter(self, name: str, fragment: str, entity: Entity) -> 'Intent':
         """Add a parameter to the list of intent parameters.
 
         This method creates an :class:`IntentParameter` instance with the provided

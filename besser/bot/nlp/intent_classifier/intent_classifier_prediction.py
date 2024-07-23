@@ -4,8 +4,7 @@ from besser.bot.nlp.ner.matched_parameter import MatchedParameter
 
 
 class IntentClassifierPrediction:
-    """
-    The prediction result of an Intent Classifier for a specific intent.
+    """The prediction result of an Intent Classifier for a specific intent.
     
     The intent classifier tries to determine the intent of a user message. For each possible intent, it will return
     an IntentClassifierPrediction containing the results, that include the probability itself and other information.
@@ -38,8 +37,7 @@ class IntentClassifierPrediction:
         self.matched_parameters: list[MatchedParameter] = matched_parameters
 
     def get_parameter(self, name: str) -> MatchedParameter or None:
-        """
-        Get a parameter from the intent classifier prediction.
+        """Get a parameter from the intent classifier prediction.
 
         Args:
             name (str): the name of the parameter to get
@@ -54,8 +52,7 @@ class IntentClassifierPrediction:
 
 
 def fallback_intent_prediction(message: str) -> IntentClassifierPrediction:
-    """
-    Return a *fallback intent prediction* for when none of the possible intents is matched.
+    """Return a *fallback intent prediction* for when none of the possible intents is matched.
 
     Args:
         message (str): the user message

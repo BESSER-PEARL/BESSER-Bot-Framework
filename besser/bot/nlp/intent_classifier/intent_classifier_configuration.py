@@ -16,8 +16,7 @@ class IntentClassifierConfiguration(ABC):
 
 
 class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
-    """
-    The Simple Intent Classifier Configuration class.
+    """The Simple Intent Classifier Configuration class.
 
     It allows the customization of a
     :class:`~besser.bot.nlp.intent_classifier.simple_intent_classifier.SimpleIntentClassifier`.
@@ -47,7 +46,6 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
         activation_last_layer (str): The activation function of the last layer
         activation_hidden_layers (str): The activation function of the hidden layers
         lr (float): Learning rate for the optimizer
-
     """
 
     def __init__(
@@ -75,8 +73,7 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
 
 
 class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
-    """
-    The LLM Intent Classifier Configuration class.
+    """The LLM Intent Classifier Configuration class.
 
     It allows the customization of a
     :class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
