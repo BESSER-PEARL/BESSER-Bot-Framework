@@ -19,6 +19,7 @@ from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntit
 from besser.bot.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
     SimpleIntentClassifierConfiguration
 from besser.bot.nlp.nlp_engine import NLPEngine
+from besser.bot.nlp.rag.rag import RAG
 from besser.bot.platforms.platform import Platform
 from besser.bot.platforms.telegram.telegram_platform import TelegramPlatform
 from besser.bot.platforms.websocket.websocket_platform import WebSocketPlatform
@@ -500,3 +501,16 @@ class Bot:
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
             thread = threading.Thread(target=self._monitoring_db.insert_transition, args=(session, transition))
             thread.start()
+
+    def use_rag(self, vector_store, splitter, llm_model, source_path: str = None, k: int = 4, num_context: int = 0) -> RAG:
+        rag = RAG(
+            nlp_engine=self._nlp_engine,
+            vector_store=vector_store,
+            splitter=splitter,
+            llm_model=llm_model,
+            source_path=source_path,
+            k=k,
+            num_context=num_context
+        )
+        self._nlp_engine._rag = rag
+        return rag

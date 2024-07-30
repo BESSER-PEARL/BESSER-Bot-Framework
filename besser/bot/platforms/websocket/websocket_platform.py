@@ -15,6 +15,7 @@ from websockets.sync.server import ServerConnection, WebSocketServer, serve
 from besser.bot.core.message import Message, MessageType
 from besser.bot.core.session import Session
 from besser.bot.exceptions.exceptions import PlatformMismatchError
+from besser.bot.nlp.rag.rag import RAGMessage
 from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
@@ -221,4 +222,13 @@ class WebSocketPlatform(Platform):
         session.chat_history.append(Message(t=MessageType.LOCATION, content=location_dict, is_user=False))
         payload = Payload(action=PayloadAction.BOT_REPLY_LOCATION,
                           message=location_dict)
+        self._send(session.id, payload)
+
+    def reply_rag(self, session: Session, rag_message: RAGMessage) -> None:
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        rag_message_dict = rag_message.to_dict()
+        session.chat_history.append(Message(t=MessageType.RAG_ANSWER, content=rag_message_dict, is_user=False))
+        payload = Payload(action=PayloadAction.BOT_REPLY_RAG,
+                          message=rag_message_dict)
         self._send(session.id, payload)

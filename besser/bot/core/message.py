@@ -34,5 +34,5 @@ class Message:
 
     def __init__(self, t: MessageType, content: Any, is_user: bool):
         self.type: MessageType = t
-        self.content = content
+        self.content: Any = content
         self.is_user: bool = is_user

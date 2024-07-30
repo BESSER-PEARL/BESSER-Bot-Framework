@@ -17,6 +17,7 @@ from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleInte
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
 from besser.bot.nlp.preprocessing.pipelines import lang_map
+from besser.bot.nlp.rag.rag import RAG
 from besser.bot.nlp.speech2text.hf_speech2text import HFSpeech2Text
 from besser.bot.nlp.speech2text.api_speech2text import APISpeech2Text
 from besser.bot.nlp.speech2text.speech2text import Speech2Text
@@ -47,6 +48,7 @@ class NLPEngine:
         self._intent_classifiers: dict['State', IntentClassifier] = {}
         self._ner: NER or None = None
         self._speech2text: Speech2Text or None = None
+        self._rag: RAG = None
 
     @property
     def ner(self):
@@ -73,6 +75,8 @@ class NLPEngine:
             self._speech2text = HFSpeech2Text(self)
         elif self.get_property(nlp.NLP_STT_SR_ENGINE):
             self._speech2text = APISpeech2Text(self)
+        if self._rag is None and self.get_property(nlp.NLP_RAG_VECTORSTORE):
+            self._rag = RAG.create_from_properties(self)
 
     def get_property(self, prop: Property) -> Any:
         """Get a NLP property's value from the NLPEngine's bot.

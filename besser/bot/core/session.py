@@ -5,6 +5,7 @@ from besser.bot.core.message import Message, MessageType
 from besser.bot.core.transition import Transition
 from besser.bot.core.file import File
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
+from besser.bot.nlp.rag.rag import RAGMessage
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
@@ -90,6 +91,7 @@ class Session:
         Args:
             message (str): the message to set in the session
         """
+        # TODO: IF STORE_CHAT_HISTORY...
         self.chat_history.append(Message(t=MessageType.STR, content=message, is_user=True))
         self._message = message
         
@@ -175,3 +177,6 @@ class Session:
         """
         # Multi-platform
         self._platform.reply(self, message)
+
+    def run_rag(self, message: str = None, llm_prompt: str = None, k: int = None, num_context: int = None) -> RAGMessage:
+        return self._bot.nlp_engine._rag.run_rag(self, message, llm_prompt, k, num_context)
