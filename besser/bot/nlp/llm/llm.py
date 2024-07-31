@@ -2,21 +2,21 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, TYPE_CHECKING
 
-from besser.bot.core.session import Session
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 
 if TYPE_CHECKING:
-    from besser.bot.core.bot import Bot
+    from besser.bot.core.session import Session
     from besser.bot.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
+    from besser.bot.nlp.nlp_engine import NLPEngine
 
 
 class LLM(ABC):
 
-    def __init__(self, bot: 'Bot', name: str, parameters: dict):
-        self._bot: 'Bot' = bot
+    def __init__(self, nlp_engine: 'NLPEngine', name: str, parameters: dict):
+        self._nlp_engine: 'NLPEngine' = nlp_engine
         self.name: str = name
         self.parameters: dict = parameters
-        self._bot.nlp_engine._llms[name] = self
+        self._nlp_engine._llms[name] = self
 
     @abstractmethod
     def initialize(self) -> None:
@@ -26,7 +26,7 @@ class LLM(ABC):
     def predict(self, message: Any) -> str:
         pass
 
-    def chat(self, session: Session, parameters: dict = None) -> str:
+    def chat(self, session: 'Session', parameters: dict = None) -> str:
         logging.warning(f'Chat not implemented in {self.__class__.__name__}')
         return None
 

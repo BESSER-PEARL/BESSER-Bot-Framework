@@ -3,20 +3,20 @@ from typing import TYPE_CHECKING
 from transformers import pipeline
 
 from besser.bot.core.message import MessageType
-from besser.bot.core.session import Session
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.llm.llm import LLM
 from besser.bot.nlp.utils import merge_llm_consecutive_messages, find_json
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
+    from besser.bot.core.session import Session
     from besser.bot.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
 
 
 class LLMHuggingFace(LLM):
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
-        super().__init__(bot, name, parameters)
+        super().__init__(bot.nlp_engine, name, parameters)
         self.pipe = None
         self.num_previous_messages: int = num_previous_messages
 
@@ -30,7 +30,7 @@ class LLMHuggingFace(LLM):
         answer = outputs[0]['generated_text']
         return answer
 
-    def chat(self, session: Session, parameters: dict = None) -> str:
+    def chat(self, session: 'Session', parameters: dict = None) -> str:
         if not parameters:
             parameters = self.parameters
         if self.num_previous_messages <= 0:

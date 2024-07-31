@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class LLMHuggingFaceAPI(LLM):
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
-        super().__init__(bot, name, parameters)
+        super().__init__(bot.nlp_engine, name, parameters)
         self.num_previous_messages: int = num_previous_messages
 
     def initialize(self) -> None:
@@ -26,7 +26,7 @@ class LLMHuggingFaceAPI(LLM):
             parameters = self.parameters
         parameters['return_full_text'] = False
         # https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task
-        headers = {"Authorization": f"Bearer {self._bot.nlp_engine.get_property(nlp.HF_API_KEY)}"}
+        headers = {"Authorization": f"Bearer {self._nlp_engine.get_property(nlp.HF_API_KEY)}"}
         api_url = F"https://api-inference.huggingface.co/models/{self.name}"
         payload = {"inputs": message, "parameters": parameters}
         response = requests.post(api_url, headers=headers, json=payload)

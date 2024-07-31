@@ -16,13 +16,12 @@ if TYPE_CHECKING:
 class LLMReplicate(LLM):
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
-        super().__init__(bot, name, parameters)
+        super().__init__(bot.nlp_engine, name, parameters)
         self.num_previous_messages: int = num_previous_messages
 
     def initialize(self) -> None:
         if 'REPLICATE_API_TOKEN' not in os.environ:
-            os.environ['REPLICATE_API_TOKEN'] = self._bot._nlp_engine.get_property(nlp.REPLICATE_API_KEY)
-        headers = {"Authorization": f"Bearer {self._bot.nlp_engine.get_property(nlp.HF_API_KEY)}"}
+            os.environ['REPLICATE_API_TOKEN'] = self._nlp_engine.get_property(nlp.REPLICATE_API_KEY)
 
     def predict(self, message: str, parameters: dict = None) -> str:
         if not parameters:

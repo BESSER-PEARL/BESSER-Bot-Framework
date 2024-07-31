@@ -178,5 +178,7 @@ class Session:
         # Multi-platform
         self._platform.reply(self, message)
 
-    def run_rag(self, message: str = None, llm_prompt: str = None, k: int = None, num_context: int = None) -> RAGMessage:
-        return self._bot.nlp_engine._rag.run_rag(self, message, llm_prompt, k, num_context)
+    def run_rag(self, message: str = None, llm_prompt: str = None, llm_name: str = None, k: int = None, num_previous_messages: int = None) -> RAGMessage:
+        if self._bot.nlp_engine._rag is None:
+            raise ValueError('Attempting to run RAG in a bot with no RAG engine.')
+        return self._bot.nlp_engine._rag.run(self, message, llm_prompt, llm_name, k, num_previous_messages)

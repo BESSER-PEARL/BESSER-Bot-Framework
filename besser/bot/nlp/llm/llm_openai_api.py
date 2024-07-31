@@ -5,24 +5,24 @@ from openai import OpenAI
 
 from besser.bot import nlp
 from besser.bot.core.message import MessageType
-from besser.bot.core.session import Session
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.llm.llm import LLM
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
+    from besser.bot.core.session import Session
     from besser.bot.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
 
 
 class LLMOpenAI(LLM):
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
-        super().__init__(bot, name, parameters)
+        super().__init__(bot.nlp_engine, name, parameters)
         self.client: OpenAI = None
         self.num_previous_messages: int = num_previous_messages
 
     def initialize(self) -> None:
-        self.client = OpenAI(api_key=self._bot.nlp_engine.get_property(nlp.OPENAI_API_KEY))
+        self.client = OpenAI(api_key=self._nlp_engine.get_property(nlp.OPENAI_API_KEY))
 
     def predict(self, message: str, parameters: dict = None) -> str:
         if not parameters:
@@ -36,7 +36,7 @@ class LLMOpenAI(LLM):
         )
         return response.choices[0].message.content
 
-    def chat(self, session: Session, parameters: dict = None) -> str:
+    def chat(self, session: 'Session', parameters: dict = None) -> str:
         if not parameters:
             parameters = self.parameters
         if self.num_previous_messages <= 0:

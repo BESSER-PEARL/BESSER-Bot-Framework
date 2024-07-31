@@ -81,8 +81,6 @@ class NLPEngine:
             self._speech2text = HFSpeech2Text(self)
         elif self.get_property(nlp.NLP_STT_SR_ENGINE):
             self._speech2text = APISpeech2Text(self)
-        if self._rag is None and self.get_property(nlp.NLP_RAG_VECTORSTORE):
-            self._rag = RAG.create_from_properties(self)
 
     def get_property(self, prop: Property) -> Any:
         """Get a NLP property's value from the NLPEngine's bot.

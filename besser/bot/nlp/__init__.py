@@ -137,14 +137,3 @@ type: ``str``
 
 default value: ``None``
 """
-
-NLP_RAG_VECTORSTORE = Property(SECTION_NLP, 'nlp.rag.vectorstore', str, None)
-NLP_RAG_EMBEDDINGS_SUITE = Property(SECTION_NLP, 'nlp.rag.embeddings_suite', str, None)
-NLP_RAG_EMBEDDINGS_NAME = Property(SECTION_NLP, 'nlp.rag.embeddings_name', str, None)
-NLP_RAG_SPLITTER = Property(SECTION_NLP, 'nlp.rag.splitter', str, 'RecursiveCharacterTextSplitter')
-NLP_RAG_CHUNK_SIZE = Property(SECTION_NLP, 'nlp.rag.chunk_size', int, 1000)
-NLP_RAG_CHUNK_OVERLAP = Property(SECTION_NLP, 'nlp.rag.chunk_overlap', int, 100)
-NLP_RAG_LLM_SUITE = Property(SECTION_NLP, 'nlp.rag.llm_suite', str, None)
-NLP_RAG_LLM_NAME = Property(SECTION_NLP, 'nlp.rag.llm_name', str, None)
-NLP_RAG_PERSIST_DIRECTORY = Property(SECTION_NLP, 'nlp.rag.persist_directory', str, None)
-NLP_RAG_MAX_LENGTH = Property(SECTION_NLP, 'nlp.rag.max_length', int, None)
