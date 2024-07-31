@@ -1,4 +1,5 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Hide Tensorflow logs
 
 import logging
@@ -14,6 +15,7 @@ from besser.bot.nlp.intent_classifier.intent_classifier_prediction import Intent
     fallback_intent_prediction
 from besser.bot.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
 from besser.bot.nlp.intent_classifier.simple_intent_classifier import SimpleIntentClassifier
+from besser.bot.nlp.llm.llm import LLM
 from besser.bot.nlp.ner.ner import NER
 from besser.bot.nlp.ner.simple_ner import SimpleNER
 from besser.bot.nlp.preprocessing.pipelines import lang_map
@@ -37,6 +39,7 @@ class NLPEngine:
 
     Attributes:
         _bot (Bot): The bot the NLPEngine belongs to
+        _llms (dict[str, LLM]): The LLMs of the NLPEngine. Keys are the names and values are the LLMs themselves.
         _intent_classifiers (dict[State, IntentClassifier]): The collection of Intent Classifiers of the NLPEngine.
             There is one for each bot state (only states with transitions triggered by intent matching)
         _ner (NER or None): The NER (Named Entity Recognition) system of the NLPEngine
@@ -45,6 +48,7 @@ class NLPEngine:
 
     def __init__(self, bot: 'Bot'):
         self._bot: 'Bot' = bot
+        self._llms: dict[str, LLM] = {}
         self._intent_classifiers: dict['State', IntentClassifier] = {}
         self._ner: NER or None = None
         self._speech2text: Speech2Text or None = None
@@ -63,6 +67,8 @@ class NLPEngine:
                 nlp.NLP_LANGUAGE,
                 list(lang_map.keys())[list(lang_map.values()).index(self.get_property(nlp.NLP_LANGUAGE))]
             )
+        for llm_name, llm in self._llms.items():
+            self._llms[llm_name].initialize()
         for state in self._bot.states:
             if state not in self._intent_classifiers and state.intents:
                 if isinstance(state.ic_config, SimpleIntentClassifierConfiguration):

@@ -79,12 +79,8 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
     It allows the customization of a
     :class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
 
-    :mod:`~besser.bot.library.intent.intent_classifier_configuration_library` contains predefined configurations for the
-    different LLM suites, that can be directly imported and used in a bot.
-
     Args:
-        llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
-            huggingface-inference-api, replicate)
+        llm_name (str): the name of the LLM to be used (must be created in  the bot)
         parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
         use_intent_descriptions (bool): whether to include the intent descriptions in the LLM prompt
         use_training_sentences (bool): whether to include the intent training sentences in the LLM prompt
@@ -92,8 +88,7 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
         use_entity_synonyms (bool): whether to include the entity value's synonyms in the LLM prompt
 
     Attributes:
-        llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
-            huggingface-inference-api, replicate)
+        llm_name (str): the name of the LLM to be used (must be created in  the bot)
         parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
         use_intent_descriptions (bool): whether to include the intent descriptions in the LLM prompt
         use_training_sentences (bool): whether to include the intent training sentences in the LLM prompt
@@ -103,17 +98,15 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
 
     def __init__(
             self,
-            llm_suite: str,
+            llm_name: str,
             parameters: dict = {},
-            use_intent_descriptions: bool = False,
-            use_training_sentences: bool = False,
-            use_entity_descriptions: bool = False,
-            use_entity_synonyms: bool = False
+            use_intent_descriptions: bool = True,
+            use_training_sentences: bool = True,
+            use_entity_descriptions: bool = True,
+            use_entity_synonyms: bool = True
     ):
         super().__init__()
-        if llm_suite not in llm.suites:
-            raise LLMSuiteNotFound(llm_suite, llm.suites)
-        self.llm_suite: str = llm_suite
+        self.llm_name: str = llm_name
         self.parameters: dict = parameters
         self.use_intent_descriptions: bool = use_intent_descriptions
         self.use_training_sentences: bool = use_training_sentences

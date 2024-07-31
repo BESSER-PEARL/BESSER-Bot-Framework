@@ -21,30 +21,18 @@ Configuration
 -------------
 
 Each state has an :doc:`intent classifier configuration <../../api/nlp/intent_classifier_configuration>`.
-that defines its intent classifier's properties. We provide :doc:`default intent classifier configurations <../../api/library/intent_classifier_configuration_library>`
-that can be imported and used:
-
-.. code:: python
-
-    from besser.bot.library.intent.intent_classifier_configuration_library import openai_config
-
-
-We can set a default configuration for all states (note that this would replace any previously defined configuration):
-
-.. code:: python
-
-    bot = Bot('example_bot')
-    bot.set_default_ic_config(openai_config)
+that defines its intent classifier's properties.
 
 This is how you can create an intent classifier configuration:
 
 .. code:: python
 
-    from besser.bot.nlp import llm
     from besser.bot.nlp.intent_classifier.intent_classifier_configuration import LLMIntentClassifierConfiguration
 
+    bot = Bot('example_bot')
+
     openai_config = LLMIntentClassifierConfiguration(
-        llm_suite=llm.OPENAI_LLM_SUITE,
+        llm_name='gpt-4o-mini',
         parameters={
             "seed": None,
             "top_p": 1,
@@ -56,11 +44,17 @@ This is how you can create an intent classifier configuration:
         use_entity_synonyms=False
     )
 
-You can set a configuration for a specific state:
+We can set a configuration for a specific state:
 
 .. code:: python
 
     example_state = bot.new_state('example_state', ic_config=openai_config)
+
+Or a default configuration for all states (note that this would replace any previously defined configuration):
+
+.. code:: python
+
+    bot.set_default_ic_config(openai_config)
 
 .. note::
 
@@ -184,8 +178,6 @@ want to think about them all, we can simply provide an intent description and us
 
 .. code:: python
 
-    from besser.bot.library.intent.intent_classifier_configuration_library import openai_config
-
     help_intent = bot.new_intent(
         name='help_intent',
         description='The user needs help to be able to use the chatbot properly or to find some information'
@@ -247,7 +239,6 @@ API References
 - Intent: :class:`besser.bot.core.intent.intent.Intent`
 - IntentClassifierConfiguration: :class:`besser.bot.nlp.intent_classifier.intent_classifier_configuration.IntentClassifierConfiguration`
 - LLMIntentClassifierConfiguration: :class:`besser.bot.nlp.intent_classifier.intent_classifier_configuration.LLMIntentClassifierConfiguration`
-- openai_config: :obj:`besser.bot.library.intent.intent_classifier_configuration_library.openai_config`
 - Session: :class:`besser.bot.core.session.Session`
 - SimpleIntentClassifierConfiguration: :class:`besser.bot.nlp.intent_classifier.intent_classifier_configuration.SimpleIntentClassifierConfiguration`
 - State: :class:`besser.bot.core.state.State`
