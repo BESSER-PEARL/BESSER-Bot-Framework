@@ -41,6 +41,7 @@ extensions = [
 ]
 
 intersphinx_mapping = {
+    "langchain": ("https://api.python.langchain.com/en/latest", None),
     "python": ("https://docs.python.org/3", None),
     "pandas": ("https://pandas.pydata.org/docs", None),
     "python-telegram-bot": ("https://docs.python-telegram-bot.org/en/v20.5", None),

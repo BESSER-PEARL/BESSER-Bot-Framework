@@ -13,19 +13,67 @@ if TYPE_CHECKING:
 
 
 class LLMHuggingFaceAPI(LLM):
+    """A HuggingFace LLM wrapper for HuggingFace's Inference API.
+
+    Normally, we consider an LLM in HuggingFace those models under the tasks ``text-generation`` or
+    ``text2text-generation`` tasks (`more info <https://huggingface.co/tasks/text-generation>`_), but there could be
+    exceptions for other tasks (which have not been tested in this class).
+
+    Args:
+        bot (Bot): the bot the LLM belongs to
+        name (str): the LLM name
+        parameters (dict): the LLM parameters
+        num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
+            to add to the prompt context (must be > 0)
+
+    Attributes:
+        _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
+        name (str): the LLM name
+        parameters (dict): the LLM parameters
+        num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
+            to add to the prompt context (must be > 0)
+    """
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
         super().__init__(bot.nlp_engine, name, parameters)
         self.num_previous_messages: int = num_previous_messages
 
+    def set_model(self, name: str) -> None:
+        """Set the LLM model name.
+
+        Args:
+            name (str): the new LLM name
+        """
+        self.name = name
+
+    def set_num_previous_messages(self, num_previous_messages: int) -> None:
+        """Set the number of previous messages to use in the chat functionality
+
+        Args:
+            num_previous_messages (int): the new number of previous messages
+        """
+        self.num_previous_messages = num_previous_messages
+
     def initialize(self) -> None:
         pass
 
     def predict(self, message: str, parameters: dict = None) -> str:
+        """Make a prediction, i.e., generate an output.
+
+        Runs the `Text Generation Inference API task
+        <https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task>`_
+
+        Args:
+            message (Any): the LLM input text
+            parameters (dict): the LLM parameters to use in the prediction. If none is provided, the default LLM
+                parameters will be used
+
+        Returns:
+            str: the LLM output
+        """
         if not parameters:
             parameters = self.parameters
         parameters['return_full_text'] = False
-        # https://huggingface.co/docs/api-inference/detailed_parameters#text-generation-task
         headers = {"Authorization": f"Bearer {self._nlp_engine.get_property(nlp.HF_API_KEY)}"}
         api_url = F"https://api-inference.huggingface.co/models/{self.name}"
         payload = {"inputs": message, "parameters": parameters}
@@ -47,12 +95,3 @@ class LLMHuggingFaceAPI(LLM):
             message=message,
             response_json=response_json
         )
-
-    def set_model(self, name: str) -> None:
-        self.name = name
-
-    def set_parameters(self, parameters: dict) -> None:
-        self.parameters = parameters
-
-    def set_num_previous_messages(self, num_previous_messages: int) -> None:
-        self.num_previous_messages = num_previous_messages

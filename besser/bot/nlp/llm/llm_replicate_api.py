@@ -14,10 +14,42 @@ if TYPE_CHECKING:
 
 
 class LLMReplicate(LLM):
+    """An LLM wrapper for Replicate's LLMs through its API.
+
+    Args:
+        bot (Bot): the bot the LLM belongs to
+        name (str): the LLM name
+        parameters (dict): the LLM parameters
+        num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
+            to add to the prompt context (must be > 0)
+
+    Attributes:
+        _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
+        name (str): the LLM name
+        parameters (dict): the LLM parameters
+        num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
+            to add to the prompt context (must be > 0)
+    """
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
         super().__init__(bot.nlp_engine, name, parameters)
         self.num_previous_messages: int = num_previous_messages
+
+    def set_model(self, name: str) -> None:
+        """Set the LLM model name.
+
+        Args:
+            name (str): the new LLM name
+        """
+        self.name = name
+
+    def set_num_previous_messages(self, num_previous_messages: int) -> None:
+        """Set the number of previous messages to use in the chat functionality
+
+        Args:
+            num_previous_messages (int): the new number of previous messages
+        """
+        self.num_previous_messages = num_previous_messages
 
     def initialize(self) -> None:
         if 'REPLICATE_API_TOKEN' not in os.environ:
@@ -57,12 +89,3 @@ class LLMReplicate(LLM):
             message=message,
             response_json=response_json
         )
-
-    def set_model(self, name: str) -> None:
-        self.name = name
-
-    def set_parameters(self, parameters: dict) -> None:
-        self.parameters = parameters
-
-    def set_num_previous_messages(self, num_previous_messages: int) -> None:
-        self.num_previous_messages = num_previous_messages

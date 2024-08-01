@@ -37,13 +37,21 @@ def find_json(text: str) -> dict:
 
 
 def merge_llm_consecutive_messages(messages: list[dict]) -> list[dict]:
-    """Merges consecutive user/assistant messages. Necessary for HuggingFace LLMs, where the message pattern must be
+    """Merges consecutive user and assistant messages. Necessary for HuggingFace LLMs, where the message pattern must be
     user/assistant/user/assistant...
 
     A message looks like the following:
 
-    {'role': 'user', 'content': 'Hi'}  # For user messages
-    {'role': 'assistant', 'content': 'Hi'}  # For assistant, i.e. LLM, messages
+    .. code-block::
+
+        {'role': 'user', 'content': 'Hi'}  # For user messages
+        {'role': 'assistant', 'content': 'Hi'}  # For assistant, i.e. LLM, messages
+
+    Args:
+        messages (list[dict): the messages to be merged by user type
+
+    Returns:
+        list[dict]: the merged messages
     """
     if not messages:
         return []
