@@ -1,6 +1,9 @@
 audio-recorder-streamlit==0.0.8
+chromadb==0.5.4
 dateparser==1.1.8
 keras==2.14.0
+langchain==0.2.9
+langchain-community==0.2.7
 librosa==0.10.1
 nltk==3.8.1
 numpy==1.26.1
@@ -8,6 +11,7 @@ openai==1.24.0
 pandas==2.1.1
 plotly==5.18.0
 psycopg2-binary==2.9.9
+pypdf==4.3.1
 python-telegram-bot==21.0
 replicate==0.23.1
 requests==2.31.0
@@ -19,6 +23,7 @@ sqlalchemy==2.0.29
 streamlit==1.27.2
 tensorflow==2.14.0
 text2num==2.5.0
+tiktoken==0.7.0
 transformers==4.41.1
 websocket-client==1.6.4
 websockets==11.0.3
