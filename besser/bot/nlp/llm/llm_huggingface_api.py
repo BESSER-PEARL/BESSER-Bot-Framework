@@ -72,7 +72,9 @@ class LLMHuggingFaceAPI(LLM):
             str: the LLM output
         """
         if not parameters:
-            parameters = self.parameters
+            parameters = self.parameters.copy()
+        else:
+            parameters = parameters.copy()
         parameters['return_full_text'] = False
         headers = {"Authorization": f"Bearer {self._nlp_engine.get_property(nlp.HF_API_KEY)}"}
         api_url = F"https://api-inference.huggingface.co/models/{self.name}"
@@ -86,9 +88,6 @@ class LLMHuggingFaceAPI(LLM):
             message: str,
             parameters: dict = None
     ) -> list[IntentClassifierPrediction]:
-        if not parameters:
-            parameters = self.parameters
-        parameters['return_full_text'] = False
         answer = self.predict(message, parameters)
         response_json = find_json(answer)
         return intent_classifier.default_json_to_intent_classifier_predictions(
