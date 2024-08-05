@@ -38,7 +38,7 @@ class File:
             file_type = 'file'
         self._name = file_name
         self._type = file_type
-        self._base64 = base64.b64encode(file_data).decode('utf-8')  
+        self._base64 = base64.b64encode(file_data).decode('utf-8')
 
     @property
     def name(self) -> str:

@@ -2,8 +2,8 @@ class EntityEntry:
     """Each one of the entries an entity consists of.
 
     Args:
-        value (list[str] or None): the entry value
-        synonyms: the value synonyms
+        value (str): the entry value
+        synonyms (list[str] or None): the value synonyms
 
     Attributes:
         value (str): the entry value

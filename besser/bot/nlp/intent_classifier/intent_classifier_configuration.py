@@ -1,6 +1,7 @@
 from abc import ABC
 
 from besser.bot.exceptions.exceptions import LLMSuiteNotFound
+from besser.bot.nlp import llm
 
 
 class IntentClassifierConfiguration(ABC):
@@ -16,8 +17,7 @@ class IntentClassifierConfiguration(ABC):
 
 
 class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
-    """
-    The Simple Intent Classifier Configuration class.
+    """The Simple Intent Classifier Configuration class.
 
     It allows the customization of a
     :class:`~besser.bot.nlp.intent_classifier.simple_intent_classifier.SimpleIntentClassifier`.
@@ -47,7 +47,6 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
         activation_last_layer (str): The activation function of the last layer
         activation_hidden_layers (str): The activation function of the hidden layers
         lr (float): Learning rate for the optimizer
-
     """
 
     def __init__(
@@ -75,18 +74,13 @@ class SimpleIntentClassifierConfiguration(IntentClassifierConfiguration):
 
 
 class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
-    """
-    The LLM Intent Classifier Configuration class.
+    """The LLM Intent Classifier Configuration class.
 
     It allows the customization of a
     :class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
 
-    :mod:`~besser.bot.library.intent.intent_classifier_configuration_library` contains predefined configurations for the
-    different LLM suites, that can be directly imported and used in a bot.
-
     Args:
-        llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
-            huggingface-inference-api, replicate)
+        llm_name (str): the name of the LLM to be used (must be created in  the bot)
         parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
         use_intent_descriptions (bool): whether to include the intent descriptions in the LLM prompt
         use_training_sentences (bool): whether to include the intent training sentences in the LLM prompt
@@ -94,35 +88,27 @@ class LLMIntentClassifierConfiguration(IntentClassifierConfiguration):
         use_entity_synonyms (bool): whether to include the entity value's synonyms in the LLM prompt
 
     Attributes:
-        llm_suite (str): the service provider from which we will load/access the LLM (openai, huggingface,
-            huggingface-inference-api, replicate)
+        llm_name (str): the name of the LLM to be used (must be created in  the bot)
         parameters (dict): the LLM parameters (this will vary depending on the suite and the LLM)
         use_intent_descriptions (bool): whether to include the intent descriptions in the LLM prompt
         use_training_sentences (bool): whether to include the intent training sentences in the LLM prompt
         use_entity_descriptions (bool): whether to include the entity descriptions in the LLM prompt
         use_entity_synonyms (bool): whether to include the entity value's synonyms in the LLM prompt
     """
-    OPENAI_LLM_SUITE = 'openai'
-    HUGGINGFACE_LLM_SUITE = 'huggingface'
-    HUGGINGFACE_INFERENCE_API_LLM_SUITE = 'huggingface-inference-api'
-    REPLICATE_LLM_SUITE = 'replicate'
-    suites = [OPENAI_LLM_SUITE, HUGGINGFACE_LLM_SUITE, HUGGINGFACE_INFERENCE_API_LLM_SUITE, REPLICATE_LLM_SUITE]
 
     def __init__(
             self,
-            llm_suite: str,
+            llm_name: str,
             parameters: dict = {},
-            use_intent_descriptions: bool = False,
-            use_training_sentences: bool = False,
-            use_entity_descriptions: bool = False,
-            use_entity_synonyms: bool = False
+            use_intent_descriptions: bool = True,
+            use_training_sentences: bool = True,
+            use_entity_descriptions: bool = True,
+            use_entity_synonyms: bool = True
     ):
         super().__init__()
-        if llm_suite not in LLMIntentClassifierConfiguration.suites:
-            raise LLMSuiteNotFound(llm_suite, LLMIntentClassifierConfiguration.suites)
-        self.llm_suite = llm_suite
-        self.parameters = parameters
-        self.use_intent_descriptions = use_intent_descriptions
-        self.use_training_sentences = use_training_sentences
-        self.use_entity_descriptions = use_entity_descriptions
-        self.use_entity_synonyms = use_entity_synonyms
+        self.llm_name: str = llm_name
+        self.parameters: dict = parameters
+        self.use_intent_descriptions: bool = use_intent_descriptions
+        self.use_training_sentences: bool = use_training_sentences
+        self.use_entity_descriptions: bool = use_entity_descriptions
+        self.use_entity_synonyms: bool = use_entity_synonyms

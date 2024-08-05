@@ -65,6 +65,10 @@ def global_fallback_body(session: Session):
     telegram_platform.reply(session, 'Greetings from global fallback')
 
 
+# Assigned to all bot states (overriding all currently assigned fallback bodies).
+bot.set_global_fallback_body(global_fallback_body)
+
+
 def s0_body(session: Session):
     telegram_platform.reply(session, 'Waiting...')
 
@@ -72,11 +76,6 @@ def s0_body(session: Session):
 s0.set_body(s0_body)
 s0.when_intent_matched_go_to(hello_intent, hello_state)
 s0.when_intent_matched_go_to(howareyou_intent, howareyou_state)
-
-# Assigned to all bot states (overriding all currently assigned fallback bodies).
-# In this case, it replaces besser.bot.library.state.StateLibrary.default_fallback_body only on s0, since it is the only
-# defined state at this point of the code
-bot.set_global_fallback_body(global_fallback_body)
 
 
 def hello_body(session: Session):
