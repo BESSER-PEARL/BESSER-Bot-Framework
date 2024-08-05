@@ -31,30 +31,23 @@ This is how you can create an intent classifier configuration:
 
     bot = Bot('example_bot')
 
-    openai_config = LLMIntentClassifierConfiguration(
-        llm_name='gpt-4o-mini',
-        parameters={
-            "seed": None,
-            "top_p": 1,
-            "temperature": 1,
-        },
-        use_intent_descriptions=True,
-        use_training_sentences=False,
-        use_entity_descriptions=True,
-        use_entity_synonyms=False
+    simple_config = SimpleIntentClassifierConfiguration(
+        activation_last_layer='sigmoid',
+        activation_hidden_layers='tanh',
+        lr=0.001
     )
 
 We can set a configuration for a specific state:
 
 .. code:: python
 
-    example_state = bot.new_state('example_state', ic_config=openai_config)
+    example_state = bot.new_state('example_state', ic_config=simple_config)
 
 Or a default configuration for all states (note that this would replace any previously defined configuration):
 
 .. code:: python
 
-    bot.set_default_ic_config(openai_config)
+    bot.set_default_ic_config(simple_config)
 
 .. note::
 
@@ -136,8 +129,8 @@ reply_options message and let the user write, although if you want to force the 
 LLM Intent Classifier
 ---------------------
 
-The :class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier` uses a Large Language Model
-(LLM) to predict the intent of a message. LLMs are multimodal models that can solve a wide variety of tasks just by
+The :class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier` uses a :doc:`Large Language Model
+(LLM) <llm>` to predict the intent of a message. LLMs are multimodal models that can solve a wide variety of tasks just by
 providing them the right prompts in natural language. In this case, we can ask them to classify a sentence into the
 appropriate intent.
 
@@ -178,12 +171,31 @@ want to think about them all, we can simply provide an intent description and us
 
 .. code:: python
 
+    from besser.bot.nlp.intent_classifier.intent_classifier_configuration import LLMIntentClassifierConfiguration
+    from besser.bot.nlp.llm.llm_openai_api import LLMOpenAI
+
+    bot = Bot('example_bot')
+    llm = LLMOpenAI(bot=bot, name='gpt-4o-mini')
+
+    ic_config = LLMIntentClassifierConfiguration(
+        llm_name='gpt-4o-mini',
+        parameters={
+            "seed": None,
+            "top_p": 1,
+            "temperature": 1,
+        },
+        use_intent_descriptions=True,
+        use_training_sentences=False,
+        use_entity_descriptions=True,
+        use_entity_synonyms=False
+    )
+
     help_intent = bot.new_intent(
         name='help_intent',
         description='The user needs help to be able to use the chatbot properly or to find some information'
     )
 
-    example_state = bot.new_state('example_state', ic_config=openai_config)
+    example_state = bot.new_state('example_state', ic_config=ic_config)
 
     def example_body(session: Session):
         # ...
@@ -192,42 +204,6 @@ want to think about them all, we can simply provide an intent description and us
     example_state.when_intent_matched_go_to(intent1, state1)
     # ...
     example_state.when_intent_matched_go_to(help_intent, help_state)
-
-Available LLM suites
-~~~~~~~~~~~~~~~~~~~~
-
-- `OpenAI <https://openai.com>`_: The OpenAI API gives access to the latest GPT models.
-   - Recommended LLMs:
-      - gpt-4
-      - gpt-4-turbo-preview
-      - gpt-3.5-turbo
-   - Necessary bot properties:
-      - :obj:`~besser.bot.nlp.OPENAI_API_KEY`
-      - :obj:`~besser.bot.nlp.NLP_INTENT_OPENAI_MODEL_NAME`
-- `HuggingFace <https://huggingface.co/>`_: There are plenty of free open-source LLMs available in HuggingFace you can run in your machine.
-   - Recommended LLMs:
-      - mistralai/Mixtral-8x7B-v0.1 (big LLM)
-      - mistralai/Mistral-7B-v0.1 (small LLM)
-      - meta-llama/Llama-2-70b-chat (big LLM)
-      - meta-llama/Llama-2-7b-chat (small LLM)
-   - Necessary bot properties:
-      - :obj:`~besser.bot.nlp.NLP_INTENT_HF_MODEL_NAME`
-- `HuggingFace Inference API <https://huggingface.co/docs/api-inference>`_: HuggingFace's LLMs can be used through its API instead of locally.
-   - Same models as in HuggingFace
-   - Necessary bot properties:
-      - :obj:`~besser.bot.nlp.HF_API_KEY`
-      - :obj:`~besser.bot.nlp.NLP_INTENT_HF_MODEL_NAME`
-- `Replicate <https://replicate.com/>`_: A platform that hosts a wide variety of LLMs that can be used through its API.
-   - Recommended LLMs:
-      - mistralai/mixtral-8x7b-instruct-v0.1 (big LLM)
-      - mistralai/mistral-7b-instruct-v0.2 (small LLM)
-      - meta/llama-2-70b-chat (big LLM)
-      - meta/llama-2-7b-chat (small LLM)
-   - Necessary bot properties:
-      - :obj:`~besser.bot.nlp.REPLICATE_API_KEY`
-      - :obj:`~besser.bot.nlp.NLP_INTENT_REPLICATE_MODEL_NAME`
-
-(The models suggested were tested on 2024-02-15)
 
 API References
 --------------
@@ -239,11 +215,9 @@ API References
 - Intent: :class:`besser.bot.core.intent.intent.Intent`
 - IntentClassifierConfiguration: :class:`besser.bot.nlp.intent_classifier.intent_classifier_configuration.IntentClassifierConfiguration`
 - LLMIntentClassifierConfiguration: :class:`besser.bot.nlp.intent_classifier.intent_classifier_configuration.LLMIntentClassifierConfiguration`
+- LLMOpenAI: :class:`besser.bot.nlp.llm.llm_openai_api.LLMIntentClassifierConfiguration`
 - Session: :class:`besser.bot.core.session.Session`
 - SimpleIntentClassifierConfiguration: :class:`besser.bot.nlp.intent_classifier.intent_classifier_configuration.SimpleIntentClassifierConfiguration`
 - State: :class:`besser.bot.core.state.State`
 - State.set_body(): :meth:`besser.bot.core.state.State.set_body`
 - State.when_intent_matched_go_to(): :meth:`besser.bot.core.state.State.when_intent_matched_go_to`
-
-
-

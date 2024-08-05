@@ -19,7 +19,7 @@ from besser.bot.nlp.rag.rag import RAGMessage, RAG
 logging.basicConfig(level=logging.INFO, format='{levelname} - {asctime}: {message}', style='{')
 
 # Create the bot
-bot = Bot('greetings_bot')
+bot = Bot('rag_bot')
 # Load bot properties stored in a dedicated file
 bot.load_properties('config.ini')
 # Define the platform your chatbot will use

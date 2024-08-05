@@ -225,6 +225,12 @@ class WebSocketPlatform(Platform):
         self._send(session.id, payload)
 
     def reply_rag(self, session: Session, rag_message: RAGMessage) -> None:
+        """Send a rag reply to a specific user.
+
+        Args:
+            session (Session): the user session
+            rag_message (RAGMessage): the rag message to send to the user
+        """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         rag_message_dict = rag_message.to_dict()
