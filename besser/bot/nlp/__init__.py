@@ -114,18 +114,6 @@ type: ``str``
 default value: ``None``
 """
 
-NLP_INTENT_OPENAI_MODEL_NAME = Property(SECTION_NLP, 'nlp.intent.openai.model_name', str, None)
-"""
-The name of the OpenAI model that wants to be used with
-:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
-
-name: ``nlp.intent.openai.model_name``
-
-type: ``str``
-
-default value: ``None``
-"""
-
 HF_API_KEY = Property(SECTION_NLP, 'nlp.hf.api_key', str, None)
 """
 The HuggingFace (Inference) API key, necessary to use a HuggingFace Inference API LLM in
@@ -138,36 +126,12 @@ type: ``str``
 default value: ``None``
 """
 
-NLP_INTENT_HF_MODEL_NAME = Property(SECTION_NLP, 'nlp.intent.hf.model_name', str, None)
-"""
-The name of the HuggingFace model that wants to be used with
-:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
-
-name: ``nlp.intent.hf.model_name``
-
-type: ``str``
-
-default value: ``None``
-"""
-
 REPLICATE_API_KEY = Property(SECTION_NLP, 'nlp.replicate.api_key', str, None)
 """
 The Replicate API key, necessary to use a Replicate LLM in
 :class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
 
 name: ``nlp.replicate.api_key``
-
-type: ``str``
-
-default value: ``None``
-"""
-
-NLP_INTENT_REPLICATE_MODEL_NAME = Property(SECTION_NLP, 'nlp.intent.replicate.model_name', str, None)
-"""
-The name of the Replicate model that wants to be used with
-:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
-
-name: ``nlp.intent.replicate.model_name``
 
 type: ``str``
 

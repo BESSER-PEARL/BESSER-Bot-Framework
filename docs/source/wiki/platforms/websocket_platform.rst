@@ -80,6 +80,13 @@ After that, you can use the platform to send different kinds of messages to the 
     latitude, longitude = 49.50177449302207, 5.94862573528648
     websocket_platform.reply_location(session, latitude, longitude)
 
+- :doc:`../nlp/rag` Messages:
+
+.. code:: python
+
+    rag_message: RAGMessage = session.run_rag()
+    websocket_platform.reply_rag(session, rag_message)
+
 ⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
 
 The WebSocket platform allows the following kinds of user messages:
@@ -100,3 +107,4 @@ API References
 - WebSocketPlatform.reply_location(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_location`
 - WebSocketPlatform.reply_options(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
 - WebSocketPlatform.reply_plotly(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`
+- WebSocketPlatform.reply_rag(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`

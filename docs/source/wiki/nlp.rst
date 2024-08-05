@@ -16,4 +16,6 @@ Table of contents
 
    nlp/intent_classification
    nlp/ner
+   nlp/llm
+   nlp/rag
    nlp/speech2text

@@ -8,7 +8,7 @@ of transcribing an audio file. Then, the transcription is treated as a typical u
 Currently BBF has 2 different implementations for speech-to-text:
 
 - With HuggingFace models (only tested with openai/whisper models). You need to set the
-  :obj:`~besser.bot.nlp.NLP_STT_HF_MODEL` bot property. Example model: openai/whisper-tiny (very lightweight model)
+  :obj:`~besser.bot.nlp.NLP_STT_HF_MODEL` bot property. Example model: ``openai/whisper-tiny`` (very lightweight model)
 
 - With the `SpeechRecognition <https://github.com/Uberi/speech_recognition>`_ Python library. You need to set the
   :obj:`~besser.bot.nlp.NLP_STT_SR_ENGINE` bot property.

@@ -34,3 +34,39 @@ def find_json(text: str) -> dict:
     end = text.rfind('}') + 1
     json_string = text[start:end]
     return json.loads(json_string)
+
+
+def merge_llm_consecutive_messages(messages: list[dict]) -> list[dict]:
+    """Merges consecutive user and assistant messages. Necessary for HuggingFace LLMs, where the message pattern must be
+    user/assistant/user/assistant...
+
+    A message looks like the following:
+
+    .. code-block::
+
+        {'role': 'user', 'content': 'Hi'}  # For user messages
+        {'role': 'assistant', 'content': 'Hi'}  # For assistant, i.e. LLM, messages
+
+    Args:
+        messages (list[dict): the messages to be merged by user type
+
+    Returns:
+        list[dict]: the merged messages
+    """
+    if not messages:
+        return []
+
+    merged_messages = []
+    if messages[0]['role'] != 'user':
+        merged_messages.append({'role': 'user', 'content': 'Hello'})
+    current_message = messages[0]
+
+    for next_message in messages[1:]:
+        if next_message['role'] == current_message['role']:
+            current_message['content'] += "\n" + next_message['content']
+        else:
+            merged_messages.append(current_message)
+            current_message = next_message
+
+    merged_messages.append(current_message)
+    return merged_messages

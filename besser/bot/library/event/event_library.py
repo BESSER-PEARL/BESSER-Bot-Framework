@@ -27,8 +27,7 @@ def auto(session: 'Session', event_params: dict) -> bool:
 
 
 def intent_matched(session: 'Session', event_params: dict) -> bool:
-    """
-    This event checks if 2 intents are the same, used for intent matching checking.
+    """This event checks if 2 intents are the same, used for intent matching checking.
 
     Args:
         session (Session): the current user session
@@ -44,8 +43,7 @@ def intent_matched(session: 'Session', event_params: dict) -> bool:
 
 
 def variable_matches_operation(session: 'Session', event_params: dict) -> bool:
-    """
-    This event checks if for a specific comparison operation, using a stored session value
+    """This event checks if for a specific comparison operation, using a stored session value
     and a given target value, returns true.
 
     Args:
@@ -63,8 +61,7 @@ def variable_matches_operation(session: 'Session', event_params: dict) -> bool:
 
 
 def file_received(session: 'Session', event_params: dict) -> bool:
-    """
-    This event only returns True if a user just sent a file.
+    """This event only returns True if a user just sent a file.
 
     Args:
         session (Session): the current user session
