@@ -3,6 +3,7 @@ import base64
 import logging
 import threading
 from concurrent.futures import Future
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from telegram import Update
@@ -206,7 +207,7 @@ class TelegramPlatform(Platform):
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append(Message(t=MessageType.STR, content=message, is_user=False))
+        session.save_message(Message(t=MessageType.STR, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
@@ -221,7 +222,7 @@ class TelegramPlatform(Platform):
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False))
+        session.save_message(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         file_dict = file.to_dict()
         if message:
             file_dict["caption"] = message
@@ -241,7 +242,7 @@ class TelegramPlatform(Platform):
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append(Message(t=MessageType.IMAGE, content=file.get_json_string(), is_user=False))
+        session.save_message(Message(t=MessageType.IMAGE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         file_dict = file.to_dict()
         if message:
             file_dict["caption"] = message
@@ -262,7 +263,7 @@ class TelegramPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         location_dict = {'latitude': latitude, 'longitude': longitude}
-        session.chat_history.append(Message(t=MessageType.LOCATION, content=location_dict, is_user=False))
+        session.save_message(Message(t=MessageType.LOCATION, content=location_dict, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_LOCATION,
                           message=location_dict)
         self._send(session.id, payload)

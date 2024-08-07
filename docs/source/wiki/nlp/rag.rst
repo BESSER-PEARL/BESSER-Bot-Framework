@@ -103,12 +103,7 @@ An LLM, using the BBF :doc:`LLM wrappers <llm>`:
 
 .. code:: python
 
-    gpt = LLMOpenAI(
-        bot=bot,
-        name='gpt-4o-mini',
-        parameters={},
-        num_previous_messages=10
-    )
+    gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini')
 
 RAG
 ---

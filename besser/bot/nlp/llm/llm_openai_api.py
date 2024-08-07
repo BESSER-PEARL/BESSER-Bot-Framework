@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from openai import OpenAI
 
 from besser.bot import nlp
-from besser.bot.core.message import MessageType
+from besser.bot.core.message import MessageType, Message
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.llm.llm import LLM
 
@@ -22,14 +22,16 @@ class LLMOpenAI(LLM):
         name (str): the LLM name
         parameters (dict): the LLM parameters
         num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
-            to add to the prompt context (must be > 0)
+            to add to the prompt context (must be > 0). Necessary a connection to
+            :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
         name (str): the LLM name
         parameters (dict): the LLM parameters
         num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
-            to add to the prompt context (must be > 0)
+            to add to the prompt context (must be > 0). Necessary a connection to
+            :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
     """
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
@@ -73,11 +75,14 @@ class LLMOpenAI(LLM):
             parameters = self.parameters
         if self.num_previous_messages <= 0:
             raise ValueError('The number of previous messages to send to the LLM must be > 0')
+        chat_history: list[Message] = session.get_chat_history(n=self.num_previous_messages)
         messages = [
             {'role': 'user' if message.is_user else 'assistant', 'content': message.content}
-            for message in session.chat_history[-self.num_previous_messages:]  # TODO: STORE CHAT IN DB INSTEAD OF SESSION
+            for message in chat_history
             if message.type in [MessageType.STR, MessageType.LOCATION]
         ]
+        if not messages:
+            messages.append({'role': 'user', 'content': session.message})
         response = self.client.chat.completions.create(
             model=self.name,
             messages=messages,

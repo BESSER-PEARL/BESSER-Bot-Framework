@@ -71,7 +71,8 @@ class RAG:
         llm_prompt (str): the prompt containing the detailed instructions for the answer generation by the LLM. If none
             is provided, the :any:`default prompt <RAG.DEFAULT_LLM_PROMPT>` will be used
         k (int): number of chunks to retrieve from the vector store
-        num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt context
+        num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt context.
+            Necessary a connection to :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the RAG engine belongs to
@@ -82,7 +83,8 @@ class RAG:
         llm_prompt (str): the prompt containing the detailed instructions for the answer generation by the LLM. If none
             is provided, the :any:`default prompt <RAG.DEFAULT_LLM_PROMPT>` will be used
         k (int): number of chunks to retrieve from the vector store
-        num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt context
+        num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt context.
+            Necessary a connection to :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
     """
 
     DEFAULT_LLM_PROMPT = "You are an assistant for question-answering tasks. Based on the previous messages in the conversation (if provided), and additional context retrieved from a database (if provided), answer the user question. If you don't know the answer, just say that you don't know. Note that if the question refers to a previous message, you may have to ignore the context since it is retrieved from the database based only on the question (the retrieval does not take into account the previous messages). Use three sentences maximum and keep the answer concise"
@@ -150,7 +152,6 @@ class RAG:
             docs: list[Document],
             question: str,
             llm_prompt: str = None,
-            num_previous_messages: int = None
     ) -> str:
         """
         Creates the prompt for the LLM answer generation.
@@ -161,23 +162,18 @@ class RAG:
             question (str): the user question
             llm_prompt (str): the prompt containing the detailed instructions for the answer generation by the LLM. If
                 none is provided, the RAG's default value will be used
-            num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt
-                context. If none is provided, the RAG's default value will be used
 
         Returns:
             str: the LLM prompt
         """
         if not llm_prompt:
             llm_prompt = self.llm_prompt
-        if not num_previous_messages:
-            num_previous_messages = self.num_previous_messages
         result = [llm_prompt]
-        if num_previous_messages > 0:
-            for message in history[-(num_previous_messages + 1):-1]:
-                if message.type == MessageType.RAG_ANSWER:
-                    result.append(f'Assistant: {message.content["answer"]}')
-                elif message.type == MessageType.STR:
-                    result.append(f'{"User" if message.is_user else "Assistant"}: {message.content}')
+        for message in history:
+            if message.type == MessageType.RAG_ANSWER:
+                result.append(f'Assistant: {message.content["answer"]}')
+            elif message.type == MessageType.STR:
+                result.append(f'{"User" if message.is_user else "Assistant"}: {message.content}')
 
         formatted_docs = "\n\n".join(doc.page_content for doc in docs)
         result.append(f'Context: {formatted_docs}')
@@ -206,7 +202,8 @@ class RAG:
             llm_name (str): the name of the LLM to use. If none is provided, the RAG's default value will be used
             k (int): the number of (top) documents to get. If none is provided, the RAG's default value will be used
             num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt
-                context. If none is provided, the RAG's default value will be used
+                context. If none is provided, the RAG's default value will be used. Necessary a connection to
+                :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
 
         Returns:
             RAGMessage: the resulting RAG message
@@ -217,12 +214,14 @@ class RAG:
             llm_name = self.llm_name
         if not message:
             message = session.message
-        if not session:
-            history = []
+        if not num_previous_messages:
+            num_previous_messages = self.num_previous_messages
+        if session and num_previous_messages > 0:
+            history = session.get_chat_history(n=num_previous_messages)
         else:
-            history = session.chat_history
+            history = []
         docs: list[Document] = self.run_retrieval(question=message, k=k)
-        prompt = self.create_prompt(history=history, docs=docs, question=message, llm_prompt=llm_prompt, num_previous_messages=num_previous_messages)
+        prompt = self.create_prompt(history=history, docs=docs, question=message, llm_prompt=llm_prompt)
         llm: LLM = self._nlp_engine._llms[llm_name]
         llm_response: str = llm.predict(prompt)
         return RAGMessage(llm_name=llm_name, question=message, answer=llm_response, docs=docs)

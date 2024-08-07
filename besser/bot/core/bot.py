@@ -4,6 +4,7 @@ import threading
 from configparser import ConfigParser
 from typing import Any, Callable
 
+from besser.bot.core.message import Message
 from besser.bot.core.transition import Transition
 from besser.bot.db import DB_MONITORING
 from besser.bot.db.monitoring_db import MonitoringDB
@@ -430,6 +431,7 @@ class Bot:
             pass
         session = Session(session_id, self, platform)
         self._sessions[session_id] = session
+        self._monitoring_db_insert_session(session)
         session.current_state.run(session)
         return session
 
@@ -437,7 +439,6 @@ class Bot:
         session = self._get_session(session_id)
         if session is None:
             session = self._new_session(session_id, platform)
-            self._monitoring_db_insert_session(session)
         return session
 
     def delete_session(self, session_id: str) -> None:
@@ -478,8 +479,8 @@ class Bot:
             session (Session): the session of the current user
         """
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
-            thread = threading.Thread(target=self._monitoring_db.insert_session, args=(session,))
-            thread.start()
+            # Not in thread since we must ensure it is added before running a state (the chat table needs the session)
+            self._monitoring_db.insert_session(session)
 
     def _monitoring_db_insert_intent_prediction(self, session: Session) -> None:
         """Insert an intent prediction record into the monitoring database.
@@ -499,4 +500,14 @@ class Bot:
         """
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
             thread = threading.Thread(target=self._monitoring_db.insert_transition, args=(session, transition))
+            thread.start()
+
+    def _monitoring_db_insert_chat(self, session: Session, message: Message) -> None:
+        """Insert a message record into the monitoring database.
+
+        Args:
+            session (Session): the session of the current user
+        """
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            thread = threading.Thread(target=self._monitoring_db.insert_chat, args=(session, message))
             thread.start()

@@ -4,9 +4,10 @@ from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from sqlalchemy import Connection, create_engine, Column, String, Integer, UniqueConstraint, ForeignKey, DateTime, \
-    Float, MetaData, insert, Table, select, Executable, CursorResult
+    Float, MetaData, insert, Table, select, Executable, CursorResult, desc, Boolean
 from sqlalchemy.orm import declarative_base
 
+from besser.bot.core.message import Message
 from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
 from besser.bot.db import DB_MONITORING_DIALECT, DB_MONITORING_PORT, DB_MONITORING_HOST, DB_MONITORING_DATABASE, \
@@ -28,6 +29,9 @@ TABLE_PARAMETER = 'parameter'
 
 TABLE_TRANSITION = 'transition'
 """The name of the database table that contains the transition records"""
+
+TABLE_CHAT = 'chat'
+"""The name of the database table that contains the chat records"""
 
 
 class MonitoringDB:
@@ -109,6 +113,15 @@ class MonitoringDB:
             info = Column(String)
             timestamp = Column(DateTime, nullable=False)
 
+        class TableChat(Base):
+            __tablename__ = TABLE_CHAT
+            id = Column(Integer, primary_key=True, autoincrement=True)
+            session_id = Column(Integer, ForeignKey(f'{TABLE_SESSION}.id'), nullable=False)
+            type = Column(String, nullable=False)
+            content = Column(String, nullable=False)
+            is_user = Column(Boolean, nullable=False)
+            timestamp = Column(DateTime, nullable=False)
+
         Base.metadata.create_all(self.conn)
         self.conn.commit()
 
@@ -135,11 +148,15 @@ class MonitoringDB:
         """
         table = Table(TABLE_INTENT_PREDICTION, MetaData(), autoload_with=self.conn)
         session_entry = self.select_session(session)
+        if session.current_state not in session._bot.nlp_engine._intent_classifiers and session.predicted_intent.intent.name == 'fallback_intent':
+            intent_classifier = 'None'
+        else:
+            intent_classifier = session._bot.nlp_engine._intent_classifiers[session.current_state].__class__.__name__,
         stmt = insert(table).values(
             session_id=int(session_entry['id'][0]),
             message=session.message,
             timestamp=datetime.now(),
-            intent_classifier=session._bot.nlp_engine._intent_classifiers[session.current_state].__class__.__name__,
+            intent_classifier=intent_classifier,
             intent=session.predicted_intent.intent.name,
             score=float(session.predicted_intent.score)
         )
@@ -151,7 +168,7 @@ class MonitoringDB:
                 'intent_prediction_id': intent_prediction_id,
                 'name': matched_parameter.name,
                 'value': matched_parameter.value,
-                'info': matched_parameter.info,
+                'info': str(matched_parameter.info),
             } for matched_parameter in session.predicted_intent.matched_parameters
         ]
         if rows_to_insert:
@@ -160,7 +177,7 @@ class MonitoringDB:
         else:
             self.conn.commit()
 
-    def insert_transition(self, session: Session, transition: Transition):
+    def insert_transition(self, session: Session, transition: Transition) -> None:
         """Insert a new transition record into the transitions table of the monitoring database.
 
         Args:
@@ -185,6 +202,24 @@ class MonitoringDB:
         )
         self.run_statement(stmt)
 
+    def insert_chat(self, session: Session, message: Message) -> None:
+        """Insert a new record into the chat table of the monitoring database.
+
+        Args:
+            session (Session): the session the transition belongs to
+            message (Message): the message to insert into the database
+        """
+        table = Table(TABLE_CHAT, MetaData(), autoload_with=self.conn)
+        session_entry = self.select_session(session)
+        stmt = insert(table).values(
+            session_id=int(session_entry['id'][0]),
+            type=message.type.value,
+            content=message.content,
+            is_user=message.is_user,
+            timestamp=message.timestamp,
+        )
+        self.run_statement(stmt)
+
     def select_session(self, session: Session) -> pd.DataFrame:
         """Retrieves a session record from the sessions table of the database.
 
@@ -202,6 +237,26 @@ class MonitoringDB:
             table.c.session_id == session.id
         )
         return pd.read_sql_query(stmt, self.conn)
+
+    def select_chat(self, session: Session, n: int) -> pd.DataFrame:
+        """Retrieves a conversation history from the chat table of the database.
+
+        Args:
+            session (Session): the session to get from the database
+            n (int or None): the number of messages to get (from the most recents). If none is provided, gets all the
+                messages
+        Returns:
+            pandas.DataFrame: the session record, should be a 1 row DataFrame
+
+        """
+        table = Table(TABLE_CHAT, MetaData(), autoload_with=self.conn)
+        session_entry = self.select_session(session)
+        stmt = (select(table).where(
+            table.c.session_id == int(session_entry['id'][0])
+        ))
+        if n:
+            stmt = stmt.order_by(desc(table.c.id)).limit(n)
+        return pd.read_sql_query(stmt, self.conn).sort_values(by='id')
 
     def run_statement(self, stmt: Executable) -> CursorResult[Any] | None:
         """Executes a SQL statement.

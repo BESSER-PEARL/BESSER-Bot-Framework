@@ -58,7 +58,7 @@ BBF comes with LLM wrappers that provide the necessary methods to use them. All 
 
 - :meth:`~besser.bot.nlp.llm.llm.LLM.initialize`: Initialize the LLM.
 - :meth:`~besser.bot.nlp.llm.llm.LLM.predict`: Generate the output for a given input.
-- :meth:`~besser.bot.nlp.llm.llm.LLM.chat`: Simulate a conversation. The LLM receives previous messages to be able to continue with a conversation. Not mandatory to implement.
+- :meth:`~besser.bot.nlp.llm.llm.LLM.chat`: Simulate a conversation. The LLM receives previous messages to be able to continue with a conversation. Necessary to get chat history from the :doc:`database <../db/monitoring_db>`. Not mandatory to implement.
 - :meth:`~besser.bot.nlp.llm.llm.LLM.intent_classification`: Predict the intent of a given message (it allows the
   :any:`llm-intent-classifier` to use this LLM). Not mandatory to implement.
 

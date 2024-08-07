@@ -3,6 +3,8 @@ import inspect
 import json
 import logging
 import os
+from datetime import datetime
+
 import plotly
 import subprocess
 import threading
@@ -141,7 +143,7 @@ class WebSocketPlatform(Platform):
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append(Message(t=MessageType.STR, content=message, is_user=False))
+        session.save_message(Message(t=MessageType.STR, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
@@ -155,7 +157,7 @@ class WebSocketPlatform(Platform):
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False))
+        session.save_message(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
                           message=file.to_dict())
         self._send(session.id, payload)
@@ -170,7 +172,7 @@ class WebSocketPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         message = df.to_json()
-        session.chat_history.append(Message(t=MessageType.DATAFRAME, content=message, is_user=False))
+        session.save_message(Message(t=MessageType.DATAFRAME, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_DF,
                           message=message)
         self._send(session.id, payload)
@@ -188,7 +190,7 @@ class WebSocketPlatform(Platform):
         for i, button in enumerate(options):
             d[i] = button
         message = json.dumps(d)
-        session.chat_history.append(Message(t=MessageType.OPTIONS, content=message, is_user=False))
+        session.save_message(Message(t=MessageType.OPTIONS, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_OPTIONS,
                           message=message)
         self._send(session.id, payload)
@@ -203,7 +205,7 @@ class WebSocketPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         message = plotly.io.to_json(plot)
-        session.chat_history.append(Message(t=MessageType.PLOTLY, content=message, is_user=False))
+        session.save_message(Message(t=MessageType.PLOTLY, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_PLOTLY,
                           message=message)
         self._send(session.id, payload)
@@ -219,7 +221,7 @@ class WebSocketPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         location_dict = {'latitude': latitude, 'longitude': longitude}
-        session.chat_history.append(Message(t=MessageType.LOCATION, content=location_dict, is_user=False))
+        session.save_message(Message(t=MessageType.LOCATION, content=location_dict, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_LOCATION,
                           message=location_dict)
         self._send(session.id, payload)
@@ -234,7 +236,7 @@ class WebSocketPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         rag_message_dict = rag_message.to_dict()
-        session.chat_history.append(Message(t=MessageType.RAG_ANSWER, content=rag_message_dict, is_user=False))
+        session.save_message(Message(t=MessageType.RAG_ANSWER, content=rag_message_dict, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_RAG,
                           message=rag_message_dict)
         self._send(session.id, payload)

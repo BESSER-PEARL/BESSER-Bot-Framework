@@ -82,6 +82,71 @@ In this example, there are 3 different sessions recorded into the database, wher
 are also stored in the database.
 
 
+Table chat
+~~~~~~~~~~
+
+This table stores all conversations, where each row belongs to a message.
+
+Some components may need this table in order to retrieve the chat history of a session (see :doc:`../nlp/llm` or :doc:`../nlp/rag`)
+
+**Table schema (PostgreSQL):**
+
+.. code:: sql
+
+    CREATE TABLE IF NOT EXISTS public.chat
+    (
+        id INTEGER NOT NULL DEFAULT nextval('session_id_seq1'::regclass),
+        session_id INTEGER NOT NULL,
+        type CHARACTER VARYING NOT NULL,
+        content CHARACTER VARYING NOT NULL,
+        is_user BOOLEAN NOT NULL
+        "timestamp" TIMESTAMP without time zone NOT NULL,
+        CONSTRAINT chat_pkey PRIMARY KEY (id),
+        CONSTRAINT chat_session_id_fkey FOREIGN KEY (session_id)
+            REFERENCES public.session (id) MATCH SIMPLE
+    )
+
+**Example table entries:**
+
+.. list-table::
+    :header-rows: 1
+    :align: left
+
+    * - id
+      - session_id
+      - type
+      - content
+      - is_user
+      - timestamp
+
+    * - 1
+      - 1
+      - str
+      - Hello
+      - True
+      - 2024-05-02 14:52:47
+
+    * - 2
+      - 1
+      - str
+      - Hi! How can I assist you today?
+      - False
+      - 2024-05-02 14:52:50
+
+    * - 3
+      - 1
+      - str
+      - I want to book a flight
+      - True
+      - 2024-05-02 14:52:59
+
+    * - 4
+      - 2
+      - str
+      - Welcome to the shop! How can I assist you?
+      - False
+      - 2024-05-02 16:22:20
+
 Table transition
 ~~~~~~~~~~~~~~~~
 
