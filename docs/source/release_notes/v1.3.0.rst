@@ -1,0 +1,25 @@
+Version 1.3.0
+=============
+
+New Features
+-------------
+- Added :doc:`LLM <../wiki/nlp/llm>`.
+- Added :doc:`RAG <../wiki/nlp/rag>`.
+
+Improvements
+-------------
+
+- Chat history in Monitoring DB instead of locally stored in the session.
+
+
+Version 1.2.2
+=============
+
+- Support for Python version 3.12, which implied to update the Tensorflow and Keras versions to 2.16.1 and 3.3.3,
+  respectively.
+
+Version 1.2.1
+=============
+
+- Support for Python version >= 3.10
+
