@@ -62,7 +62,7 @@ class State:
         self._fallback_body: Callable[[Session], None] = default_fallback_body
         if not ic_config:
             ic_config = SimpleIntentClassifierConfiguration()
-        self._ic_config = ic_config
+        self._ic_config: IntentClassifierConfiguration = ic_config
         self._transition_counter: int = 0
         self.intents: list[Intent] = []
         self.transitions: list[Transition] = []

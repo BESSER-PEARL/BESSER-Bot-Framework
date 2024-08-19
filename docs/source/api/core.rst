@@ -6,6 +6,7 @@ core
 
    core/bot
    core/file
+   core/message
    core/property
    core/session
    core/state

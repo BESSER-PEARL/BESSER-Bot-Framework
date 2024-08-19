@@ -15,7 +15,7 @@ class Platform(ABC):
 
     This class serves as a template to implement platforms.
 
-     Attributes:
+    Attributes:
         running (bool): Whether the platform is running or not
     """
 

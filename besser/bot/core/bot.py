@@ -4,6 +4,7 @@ import threading
 from configparser import ConfigParser
 from typing import Any, Callable
 
+from besser.bot.core.message import Message
 from besser.bot.core.transition import Transition
 from besser.bot.db import DB_MONITORING
 from besser.bot.db.monitoring_db import MonitoringDB
@@ -344,10 +345,10 @@ class Bot:
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
         session.message = message
-        session.predicted_intent = self._nlp_engine.predict_intent(session)
-        self._monitoring_db_insert_intent_prediction(session)
         logging.info(f'Received message: {message}')
+        session.predicted_intent = self._nlp_engine.predict_intent(session)
         logging.info(f'Detected intent: {session.predicted_intent.intent.name}')
+        self._monitoring_db_insert_intent_prediction(session)
         for parameter in session.predicted_intent.matched_parameters:
             logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
@@ -430,6 +431,7 @@ class Bot:
             pass
         session = Session(session_id, self, platform)
         self._sessions[session_id] = session
+        self._monitoring_db_insert_session(session)
         session.current_state.run(session)
         return session
 
@@ -437,7 +439,6 @@ class Bot:
         session = self._get_session(session_id)
         if session is None:
             session = self._new_session(session_id, platform)
-            self._monitoring_db_insert_session(session)
         return session
 
     def delete_session(self, session_id: str) -> None:
@@ -478,8 +479,8 @@ class Bot:
             session (Session): the session of the current user
         """
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
-            thread = threading.Thread(target=self._monitoring_db.insert_session, args=(session,))
-            thread.start()
+            # Not in thread since we must ensure it is added before running a state (the chat table needs the session)
+            self._monitoring_db.insert_session(session)
 
     def _monitoring_db_insert_intent_prediction(self, session: Session) -> None:
         """Insert an intent prediction record into the monitoring database.
@@ -488,7 +489,7 @@ class Bot:
             session (Session): the session of the current user
         """
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
-            thread = threading.Thread(target=self._monitoring_db.insert_intent_prediction, args=(session,))
+            thread = threading.Thread(target=self._monitoring_db.insert_intent_prediction, args=(session, session.current_state,))
             thread.start()
 
     def _monitoring_db_insert_transition(self, session: Session, transition: Transition) -> None:
@@ -499,4 +500,14 @@ class Bot:
         """
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
             thread = threading.Thread(target=self._monitoring_db.insert_transition, args=(session, transition))
+            thread.start()
+
+    def _monitoring_db_insert_chat(self, session: Session, message: Message) -> None:
+        """Insert a message record into the monitoring database.
+
+        Args:
+            session (Session): the session of the current user
+        """
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            thread = threading.Thread(target=self._monitoring_db.insert_chat, args=(session, message))
             thread.start()

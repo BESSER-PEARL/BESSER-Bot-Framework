@@ -43,5 +43,7 @@ Example bots
 ------------
 
 - :doc:`examples/greetings_bot`: Very simple bot for the first contact with the framework
-- :doc:`examples/weather_bot`: Introducing entities
+- :doc:`examples/weather_bot`: Introducing :doc:`entities <wiki/core/entities>`
+- :doc:`examples/llm_bot`: Introducing :doc:`Large Language Models (LLMs) <wiki/nlp/llm>`
+- :doc:`examples/rag_bot`: Introducing :doc:`Retrieval Augmented Generation (RAG) <wiki/nlp/rag>`
 - :doc:`examples/telegram_bot`: Introducing the :doc:`wiki/platforms/telegram_platform`

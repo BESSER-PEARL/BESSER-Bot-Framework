@@ -3,12 +3,14 @@ import base64
 import logging
 import threading
 from concurrent.futures import Future
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from telegram import Update
 from telegram.ext import Application, ApplicationBuilder, BaseHandler, CommandHandler, ContextTypes, MessageHandler, \
     filters
 
+from besser.bot.core.message import Message, MessageType
 from besser.bot.core.session import Session
 from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import PlatformMismatchError
@@ -44,9 +46,10 @@ class TelegramPlatform(Platform):
 
     Attributes:
         _bot (Bot): The bot the platform belongs to
-        _telegram_app (Application): The Telegram Application
+        _telegram_app (telegram.ext.Application): The Telegram Application
         _event_loop (asyncio.AbstractEventLoop): The event loop that runs the asynchronous tasks of the Telegram
             Application
+        _handlers (list[telegram.ext.BaseHandler]): List of telegram bot handlers
     """
     def __init__(self, bot: 'Bot'):
         super().__init__()
@@ -204,7 +207,7 @@ class TelegramPlatform(Platform):
     def reply(self, session: Session, message: str) -> None:
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append((message, 0))
+        session.save_message(Message(t=MessageType.STR, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
@@ -219,7 +222,7 @@ class TelegramPlatform(Platform):
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append((file.get_json_string(), 0))
+        session.save_message(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         file_dict = file.to_dict()
         if message:
             file_dict["caption"] = message
@@ -239,7 +242,7 @@ class TelegramPlatform(Platform):
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        session.chat_history.append((file.get_json_string(), 0))
+        session.save_message(Message(t=MessageType.IMAGE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         file_dict = file.to_dict()
         if message:
             file_dict["caption"] = message
@@ -260,7 +263,7 @@ class TelegramPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         location_dict = {'latitude': latitude, 'longitude': longitude}
-        session.chat_history.append((str(location_dict), 0))
+        session.save_message(Message(t=MessageType.LOCATION, content=location_dict, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_LOCATION,
                           message=location_dict)
         self._send(session.id, payload)

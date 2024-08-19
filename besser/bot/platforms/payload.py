@@ -51,6 +51,8 @@ class PayloadAction(Enum):
     dictionary composed by a latitude and a longitude.
     """
 
+    BOT_REPLY_RAG = 'bot_reply_rag'
+
 
 class Payload:
     """Represents a payload object used for encoding and decoding messages between a bot and any other external agent.
