@@ -9,10 +9,12 @@ from sqlalchemy.orm import declarative_base
 
 from besser.bot.core.message import Message
 from besser.bot.core.session import Session
+from besser.bot.core.state import State
 from besser.bot.core.transition import Transition
 from besser.bot.db import DB_MONITORING_DIALECT, DB_MONITORING_PORT, DB_MONITORING_HOST, DB_MONITORING_DATABASE, \
     DB_MONITORING_USERNAME, DB_MONITORING_PASSWORD
 from besser.bot.library.event.event_library import intent_matched, variable_matches_operation
+from besser.bot.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
@@ -140,7 +142,7 @@ class MonitoringDB:
         )
         self.run_statement(stmt)
 
-    def insert_intent_prediction(self, session: Session) -> None:
+    def insert_intent_prediction(self, session: Session, state: State) -> None:
         """Insert a new intent prediction record into the intent predictions table of the monitoring database.
 
         Args:
@@ -148,10 +150,12 @@ class MonitoringDB:
         """
         table = Table(TABLE_INTENT_PREDICTION, MetaData(), autoload_with=self.conn)
         session_entry = self.select_session(session)
-        if session.current_state not in session._bot.nlp_engine._intent_classifiers and session.predicted_intent.intent.name == 'fallback_intent':
+        if state not in session._bot.nlp_engine._intent_classifiers and session.predicted_intent.intent.name == 'fallback_intent':
             intent_classifier = 'None'
+        elif isinstance(session._bot.nlp_engine._intent_classifiers[state], LLMIntentClassifier):
+            intent_classifier = state.ic_config.llm_name
         else:
-            intent_classifier = session._bot.nlp_engine._intent_classifiers[session.current_state].__class__.__name__,
+            intent_classifier = session._bot.nlp_engine._intent_classifiers[state].__class__.__name__,
         stmt = insert(table).values(
             session_id=int(session_entry['id'][0]),
             message=session.message,
