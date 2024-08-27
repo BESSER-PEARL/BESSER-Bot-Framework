@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/source/_static/bbf_logo_light.svg" alt="BESSER Bot Framework" width="500"/>
+  <img src="./docs/source/_static/bbf_logo_readme.svg" alt="BESSER Bot Framework" width="500"/>
 </div>
 
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue?logo=python&logoColor=gold)](https://pypi.org/project/besser-bot-framework/)
