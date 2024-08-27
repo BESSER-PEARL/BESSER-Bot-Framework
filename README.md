@@ -1,4 +1,14 @@
-# BESSER Bot Framework
+<div align="center">
+  <img src="./docs/source/_static/bbf_logo_light.svg" alt="BESSER Bot Framework" width="500"/>
+</div>
+
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue?logo=python&logoColor=gold)](https://pypi.org/project/besser-bot-framework/)
+[![PyPI version](https://img.shields.io/pypi/v/besser-bot-framework?logo=pypi&logoColor=white)](https://pypi.org/project/besser-bot-framework/)
+[![PyPI - Downloads](https://static.pepy.tech/badge/besser-bot-framework)](https://pypi.org/project/besser-bot-framework/)
+[![Read the Docs](https://img.shields.io/readthedocs/besserbot-framework)](https://besserbot-framework.readthedocs.io/en/latest/)
+[![PyPI - License](https://img.shields.io/pypi/l/besser-bot-framework)](https://opensource.org/license/MIT)
+[![LinkedIn](https://img.shields.io/badge/-LinkedIn-blue?logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/pireseduardo/)](https://www.linkedin.com/company/besser-bot-framework)
+[![GitHub Repo stars](https://img.shields.io/github/stars/besser-pearl/besser-bot-framework?style=social)](https://star-history.com/#besser-pearl/besser-bot-framework)
 
 The BESSER Bot Framework (BBF) is part of the [BESSER](https://modeling-languages.com/a-smart-low-code-platform-for-smart-software-in-luxembourg-goodbye-barcelona/) (Building Better Smart Software Faster) project. It aims to make
 the design and implementation of chatbots easier and accessible for everyone.
