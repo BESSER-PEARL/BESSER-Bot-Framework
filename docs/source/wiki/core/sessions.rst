@@ -47,9 +47,8 @@ Let's see the different things we can do with a user session.
         session_id: str =  session.id
         # We can send a message to the user:
         session.reply('Hello!')
-        # We can get the chat history:
-        # The integer associated to each message identifies the sender (0 = chatbot, 1 = user)
-        chat_history: list[tuple[str, int]] = session.chat_history
+        # We can get the chat history (the 'n' last messages):
+        chat_history: list[Message] = session.get_chat_history(n=5)
         # We can set (store) a variable:
         session.set('age', 30)
         # We can get a variable (the return type can be any type):
@@ -65,5 +64,6 @@ API References
 - Session: :class:`besser.bot.core.session.Session`
 - Session.delete(): :meth:`besser.bot.core.session.Session.delete`
 - Session.get(): :meth:`besser.bot.core.session.Session.get`
+- Session.get_chat_history(): :meth:`besser.bot.core.session.Session.get_chat_history`
 - Session.reply(): :meth:`besser.bot.core.session.Session.reply`
 - Session.set(): :meth:`besser.bot.core.session.Session.set`
