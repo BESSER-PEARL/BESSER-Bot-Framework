@@ -147,6 +147,8 @@ class MonitoringDB:
 
         Args:
             session (Session): the session containing the predicted intent to insert into the database
+            state (State): the state where the intent prediction took place (the session's current state may have
+                changed since the intent prediction, so we need it as argument)
         """
         table = Table(TABLE_INTENT_PREDICTION, MetaData(), autoload_with=self.conn)
         session_entry = self.select_session(session)

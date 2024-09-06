@@ -38,7 +38,6 @@ class Session:
         _message (str): The last message sent to the bot by this session
         _predicted_intent (str): The last predicted intent for this session
         _file: File or None: The last file sent to the bot.
-        chat_history (str): The session chat history
         flags (dict[str, bool]): A dictionary of boolean flags.
             A `predicted_intent flag` is set to true when an intent is received. When the evaluation of the
             current state's transitions is done, the flag is set to false. It may happen that a transition different
@@ -62,7 +61,6 @@ class Session:
         self._message: str or None = None
         self._predicted_intent: IntentClassifierPrediction or None = None
         self._file: File or None = None
-        self.chat_history: list[Message] = []
         self.flags: dict[str, bool] = {
             'predicted_intent': False,
             'file': False

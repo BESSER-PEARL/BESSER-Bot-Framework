@@ -130,18 +130,19 @@ forwarded:
         # The session id is the Telegram chat_id
         telegram_platform.send_audio(session.id, my_audio, title='Hello World')
 
-Note that the TelegramPlatform wrappers also involve other actions. For instance, when the bot replies a message, it is
-added to an internal chat history stored in the user session. You can also customize what is done when calling any function.
+Note that the TelegramPlatform wrappers also involve other actions. For instance, when the bot replies a message, it can be
+added to a chat history :doc:`database <../db/monitoring_db>`. You can also customize what is done when calling any function.
 You could update the chat history to record the audio messages, either adding the audio or simply a log message:
 
 .. code:: python
 
-    def custom_send_audio(session, audio):
-        # Bot messages are identified with a 0, user messages with a 1
-        session.chat_history.append(('audio sent', 0))
-        # or
-        session.chat_history.append((audio, 0))
-        telegram_platform.send_audio(session.id, my_audio, title='Hello World')
+    from datetime import datetime
+    from besser.bot.core.message import Message, MessageType
+
+    def custom_send_audio(session: Session, audio):
+        message = Message(MessageType.AUDIO, audio, is_user=False, timestamp=datetime.now())
+        session.save_message(message)
+        telegram_platform.send_audio(session.id, audio, title='Hello World')
 
     def example_body(session: Session):
         custom_send_audio(session, audio)
@@ -154,6 +155,8 @@ API References
 - Bot.get_or_create_session(): :meth:`besser.bot.core.bot.Bot.get_or_create_session`
 - Bot.use_telegram_platform(): :meth:`besser.bot.core.bot.Bot.use_telegram_platform`
 - File: :class:`besser.bot.core.file.File`
+- Message: :class:`besser.bot.core.message.Message`
+- MessageType: :class:`besser.bot.core.message.MessageType`
 - TelegramPlatform: :class:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform`
 - TelegramPlatform.add_handler(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.add_handler`
 - TelegramPlatform.reply(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply`
