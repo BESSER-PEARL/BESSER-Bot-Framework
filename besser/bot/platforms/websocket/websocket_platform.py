@@ -88,9 +88,11 @@ class WebSocketPlatform(Platform):
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
-                logging.error(f'The client closed unexpectedly')
+                pass
+                # logging.error(f'The client closed unexpectedly')
             except Exception as e:
-                logging.error("Server Error:", e)
+                pass
+                # logging.error("Server Error:", e)
             finally:
                 logging.info(f'Session finished')
                 self._bot.delete_session(session.id)
@@ -131,8 +133,11 @@ class WebSocketPlatform(Platform):
         self._websocket_server.serve_forever()
 
     def stop(self):
-        self._websocket_server.shutdown()
         self.running = False
+        for conn_id in list(self._connections.keys()):
+            conn = self._connections[conn_id]
+            conn.close_socket()
+        self._websocket_server.shutdown()
         logging.info(f'{self._bot.name}\'s WebSocketPlatform stopped')
 
     def _send(self, session_id, payload: Payload) -> None:

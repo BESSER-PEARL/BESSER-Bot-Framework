@@ -21,7 +21,7 @@ from besser.bot.core.message import Message, MessageType
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 
 # Time interval to check if a streamlit session is still active, in seconds
-SESSION_MONITORING_INTERVAL = 10
+SESSION_MONITORING_INTERVAL = 1
 
 
 def get_streamlit_session() -> AppSession or None:
