@@ -94,7 +94,7 @@ class WebSocketPlatform(Platform):
                 pass
                 # logging.error("Server Error:", e)
             finally:
-                logging.info(f'Session finished')
+                # logging.info(f'Session finished')
                 self._bot.delete_session(session.id)
                 del self._connections[session.id]
         self._message_handler = message_handler

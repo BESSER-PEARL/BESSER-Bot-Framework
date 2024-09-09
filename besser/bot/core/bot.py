@@ -1,7 +1,5 @@
 import logging
 import operator
-import signal
-import sys
 import threading
 from configparser import ConfigParser
 from typing import Any, Callable
@@ -306,15 +304,15 @@ class Bot:
             if self._monitoring_db.connected:
                 self._monitoring_db.initialize_db()
         self._run_platforms()
-
-        def handle_exit(sig, frame):
-            self.stop()
-            sys.exit(0)
-        signal.signal(signal.SIGINT, handle_exit)
-
         if sleep:
             idle = threading.Event()
-            idle.wait()
+            while True:
+                try:
+                    idle.wait(1)
+                except BaseException as e:
+                    self.stop()
+                    logging.info(f'{self._name} execution finished due to {e.__class__.__name__}')
+                    break
 
     def stop(self) -> None:
         """Stop the bot execution."""
