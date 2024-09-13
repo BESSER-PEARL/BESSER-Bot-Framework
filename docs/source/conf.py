@@ -79,9 +79,22 @@ paramlinks_hyperlink_param = "name"
 
 # API GENERATION
 def generate_api_rst_files(preffix, dir, output_dir):
-    api_excluded_files = [
-        'streamlit_ui.py'
+    api_excluded_files_toctree = [
+        # Files that for which we won't automatically generate .rst files and WILL NOT appear in the toctree
+        'db/db_connection.py',
+        'db/flow_graph.py',
+        'db/home.py',
+        'db/intent_details.py',
+        'db/monitoring_ui.py',
+        'db/sidebar.py',
+        'db/table_overview.py',
+        'db/utils.py',
     ]
+    api_excluded_files = [
+        # Files that for which we won't automatically generate .rst files and WILL appear in the toctree
+        'platforms/streamlit_ui.py',
+    ]
+    api_excluded_files.extend(api_excluded_files_toctree)
     os.makedirs(output_dir, exist_ok=True)
     root_dir = preffix + dir
     package_name = root_dir.split('/')[-1]
@@ -95,12 +108,12 @@ f"""
 """
     for dirpath, dirnames, filenames in os.walk(root_dir):
         for filename in filenames:
-            if (filename.endswith('.py')) and (not filename.startswith('_')):
+            if (filename.endswith('.py')) and (not filename.startswith('_')) and (f'{package_name}/{filename}' not in api_excluded_files_toctree):
                 module_name = os.path.splitext(filename)[0]
                 package_rst += \
 f"""   {package_name}/{module_name}
 """
-                if filename not in api_excluded_files:
+                if f'{package_name}/{filename}' not in api_excluded_files:
                     rel_path = os.path.relpath(dirpath, root_dir).replace(os.path.sep, '.')
                     full_module_name = dir.replace('/', '.').replace(os.path.sep, '.') + '.' + rel_path + '.' + module_name \
                         if rel_path != '.' else \

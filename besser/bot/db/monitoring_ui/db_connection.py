@@ -26,7 +26,7 @@ def get_property(config: ConfigParser, prop: Property) -> Any:
 
 
 def close_connection(monitoring_db: MonitoringDB):
-    print('Closing DB connection...')
+    logging.info('Closing DB connection...')
     if monitoring_db is not None:
         monitoring_db.close_connection()
 
@@ -48,7 +48,7 @@ def connect_to_db(config_path: str):
             engine = create_engine(url)
             monitoring_db.conn = engine.connect()
             atexit.register(close_connection, monitoring_db)
-            print('Connected to DB')
+            logging.info('Connected to DB')
             return monitoring_db
         except Exception as e:
             logging.error(f"An error occurred while trying to connect to the monitoring DB in the monitoring UI. "

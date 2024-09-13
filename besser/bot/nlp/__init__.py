@@ -104,8 +104,7 @@ default value: ``None``
 
 OPENAI_API_KEY = Property(SECTION_NLP, 'nlp.openai.api_key', str, None)
 """
-The OpenAI API key, necessary to use an OpenAI LLM in
-:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+The OpenAI API key, necessary to use an OpenAI LLM.
 
 name: ``nlp.openai.api_key``
 
@@ -116,8 +115,7 @@ default value: ``None``
 
 HF_API_KEY = Property(SECTION_NLP, 'nlp.hf.api_key', str, None)
 """
-The HuggingFace (Inference) API key, necessary to use a HuggingFace Inference API LLM in
-:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+The HuggingFace (Inference) API key, necessary to use a HuggingFace Inference API LLM.
 
 name: ``nlp.hf.api_key``
 
@@ -128,8 +126,7 @@ default value: ``None``
 
 REPLICATE_API_KEY = Property(SECTION_NLP, 'nlp.replicate.api_key', str, None)
 """
-The Replicate API key, necessary to use a Replicate LLM in
-:class:`~besser.bot.nlp.intent_classifier.llm_intent_classifier.LLMIntentClassifier`.
+The Replicate API key, necessary to use a Replicate LLM.
 
 name: ``nlp.replicate.api_key``
 

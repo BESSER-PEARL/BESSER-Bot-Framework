@@ -74,7 +74,7 @@ API References
 
 - Bot: :class:`besser.bot.core.bot.Bot`
 - LLM: :class:`besser.bot.nlp.llm.llm.LLM`
-- LLM.predict: :meth:`besser.bot.nlp.llm.llm.LLM.predict`
+- LLM.predict(): :meth:`besser.bot.nlp.llm.llm.LLM.predict`
 - LLMHuggingFace: :class:`besser.bot.nlp.llm.llm_huggingface.LLMHuggingFace`:
 - LLMHuggingFaceAPI: :class:`besser.bot.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`:
 - LLMOpenAI: :class:`besser.bot.nlp.llm.llm_openai_api.LLMOpenAI`

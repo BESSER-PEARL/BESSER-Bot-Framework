@@ -35,9 +35,8 @@ def start_ui(config_path: str = None, host: str = 'localhost', port: int = 8401)
         subprocess.run(cmd)
 
     thread = threading.Thread(target=run_monitoring_ui)
-    logging.info(f'Running Monitoring UI in another thread')
+    logging.info(f'Monitoring UI starting at {host}:{port}')
     thread.start()
-    logging.info(f'Monitoring UI starting at ws://{host}:{port}')
 
 
 def main():
