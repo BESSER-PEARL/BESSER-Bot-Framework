@@ -34,5 +34,5 @@ class LanguageDetectionProcessor(Processor):
             str: the processed message
         """
         lang = detect(message)
-        session.set(f'{session.id}-detected-language', lang)
+        session.set('detected-language', lang)
         return message
