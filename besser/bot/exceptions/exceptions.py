@@ -133,3 +133,9 @@ class LLMSuiteNotFound(Exception):
         for suite in suites:
             message += suite + "\n"
         super().__init__(message)
+        
+class ProcessorTargetUndefined(Exception):
+    def __init__(self):
+        message = "One or more processors were not configured correctly, you need to specify which message needs to be \
+            processed. Reminder: Either \"user_messages\" or \"bot_messages\" (or both) need to be set to true.\n"
+        super().__init__(message)

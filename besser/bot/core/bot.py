@@ -2,7 +2,7 @@ import logging
 import operator
 import threading
 from configparser import ConfigParser
-from typing import Any, Callable
+from typing import Any, Callable, get_type_hints
 
 from besser.bot.core.message import Message
 from besser.bot.core.transition import Transition
@@ -12,6 +12,7 @@ from besser.bot.core.entity.entity import Entity
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
+from besser.bot.core.processors.processor import Processor
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
 from besser.bot.core.file import File
@@ -66,6 +67,7 @@ class Bot:
         self.entities: list[Entity] = []
         self.global_initial_states: list[tuple[State, Intent]] = []
         self.global_state_component: dict[State, list[State]] = dict()
+        self.processors: list[Processor] = []
 
     @property
     def name(self):
@@ -351,6 +353,7 @@ class Bot:
         """
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
+        message = self.process(session=session, message=message, user_messages=True)
         session.message = message
         logging.info(f'Received message: {message}')
         session.predicted_intent = self._nlp_engine.predict_intent(session)
@@ -359,6 +362,16 @@ class Bot:
         for parameter in session.predicted_intent.matched_parameters:
             logging.info(f"Parameter '{parameter.name}': {parameter.value}, info = {parameter.info}")
         session.current_state.receive_intent(session)
+
+    def process(self, session: Session, message: Any, user_messages: bool = False, bot_messages: bool = False):
+        for processor in self._processors:
+            method_return_type = get_type_hints(processor.process).get('return')
+            if method_return_type is not None and isinstance(message, method_return_type):
+                if processor.bot_messages and bot_messages:
+                    message = processor.process(session=session, message=message)
+                elif processor.user_messages and user_messages:
+                    message = processor.process(session=session, message=message)
+        return message
 
     def receive_file(self, session_id: str, file: File) -> None:
         """Receive a file from a specific session.
@@ -371,6 +384,7 @@ class Bot:
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
         # keep previous message here? 
+        file = self.process(session=session, message=file, user_messages=True)
         session.message = file.name
         session.file = file
         logging.info('Received file')
@@ -518,3 +532,11 @@ class Bot:
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
             thread = threading.Thread(target=self._monitoring_db.insert_chat, args=(session, message))
             thread.start()
+
+    def add_processor(self, processor: Processor):
+        """Add a processor to be used by the bot.
+
+        Args:
+            processor (Processor): the processor to be added
+        """
+        self._processors.append(processor)
