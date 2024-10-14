@@ -364,7 +364,7 @@ class Bot:
         session.current_state.receive_intent(session)
 
     def process(self, session: Session, message: Any, user_messages: bool = False, bot_messages: bool = False):
-        for processor in self._processors:
+        for processor in self.processors:
             method_return_type = get_type_hints(processor.process).get('return')
             if method_return_type is not None and isinstance(message, method_return_type):
                 if processor.bot_messages and bot_messages:
