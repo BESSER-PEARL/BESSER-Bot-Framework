@@ -36,7 +36,8 @@ class LLM(ABC):
         self.name: str = name
         self.parameters: dict = parameters
         self._nlp_engine._llms[name] = self
-        self._global_context = global_context
+        self._global_context: str = global_context
+        self._context: dict = dict()
 
     def set_parameters(self, parameters: dict) -> None:
         """Set the LLM parameters.
@@ -104,8 +105,7 @@ class LLM(ABC):
         """
         logging.warning(f'Intent Classification not implemented in {self.__class__.__name__}')
         return []
-    
-    @abstractmethod
+
     def add_user_context(self, session: 'Session', context: str) -> None:
         """Add user-specific context.
 
@@ -113,4 +113,4 @@ class LLM(ABC):
             context (str): the user-specific context
             session (Session): the ongoing session
         """
-        pass
+        self._context[session.id] = context

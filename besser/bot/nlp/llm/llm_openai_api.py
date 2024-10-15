@@ -24,6 +24,7 @@ class LLMOpenAI(LLM):
         num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
             to add to the prompt context (must be > 0). Necessary a connection to
             :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
+        global_context (str): the global context to be provided to the LLM for each request
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
@@ -32,13 +33,13 @@ class LLMOpenAI(LLM):
         num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
             to add to the prompt context (must be > 0). Necessary a connection to
             :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
+        _global_context (str): the global context to be provided to the LLM for each request
     """
 
     def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1, global_context: str = None):
         super().__init__(bot.nlp_engine, name, parameters, global_context=global_context)
         self.client: OpenAI = None
         self.num_previous_messages: int = num_previous_messages
-        self._context: dict = dict()
 
     def set_model(self, name: str) -> None:
         """Set the LLM model name.
@@ -121,9 +122,3 @@ class LLMOpenAI(LLM):
             message=message,
             response_json=response_json
         )
-
-    def add_user_context(self, session: 'Session', context: str):
-        self._context[session.id] = context
-        print("adding user context")
-        print(self._context[session.id])
-        
