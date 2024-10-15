@@ -94,8 +94,8 @@ class LLMOpenAI(LLM):
         context_messages = []
         if self._global_context:
             context_messages.append({"role": "system", "content": self._global_context})
-        if session and session.id in self._context:
-            context_messages.append({"role": "system", "content": self._context[session.id]})
+        if session and session.id in self._user_context:
+            context_messages.append({"role": "system", "content": self._user_context[session.id]})
         response = self.client.chat.completions.create(
             model=self.name,
             messages=context_messages + messages,
