@@ -32,17 +32,20 @@ Here is an example of how to create a custom processor that processes both user 
         def __init__(self):
             super().__init__(user_messages=True, bot_messages=True)
 
-        def process(self, session: 'Session', message: Any) -> Any:
+        def process(self, session: 'Session', message: str) -> str:
             # Custom processing logic goes here
             processed_message = message.lower()  # Example: convert message to lowercase
             return processed_message
 
     # Usage
+    # Initialise processor
     my_processor = MyCustomProcessor()
-    processed_message = my_processor.process(session, "HELLO WORLD")
-    print(processed_message)  # Output: "hello world"
-
-The example demonstrates the implementation of a `MyCustomProcessor` that converts all incoming messages to lowercase.
+    # Add to a bot
+    bot = Bot('greetings_bot')
+    # Add processor to bot
+    bot.add_processor(my_processor)
+    
+The example demonstrates the implementation of a `MyCustomProcessor` that converts both the user's messages to the bot and the bot's responses to lowercase.
 
 Methods
 -------
@@ -65,6 +68,7 @@ Methods
 - **process(self, session: 'Session', message: Any) -> Any**
   
   Abstract method that processes a message. This method should be overridden in subclasses to define custom processing logic.
+  Note that the process method MUST return the processed message, even if no changes were applied.
 
   Parameters:
   
@@ -82,10 +86,24 @@ The following exceptions may be raised:
 
 - **ProcessorTargetUndefined**: Raised if a `Processor` is created without specifying either `user_messages` or `bot_messages` as `True`.
 
+Available processors
+--------------------
+This section contains a list of implemented processors.
+
+`Language Detection Processor <https://github.com/BESSER-PEARL/BESSER-Bot-Framework/besser/bot/core/processors/language_detection_processor.py>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This processor attempts to detect the language of given messages by using the `langdetect <https://pypi.org/project/langdetect/>`_ library. 
+When processed, the recognized language will be stored as a session variable in ISO 639-1 format and can be fetched with the following call:
+
+.. code:: python
+
+    session.get('detected-lang')
+
+
 API References
 --------------
 
-- Processor: :class:`besser.bot.processors.processor.Processor`
-- Processor.process(): :meth:`besser.bot.processors.processor.Processor.process`
+- Processor: :class:`besser.bot.core.processors.processor.Processor`
+- Processor.process(): :meth:`besser.bot.core.processors.processor.Processor.process`
 - Session: :class:`besser.bot.core.session.Session`
 - ProcessorTargetUndefined: :class:`besser.bot.exceptions.exceptions.ProcessorTargetUndefined`
