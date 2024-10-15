@@ -24,9 +24,8 @@ class UserAdaptationProcessor(Processor):
         llm_name (str): the name of the LLM to use.
         context (str): additional context to improve the adaptation. should include information about the bot itself and the task it should accomplish        
     """
-    def __init__(self, bot: 'Bot', llm_name: str, user_messages: bool = False, bot_messages: bool = False,
-                 context: str = None):
-        super().__init__(user_messages=user_messages, bot_messages=bot_messages)
+    def __init__(self, bot: 'Bot', llm_name: str, context: str = None):
+        super().__init__(bot_messages=True)
         self._llm_name: str = llm_name
         self._nlp_engine: 'NLPEngine' = bot.nlp_engine
         # does it make sense to have a constructor param for context? It essentially does the same as the global_context attr of LLMs. 
