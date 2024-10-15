@@ -50,6 +50,7 @@ class Bot:
         global_initial_states (list[State, Intent]): List of tuples of initial global states and their triggering intent
         global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
+        processors (list[Processors]): List of processors used by the bot
     """
 
     def __init__(self, name: str):
@@ -539,4 +540,4 @@ class Bot:
         Args:
             processor (Processor): the processor to be added
         """
-        self._processors.append(processor)
+        self.processors.append(processor)
