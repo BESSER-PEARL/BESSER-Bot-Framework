@@ -34,10 +34,11 @@ class LLMOpenAI(LLM):
             :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
     """
 
-    def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
-        super().__init__(bot.nlp_engine, name, parameters)
+    def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1, global_context: str = None):
+        super().__init__(bot.nlp_engine, name, parameters, global_context=global_context)
         self.client: OpenAI = None
         self.num_previous_messages: int = num_previous_messages
+        self._context: dict = dict()
 
     def set_model(self, name: str) -> None:
         """Set the LLM model name.
@@ -58,14 +59,18 @@ class LLMOpenAI(LLM):
     def initialize(self) -> None:
         self.client = OpenAI(api_key=self._nlp_engine.get_property(nlp.OPENAI_API_KEY))
 
-    def predict(self, message: str, parameters: dict = None) -> str:
+    def predict(self, message: str, session: 'Session' = None, parameters: dict = None) -> str:
+        messages = []
+        if self._global_context:
+            messages.append({"role": "system", "content": self._global_context})
+        if session and session.id in self._context:
+            messages.append({"role": "system", "content": self._context[session.id]})
+        messages.append({"role": "user", "content": message})
         if not parameters:
             parameters = self.parameters
         response = self.client.chat.completions.create(
             model=self.name,
-            messages=[
-                {"role": "user", "content": message}
-            ],
+            messages=messages,
             **parameters,
         )
         return response.choices[0].message.content
@@ -83,9 +88,14 @@ class LLMOpenAI(LLM):
         ]
         if not messages:
             messages.append({'role': 'user', 'content': session.message})
+        context_messages = []
+        if self._global_context:
+            context_messages.append({"role": "system", "content": self._global_context})
+        if session and session.id in self._context:
+            context_messages.append({"role": "system", "content": self._context[session.id]})
         response = self.client.chat.completions.create(
             model=self.name,
-            messages=messages,
+            messages=context_messages + messages,
             **parameters,
         )
         return response.choices[0].message.content
@@ -111,3 +121,9 @@ class LLMOpenAI(LLM):
             message=message,
             response_json=response_json
         )
+
+    def add_user_context(self, session: 'Session', context: str):
+        self._context[session.id] = context
+        print("adding user context")
+        print(self._context[session.id])
+        
