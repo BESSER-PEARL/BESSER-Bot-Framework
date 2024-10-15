@@ -1,4 +1,4 @@
-Processor
+Processors
 =========
 
 The `Processor` class defines an abstract base class for processing user or bot messages within the system. It serves as a template to implement processors that can modify messages before they are handled by other components.
