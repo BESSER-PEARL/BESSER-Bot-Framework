@@ -34,9 +34,11 @@ class LLMOpenAI(LLM):
             to add to the prompt context (must be > 0). Necessary a connection to
             :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
         _global_context (str): the global context to be provided to the LLM for each request
+        _user_context (dict): user specific context to be provided to the LLM for each request
     """
 
-    def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1, global_context: str = None):
+    def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1, 
+                 global_context: str = None):
         super().__init__(bot.nlp_engine, name, parameters, global_context=global_context)
         self.client: OpenAI = None
         self.num_previous_messages: int = num_previous_messages
@@ -60,12 +62,12 @@ class LLMOpenAI(LLM):
     def initialize(self) -> None:
         self.client = OpenAI(api_key=self._nlp_engine.get_property(nlp.OPENAI_API_KEY))
 
-    def predict(self, message: str, session: 'Session' = None, parameters: dict = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None) -> str:
         messages = []
         if self._global_context:
             messages.append({"role": "system", "content": self._global_context})
-        if session and session.id in self._context:
-            messages.append({"role": "system", "content": self._context[session.id]})
+        if session and session.id in self._user_context:
+            messages.append({"role": "system", "content": self._user_context[session.id]})
         messages.append({"role": "user", "content": message})
         if not parameters:
             parameters = self.parameters

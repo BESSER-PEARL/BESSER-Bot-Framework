@@ -27,6 +27,8 @@ class LLMHuggingFace(LLM):
         num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
             to add to the prompt context (must be > 0). Necessary a connection to
             :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
+        global_context (str): the global context to be provided to the LLM for each request
+
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
@@ -35,10 +37,13 @@ class LLMHuggingFace(LLM):
         num_previous_messages (int): for the chat functionality, the number of previous messages of the conversation
             to add to the prompt context (must be > 0). Necessary a connection to
             :class:`~besser.bot.db.monitoring_db.MonitoringDB`.
+        _global_context (str): the global context to be provided to the LLM for each request
+        _user_context (dict): user specific context to be provided to the LLM for each request
     """
 
-    def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1):
-        super().__init__(bot.nlp_engine, name, parameters)
+    def __init__(self, bot: 'Bot', name: str, parameters: dict, num_previous_messages: int = 1, 
+                 global_context: str = None):
+        super().__init__(bot.nlp_engine, name, parameters, global_context)
         self.pipe = None
         self.num_previous_messages: int = num_previous_messages
 
@@ -53,10 +58,16 @@ class LLMHuggingFace(LLM):
     def initialize(self) -> None:
         self.pipe = pipeline("text-generation", model=self.name)
 
-    def predict(self, message: str, parameters: dict = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None) -> str:
         if not parameters:
             parameters = self.parameters
-        outputs = self.pipe([{'role': 'user', 'content': message}], return_full_text=False, **parameters)
+        context_messages = []
+        if self._global_context:
+            context_messages.append({'role': 'user', 'content': f"Context: {self._global_context}"})
+        if session and session.id in self._user_context:
+            context_messages.append({'role': 'user', 'content': f"Context: {self._user_context[session.id]}"})
+        messages = context_messages + [{'role': 'user', 'content': message}]
+        outputs = self.pipe(messages, return_full_text=False, **parameters)
         answer = outputs[0]['generated_text']
         return answer
 
@@ -65,6 +76,11 @@ class LLMHuggingFace(LLM):
             parameters = self.parameters
         if self.num_previous_messages <= 0:
             raise ValueError('The number of previous messages to send to the LLM must be > 0')
+        context_messages = []
+        if self._global_context:
+            context_messages.append({'role': 'user', 'content': f"Context: {self._global_context}"})
+        if session and session.id in self._user_context:
+            context_messages.append({'role': 'user', 'content': f"Context: {self._user_context[session.id]}"})
         chat_history: list[Message] = session.get_chat_history(n=self.num_previous_messages)
         messages = [
             {'role': 'user' if message.is_user else 'assistant', 'content': message.content}
@@ -73,7 +89,7 @@ class LLMHuggingFace(LLM):
         ]
         if not messages:
             messages.append({'role': 'user', 'content': session.message})
-        messages = merge_llm_consecutive_messages(messages)
+        messages = merge_llm_consecutive_messages(context_messages + messages)
         outputs = self.pipe(messages, return_full_text=False, **parameters)
         answer = outputs[0]['generated_text']
         return answer

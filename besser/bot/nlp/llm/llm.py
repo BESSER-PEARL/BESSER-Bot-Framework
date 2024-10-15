@@ -29,6 +29,7 @@ class LLM(ABC):
         name (str): the LLM name
         parameters (dict): the LLM parameters
         _global_context (str): the global context to be provided to the LLM for each request
+        _user_context (dict): user specific context to be provided to the LLM for each request
     """
 
     def __init__(self, nlp_engine: 'NLPEngine', name: str, parameters: dict, global_context: str = None):
@@ -37,7 +38,7 @@ class LLM(ABC):
         self.parameters: dict = parameters
         self._nlp_engine._llms[name] = self
         self._global_context: str = global_context
-        self._context: dict = dict()
+        self._user_context: dict = dict()
 
     def set_parameters(self, parameters: dict) -> None:
         """Set the LLM parameters.
@@ -53,7 +54,7 @@ class LLM(ABC):
         pass
 
     @abstractmethod
-    def predict(self, message: str, session: 'Session' = None, parameters: dict = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None) -> str:
         """Make a prediction, i.e., generate an output.
 
         Args:
@@ -113,4 +114,4 @@ class LLM(ABC):
             context (str): the user-specific context
             session (Session): the ongoing session
         """
-        self._context[session.id] = context
+        self._user_context[session.id] = context
