@@ -41,6 +41,13 @@ class DuplicatedEntityError(Exception):
         super().__init__(message)
 
 
+class DuplicatedImageObjectError(Exception):
+
+    def __init__(self, bot, image_object):
+        message = f"Bot '{bot.name}' already contains an image object with name '{image_object.name}'"
+        super().__init__(message)
+
+
 class DuplicatedIntentParameterError(Exception):
 
     def __init__(self, intent, name):

@@ -15,6 +15,9 @@ class PayloadAction(Enum):
     USER_FILE = 'user_file'
     """PayloadAction: Indicates that the payload's purpose is to send a user file."""
 
+    USER_IMAGE = 'user_image'
+    """PayloadAction: Indicates that the payload's purpose is to send a user image."""
+
     RESET = 'reset'
     """PayloadAction: Use the :class:`~besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform` on this
     bot.
@@ -52,6 +55,10 @@ class PayloadAction(Enum):
     """
 
     BOT_REPLY_RAG = 'bot_reply_rag'
+
+    BOT_REPLY_OBJECT_DETECTION = 'bot_reply_object_detection'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing an object detection 
+    prediction."""
 
 
 class Payload:

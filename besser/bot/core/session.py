@@ -7,6 +7,7 @@ from pandas import DataFrame
 from besser.bot.core.message import Message, MessageType, get_message_type
 from besser.bot.core.transition import Transition
 from besser.bot.core.file import File
+from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
 from besser.bot.db import DB_MONITORING
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.rag.rag import RAGMessage
@@ -36,8 +37,9 @@ class Session:
         _current_state (str): The current state in the bot for this session
         _dictionary (str): Storage of private data for this session
         _message (str): The last message sent to the bot by this session
-        _predicted_intent (str): The last predicted intent for this session
-        _file: File or None: The last file sent to the bot.
+        _predicted_intent (IntentClassifierPrediction): The last predicted intent for this session
+        _detected_objects (ObjectDetectionPrediction): The last detected objects for this session
+        _file (File or None): The last file sent to the bot.
         flags (dict[str, bool]): A dictionary of boolean flags.
             A `predicted_intent flag` is set to true when an intent is received. When the evaluation of the
             current state's transitions is done, the flag is set to false. It may happen that a transition different
@@ -60,10 +62,12 @@ class Session:
         self._dictionary: dict[str, Any] = {}
         self._message: str or None = None
         self._predicted_intent: IntentClassifierPrediction or None = None
+        self._detected_objects: ObjectDetectionPrediction or None = None
         self._file: File or None = None
         self.flags: dict[str, bool] = {
             'predicted_intent': False,
-            'file': False
+            'file': False,
+            'detected_objects': False
         }
 
     @property
@@ -88,8 +92,8 @@ class Session:
 
     @message.setter
     def message(self, message):
-        """
-        Set the last message sent to the bot.
+        """Set the last message sent to the bot.
+
         Args:
             message (str): the message to set in the session
         """
@@ -104,8 +108,8 @@ class Session:
 
     @file.setter
     def file(self, file: File):
-        """
-        Set the last file sent to the bot.
+        """Set the last file sent to the bot.
+
         Args:
             file (File): the file to set in the session
         """
@@ -115,18 +119,33 @@ class Session:
 
     @property
     def predicted_intent(self):
-        """str: The last predicted intent for this session."""
+        """IntentClassifierPrediction: The last predicted intent for this session."""
         return self._predicted_intent
 
     @predicted_intent.setter
     def predicted_intent(self, predicted_intent: IntentClassifierPrediction):
-        """
-        Set the last predicted intent for this session.
+        """Set the last predicted intent for this session.
+
         Args:
-            predicted_intent (File): the last predicted intent
+            predicted_intent (IntentClassifierPrediction): the last predicted intent
         """
         self._predicted_intent = predicted_intent
         self.flags['predicted_intent'] = True
+
+    @property
+    def detected_objects(self):
+        """ObjectDetectionPrediction: The last detected objects for this session"""
+        return self._detected_objects
+
+    @detected_objects.setter
+    def detected_objects(self, detected_objects: ObjectDetectionPrediction):
+        """Set the last detected objects for this session.
+
+        Args:
+            detected_objects (ObjectDetectionPrediction): the last detected objects
+        """
+        self._detected_objects = detected_objects
+        self.flags['detected_objects'] = True
 
     def get_chat_history(self, n: int = None) -> list[Message]:
         """Get the history of messages between this session and its bot.

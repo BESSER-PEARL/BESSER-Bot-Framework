@@ -6,6 +6,7 @@ import threading
 import time
 from datetime import datetime
 
+import cv2
 import pandas as pd
 import plotly
 import streamlit as st
@@ -22,6 +23,11 @@ from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 
 # Time interval to check if a streamlit session is still active, in seconds
 SESSION_MONITORING_INTERVAL = 1
+# To enable/disable video input (images from camera input sent to the bot)
+# TODO: Temporary solution
+VIDEO_INPUT_ENABLED = False
+# Time interval to send images to the bot
+VIDEO_INPUT_INTERVAL = 0.2
 
 
 def get_streamlit_session() -> AppSession or None:
@@ -43,6 +49,30 @@ def session_monitoring(interval: int):
             runtime.close_session(session.id)
             session.session_state['websocket'].close()
             break
+
+
+def video_input():
+    """This function periodically sends images to the bot at a specific frequency (defined by VIDEO_INPUT_INTERVAL, in
+    seconds)"""
+    # TODO: FINISH WHEN SESSION IS CLOSED
+    session = get_streamlit_session()
+    cap = cv2.VideoCapture(0)
+    cap.set(3, 1280)
+    cap.set(4, 720)
+    while True:
+        ws = session.session_state['websocket']
+        success, img = cap.read()
+        session.session_state['img'] = img
+        if success:
+            retval, buffer = cv2.imencode('.jpg', img)  # Encode as JPEG
+            base64_img = base64.b64encode(buffer).decode('utf-8')
+            payload = Payload(action=PayloadAction.USER_IMAGE,
+                              message=base64_img)
+            try:
+                ws.send(json.dumps(payload, cls=PayloadEncoder))
+            except Exception as e:
+                print('Your message (image from video input) could not be sent. The connection is already closed')
+        time.sleep(VIDEO_INPUT_INTERVAL)
 
 
 def main():
@@ -88,6 +118,28 @@ def main():
         elif payload.action == PayloadAction.BOT_REPLY_RAG.value:
             t = MessageType.RAG_ANSWER
             content = payload.message
+        elif payload.action == PayloadAction.BOT_REPLY_OBJECT_DETECTION.value:
+            # Draw labelled bounding boxes in the camera screen
+            image_object_predictions = json.loads(payload.message)['image_object_predictions']
+            img = st.session_state['img']
+            for image_object_prediction in image_object_predictions:
+                x1 = image_object_prediction['x1']
+                y1 = image_object_prediction['y1']
+                x2 = image_object_prediction['x2']
+                y2 = image_object_prediction['y2']
+                label = f'{image_object_prediction["name"]} {image_object_prediction["score"]}'
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                (text_width, text_height), baseline = cv2.getTextSize(label, font, fontScale=0.7, thickness=1)
+                label_pos = (x1, y1 - 10)  # Put label above the box
+                # Draw a filled rectangle as background for the label
+                cv2.rectangle(img, (x1, y1 - text_height - baseline), (x1 + text_width, y1), color=(0, 255, 0),thickness=-1)
+                # Draw the text (label) on top of the background rectangle
+                cv2.putText(img, label, label_pos, font, fontScale=0.7, color=(0, 0, 0), thickness=1)
+                # Draw box
+                cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 255, 0), thickness=2)
+            cv2.imshow("Image", img)
+            cv2.waitKey(1)
+
         message = Message(t=t, content=content, is_user=False, timestamp=datetime.now())
         streamlit_session._session_state['queue'].put(message)
         streamlit_session._handle_rerun_script_request()
@@ -145,6 +197,12 @@ def main():
         add_script_run_ctx(session_monitoring_thread)
         session_monitoring_thread.start()
         st.session_state['session_monitoring'] = session_monitoring_thread
+
+    if VIDEO_INPUT_ENABLED and 'video_input' not in st.session_state:  # TODO: MAKE THIS OPTIONAL
+        video_input_thread = threading.Thread(target=video_input)
+        add_script_run_ctx(video_input_thread)
+        video_input_thread.start()
+        st.session_state['video_input'] = video_input_thread
 
     ws = st.session_state['websocket']
 

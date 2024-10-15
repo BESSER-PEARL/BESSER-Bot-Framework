@@ -8,6 +8,7 @@ value, trigger the transitions.
 from typing import Any, Callable, TYPE_CHECKING
 
 from besser.bot.core.intent.intent import Intent
+from besser.bot.core.image.image_object import ImageObject
 
 if TYPE_CHECKING:
     from besser.bot.core.session import Session
@@ -69,7 +70,7 @@ def file_received(session: 'Session', event_params: dict) -> bool:
 
     Returns:
         bool: True if the user has sent a file and (if specified) the received file type corresponds to the allowed
-        types as defined in "allowed_types"
+            types as defined in "allowed_types"
     """
     if session.flags['file']:
         if "allowed_types" in event_params.keys():
@@ -77,4 +78,25 @@ def file_received(session: 'Session', event_params: dict) -> bool:
                 return True
             return False
         return True
+    return False
+
+
+def image_object_detected(session: 'Session', event_params: dict) -> bool:
+    """This event checks if a specific ImageObject was detected in an Object Detection Prediction with a minimum
+    confidence score.
+
+    Args:
+        session (Session): the current user session
+        event_params (dict): the event parameters
+
+    Returns:
+        bool: True if the target ImageObject was detected in the Object Detection, with a score higher than the
+            specified in the event parameters
+    """
+    if session.flags['detected_objects']:
+        target_image_object: ImageObject = event_params['image_object']
+        target_score: ImageObject = event_params['score']
+        for image_object_prediction in session.detected_objects.image_object_predictions:
+            if image_object_prediction.image_object == target_image_object and image_object_prediction.score >= target_score:
+                return True
     return False

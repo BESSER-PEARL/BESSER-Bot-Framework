@@ -5,6 +5,8 @@ import logging
 import os
 from datetime import datetime
 
+import cv2
+import numpy as np
 import plotly
 import subprocess
 import threading
@@ -16,6 +18,7 @@ from websockets.sync.server import ServerConnection, WebSocketServer, serve
 
 from besser.bot.core.message import Message, MessageType
 from besser.bot.core.session import Session
+from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPredictionEncoder
 from besser.bot.exceptions.exceptions import PlatformMismatchError
 from besser.bot.nlp.rag.rag import RAGMessage
 from besser.bot.platforms import websocket
@@ -48,18 +51,20 @@ class WebSocketPlatform(Platform):
         _host (str): The WebSocket host address (e.g. `localhost`)
         _port (int): The WebSocket port (e.g. `8765`)
         _use_ui (bool): Whether to use the built-in UI or not
+        _video_input (bool): Whether to request the WebSocket client to send video (streaming images) or not
         _connections (dict[str, ServerConnection]): The list of active connections (i.e. users connected to the bot)
         _websocket_server (WebSocketServer or None): The WebSocket server instance
         _message_handler (Callable[[ServerConnection], None]): The function that handles the user connections
             (sessions) and incoming messages
     """
 
-    def __init__(self, bot: 'Bot', use_ui: bool = True):
+    def __init__(self, bot: 'Bot', use_ui: bool = True, video_input: bool = True):
         super().__init__()
         self._bot: 'Bot' = bot
         self._host: str = None
         self._port: int = None
         self._use_ui: bool = use_ui
+        self._video_input: bool = video_input  # TODO: Not used yet
         self._connections: dict[str, ServerConnection] = {}
         self._websocket_server: WebSocketServer = None
 
@@ -85,6 +90,16 @@ class WebSocketPlatform(Platform):
                         self._bot.receive_message(session.id, message)
                     elif payload.action == PayloadAction.USER_FILE.value:
                         self._bot.receive_file(session.id, File.decode(payload.message))
+                    elif payload.action == PayloadAction.USER_IMAGE.value:
+                        decoded_data = base64.b64decode(payload.message)  # Decode base64 back to bytes
+                        np_data = np.frombuffer(decoded_data, np.uint8)  # Convert bytes to numpy array
+                        img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)  # Decode numpy array back to image
+                        self._bot.receive_image(session.id, img)
+                        # To display detected objects, optional
+                        payload = Payload(action=PayloadAction.BOT_REPLY_OBJECT_DETECTION,
+                                          message=json.dumps(session.detected_objects, cls=ObjectDetectionPredictionEncoder))
+                        self._send(session.id, payload)
+
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:

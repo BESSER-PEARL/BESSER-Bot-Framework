@@ -4,8 +4,12 @@ import threading
 from configparser import ConfigParser
 from typing import Any, Callable
 
+import numpy as np
+
 from besser.bot.core.message import Message
 from besser.bot.core.transition import Transition
+from besser.bot.core.image.image_object import ImageObject
+from besser.bot.cv.cv_engine import CVEngine
 from besser.bot.db import DB_MONITORING
 from besser.bot.db.monitoring_db import MonitoringDB
 from besser.bot.core.entity.entity import Entity
@@ -16,7 +20,7 @@ from besser.bot.core.session import Session
 from besser.bot.core.state import State
 from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
-    DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound
+    DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound, DuplicatedImageObjectError
 from besser.bot.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
     SimpleIntentClassifierConfiguration
 from besser.bot.nlp.nlp_engine import NLPEngine
@@ -36,6 +40,7 @@ class Bot:
         _platforms (list[Platform]): The bot platforms
         _platforms_threads (list[threading.Thread]): The threads where the platforms are run
         _nlp_engine (NLPEngine): The bot NLP engine
+        _cv_engine (CVEngine): The bot CV engine
         _config (ConfigParser): The bot configuration parameters
         _default_ic_config (IntentClassifierConfiguration): the intent classifier configuration used by default for the
             bot states
@@ -46,6 +51,7 @@ class Bot:
         states (list[State]): The bot states
         intents (list[Intent]): The bot intents
         entities (list[Entity]): The bot entities
+        image_objects (list[ImageObject]): The bot image objects
         global_initial_states (list[State, Intent]): List of tuples of initial global states and their triggering intent
         global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
@@ -56,6 +62,7 @@ class Bot:
         self._platforms: list[Platform] = []
         self._platforms_threads: list[threading.Thread] = []
         self._nlp_engine = NLPEngine(self)
+        self._cv_engine = CVEngine(self)
         self._config: ConfigParser = ConfigParser()
         self._default_ic_config: IntentClassifierConfiguration = SimpleIntentClassifierConfiguration()
         self._sessions: dict[str, Session] = {}
@@ -64,6 +71,7 @@ class Bot:
         self.states: list[State] = []
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
+        self.image_objects: list[ImageObject] = []
         self.global_initial_states: list[tuple[State, Intent]] = []
         self.global_state_component: dict[State, list[State]] = dict()
 
@@ -76,6 +84,11 @@ class Bot:
     def nlp_engine(self):
         """NLPEngine: The bot NLP engine."""
         return self._nlp_engine
+
+    @property
+    def cv_engine(self):
+        """CVEngine: The bot CV engine."""
+        return self._cv_engine
 
     @property
     def config(self):
@@ -238,6 +251,36 @@ class Bot:
         self.entities.append(new_entity)
         return new_entity
 
+    def new_image_object(self, name: str, description: str or None = None) -> ImageObject:
+        """Create a new image object in the bot.
+
+        Args:
+            name (str): the image object name. It must be unique in the bot
+            description (str or None): a description of the image, optional
+
+        Returns:
+            ImageObject: the image object
+        """
+        new_image_object = ImageObject(name, description)
+        if new_image_object in self.image_objects:
+            raise DuplicatedImageObjectError(self, new_image_object)
+        self.image_objects.append(new_image_object)
+        return new_image_object
+
+    def get_image_object(self, name: str) -> ImageObject or None:
+        """Get an image object of the bot.
+
+        Args:
+            name (str): the image object name
+
+        Returns:
+            ImageObject or None: the image object, or None if it does not exist
+        """
+        for image_object in self.image_objects:
+            if image_object.name == name:
+                return image_object
+        return None
+
     def initial_state(self) -> State or None:
         """Get the bot's initial state. It can be None if it has not been set.
 
@@ -363,7 +406,6 @@ class Bot:
     def receive_file(self, session_id: str, file: File) -> None:
         """Receive a file from a specific session.
 
-
         Args:
             session_id (str): the session that sends the message to the bot
             file (File): the file sent to the bot
@@ -375,7 +417,19 @@ class Bot:
         session.file = file
         logging.info('Received file')
         session.current_state.receive_file(session)
-              
+
+    def receive_image(self, session_id: str, img: np.ndarray):
+        """Receive an image from a specific session.
+
+        Args:
+            session_id (str): the session that sends the message to the bot
+            img (np.ndarray): the image sent to the bot
+        """
+        session = self._sessions[session_id]
+        # TODO: Raise exception SessionNotFound
+        session.detected_objects = self._cv_engine.detect_objects(img)
+        session.current_state.receive_detected_objects(session)
+
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:
         """Set the fallback body for all bot states.
 
@@ -401,8 +455,10 @@ class Bot:
             raise InitialStateNotFound(self)
         self._init_global_states()
         self._nlp_engine.initialize()
+        self._cv_engine.initialize()
         logging.info(f'{self._name} training started')
         self._nlp_engine.train()
+        self._cv_engine.train()
         logging.info(f'{self._name} training finished')
         self._trained = True
 
@@ -456,16 +512,17 @@ class Bot:
         """
         del self._sessions[session_id]
 
-    def use_websocket_platform(self, use_ui: bool = True) -> WebSocketPlatform:
+    def use_websocket_platform(self, use_ui: bool = True, video_input: bool = False) -> WebSocketPlatform:
         """Use the :class:`~besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform` on this bot.
 
         Args:
             use_ui (bool): if true, the default UI will be run to use this platform
+            video_input (bool): if true, the WebSocket client will send streaming video (images) to the bot
 
         Returns:
             WebSocketPlatform: the websocket platform
         """
-        websocket_platform = WebSocketPlatform(self, use_ui)
+        websocket_platform = WebSocketPlatform(self, use_ui, video_input)
         self._platforms.append(websocket_platform)
         return websocket_platform
 

@@ -6,9 +6,12 @@ from typing import Any, Callable, TYPE_CHECKING
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
+from besser.bot.core.image.image_object import ImageObject
+from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
 from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
     DuplicatedIntentMatchingTransitionError, EventSignatureError, IntentNotFound, StateNotFound
-from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation, file_received
+from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation, file_received, \
+    image_object_detected
 from besser.bot.library.event.event_template import event_template
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_body, default_fallback_body
@@ -270,6 +273,26 @@ class State:
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=variable_matches_operation,
                                            event_params=event_params))
 
+    def when_image_object_detected_go_to(
+            self,
+            image_object: ImageObject,
+            score: float,
+            dest: 'State'
+    ) -> None:
+        """Create a new `image object detected` transition on this state.
+
+        When the bot is in a state and receives an image, the CVEngine will be in charge of detecting objects.
+        If the transition event is to receive a specific image object that was detected by the bot, it will move to the
+        transition's destination state.
+
+        Args:
+            image_object (ImageObject): the image object
+            dest (State): the destination state
+        """
+        event_params = {'image_object': image_object, 'score': score}
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=image_object_detected,
+                                           event_params=event_params))
+
     def when_file_received_go_to(self, dest: 'State', allowed_types: list[str] or str = None) -> None:
         """Create a new `file received` transition on this state.
 
@@ -320,6 +343,26 @@ class State:
                 logging.error(f"An error occurred while executing '{self._fallback_body.__name__}' of state "
                               f"'{self._name}' in bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
+
+    def receive_detected_objects(self, session: Session) -> None:
+        """Receive the detected objects (which are predicted from an image sent to the bot) from a user session.
+
+        When receiving detected objects it looks for the state's transition whose trigger event is to match that intent.
+        The fallback body is run when the received intent does not match any transition intent (i.e. fallback intent).
+
+        Args:
+            session (Session): the user session that sent the message
+        """
+        detected_objects: ObjectDetectionPrediction = session.detected_objects
+        if detected_objects is None:
+            logging.error("Something went wrong, no object detection was stored in the session")
+            return
+        for transition in self.transitions:  # TODO: ONLY CHECK OBJECT DETECTION TRANSITIONS???
+            if transition.is_event_true(session):
+                session.flags['detected_objects'] = False
+                session.move(transition)
+                return
+        session.flags['detected_objects'] = False
 
     def receive_file(self, session: Session) -> None:
         """Receive a file from a user session.
