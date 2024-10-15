@@ -22,18 +22,21 @@ class LLM(ABC):
         nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
         name (str): the LLM name
         parameters (dict): the LLM parameters
+        global_context (str): the global context to be provided to the LLM for each request
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
         name (str): the LLM name
         parameters (dict): the LLM parameters
+        _global_context (str): the global context to be provided to the LLM for each request
     """
 
-    def __init__(self, nlp_engine: 'NLPEngine', name: str, parameters: dict):
+    def __init__(self, nlp_engine: 'NLPEngine', name: str, parameters: dict, global_context: str = None):
         self._nlp_engine: 'NLPEngine' = nlp_engine
         self.name: str = name
         self.parameters: dict = parameters
         self._nlp_engine._llms[name] = self
+        self._global_context = global_context
 
     def set_parameters(self, parameters: dict) -> None:
         """Set the LLM parameters.
@@ -49,11 +52,12 @@ class LLM(ABC):
         pass
 
     @abstractmethod
-    def predict(self, message: str, parameters: dict = None) -> str:
+    def predict(self, message: str, session: 'Session' = None, parameters: dict = None) -> str:
         """Make a prediction, i.e., generate an output.
 
         Args:
             message (Any): the LLM input text
+            session (Session): the ongoing session, can be None if no context needs to be applied
             parameters (dict): the LLM parameters to use in the prediction. If none is provided, the default LLM
                 parameters will be used
 
@@ -100,3 +104,13 @@ class LLM(ABC):
         """
         logging.warning(f'Intent Classification not implemented in {self.__class__.__name__}')
         return []
+    
+    @abstractmethod
+    def add_user_context(self, session: 'Session', context: str) -> None:
+        """Add user-specific context.
+
+        Args:
+            context (str): the user-specific context
+            session (Session): the ongoing session
+        """
+        pass
