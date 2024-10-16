@@ -141,8 +141,8 @@ class WebSocketPlatform(Platform):
         logging.info(f'{self._bot.name}\'s WebSocketPlatform stopped')
 
     def _send(self, session_id, payload: Payload) -> None:
-        payload.message = self._bot.process(self._bot.get_or_create_session(session_id, self), payload.message,
-                                            bot_messages=True)
+        session = self._bot.get_or_create_session(session_id=session_id, platform=self)
+        payload.message = self._bot.process(session=session, message=payload.message, is_user_message=False)
         if session_id in self._connections:
             conn = self._connections[session_id]
             conn.send(json.dumps(payload, cls=PayloadEncoder))
