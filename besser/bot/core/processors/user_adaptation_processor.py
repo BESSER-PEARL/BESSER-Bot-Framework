@@ -13,19 +13,17 @@ class UserAdaptationProcessor(Processor):
     done once. If the profile changes, then an adapation will be triggered again.
 
     Args:
-        user_messages (bool): Whether the processor should be applied to user messages.
-        bot_messages (bool): Whether the processor should be applied to bot messages.
+        bot (Bot): The bot the processor belongs to
         llm_name (str): the name of the LLM to use.
         context (str): additional context to improve the adaptation. should include information about the bot itself and the task it should accomplish
 
     Attributes:
-        user_messages (bool): Whether the processor should be applied to user messages.
-        bot_messages (bool): Whether the processor should be applied to bot messages.
+        bot (Bot): The bot the processor belongs to
         llm_name (str): the name of the LLM to use.
         context (str): additional context to improve the adaptation. should include information about the bot itself and the task it should accomplish        
     """
     def __init__(self, bot: 'Bot', llm_name: str, context: str = None):
-        super().__init__(bot_messages=True)
+        super().__init__(bot=bot, bot_messages=True)
         self._llm_name: str = llm_name
         self._nlp_engine: 'NLPEngine' = bot.nlp_engine
         # does it make sense to have a constructor param for context? It essentially does the same as the global_context attr of LLMs. 
