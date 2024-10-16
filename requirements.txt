@@ -20,7 +20,7 @@ requests==2.31.0
 snowballstemmer==2.2.0
 spacy==3.7.2
 SpeechRecognition==3.10.0
-spellux @ git+https://github.com/Aran30/spellux
+# spellux @ git+https://github.com/Aran30/spellux  # Not available in PyPi. Install manually with `pip install git+https://github.com/Aran30/spellux.git`
 sqlalchemy==2.0.29
 streamlit==1.27.2
 streamlit-antd-components==0.3.2
