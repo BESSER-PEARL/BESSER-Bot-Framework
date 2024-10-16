@@ -4,6 +4,7 @@ dateparser==1.1.8
 keras==2.14.0
 langchain==0.2.9
 langchain-community==0.2.7
+langdetect==1.0.9
 librosa==0.10.1
 nltk==3.8.1
 numpy==1.26.1
@@ -13,6 +14,7 @@ plotly==5.18.0
 psycopg2-binary==2.9.9
 pypdf==4.3.1
 python-telegram-bot==21.0
+pyvis==0.3.2
 replicate==0.23.1
 requests==2.31.0
 snowballstemmer==2.2.0
@@ -21,6 +23,7 @@ SpeechRecognition==3.10.0
 spellux @ git+https://github.com/Aran30/spellux
 sqlalchemy==2.0.29
 streamlit==1.27.2
+streamlit-antd-components==0.3.2
 tensorflow==2.14.0
 text2num==2.5.0
 tiktoken==0.7.0

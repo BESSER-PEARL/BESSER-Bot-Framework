@@ -163,6 +163,8 @@ class TelegramPlatform(Platform):
         logging.info(f'{self._bot.name}\'s TelegramPlatform stopped')
 
     def _send(self, session_id: str, payload: Payload) -> None:
+        session = self._bot.get_or_create_session(session_id=session_id, platform=self)
+        payload.message = self._bot.process(is_user_message=False, session=session, message=payload.message)
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
             future = asyncio.run_coroutine_threadsafe(
                 self._telegram_app.bot.send_message(

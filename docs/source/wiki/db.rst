@@ -13,3 +13,4 @@ Table of contents
    :maxdepth: 1
 
    db/monitoring_db
+   db/monitoring_ui

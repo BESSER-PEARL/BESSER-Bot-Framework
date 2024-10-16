@@ -103,6 +103,8 @@ An LLM, using the BBF :doc:`LLM wrappers <llm>`:
 
 .. code:: python
 
+    from besser.bot.nlp.llm.llm_openai_api import LLMOpenAI
+
     gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini')
 
 RAG
@@ -174,3 +176,16 @@ expander containers that show the retrieved documents to the user.
 
 API References
 --------------
+
+- Bot: :class:`besser.bot.core.bot.Bot`
+- Bot.load_properties(): :meth:`besser.bot.core.bot.Bot.load_properties`
+- Bot.use_websocket_platform(): :meth:`besser.bot.core.bot.Bot.use_websocket_platform`
+- LLMOpenAI: :class:`besser.bot.nlp.llm.llm_openai_api.LLMOpenAI`
+- RAG: :class:`besser.bot.nlp.rag.rag.RAG`
+- RAG.load_pdfs(): :meth:`besser.bot.nlp.rag.rag.RAG.load_pdfs`
+- RAG.run(): :meth:`besser.bot.nlp.rag.rag.RAG.run`
+- RAGMessage: :class:`besser.bot.nlp.rag.rag.RAGMessage`
+- Session: :class:`besser.bot.core.session.Session`
+- Session.reply(): :meth:`besser.bot.core.session.Session.reply`
+- Session.run_rag(): :meth:`besser.bot.core.session.Session.run_rag`
+- WebSocketPlatform.reply_rag(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`

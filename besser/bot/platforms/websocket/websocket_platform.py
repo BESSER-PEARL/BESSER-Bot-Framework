@@ -88,11 +88,13 @@ class WebSocketPlatform(Platform):
                     elif payload.action == PayloadAction.RESET.value:
                         self._bot.reset(session.id)
             except ConnectionClosedError:
-                logging.error(f'The client closed unexpectedly')
+                pass
+                # logging.error(f'The client closed unexpectedly')
             except Exception as e:
-                logging.error("Server Error:", e)
+                pass
+                # logging.error("Server Error:", e)
             finally:
-                logging.info(f'Session finished')
+                # logging.info(f'Session finished')
                 self._bot.delete_session(session.id)
                 del self._connections[session.id]
         self._message_handler = message_handler
@@ -131,11 +133,16 @@ class WebSocketPlatform(Platform):
         self._websocket_server.serve_forever()
 
     def stop(self):
-        self._websocket_server.shutdown()
         self.running = False
+        for conn_id in list(self._connections.keys()):
+            conn = self._connections[conn_id]
+            conn.close_socket()
+        self._websocket_server.shutdown()
         logging.info(f'{self._bot.name}\'s WebSocketPlatform stopped')
 
     def _send(self, session_id, payload: Payload) -> None:
+        session = self._bot.get_or_create_session(session_id=session_id, platform=self)
+        payload.message = self._bot.process(session=session, message=payload.message, is_user_message=False)
         if session_id in self._connections:
             conn = self._connections[session_id]
             conn.send(json.dumps(payload, cls=PayloadEncoder))
@@ -171,7 +178,8 @@ class WebSocketPlatform(Platform):
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        message = df.to_json()
+        message = df.to_json() 
+        #TODO processor will check for JSON instead of Dataframe, so the processor needs to convert to DF
         session.save_message(Message(t=MessageType.DATAFRAME, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_DF,
                           message=message)
@@ -189,6 +197,7 @@ class WebSocketPlatform(Platform):
         d = {}
         for i, button in enumerate(options):
             d[i] = button
+        #TODO processor should also process the individual strings in the list of strings
         message = json.dumps(d)
         session.save_message(Message(t=MessageType.OPTIONS, content=message, is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_OPTIONS,
