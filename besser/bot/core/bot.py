@@ -2,7 +2,7 @@ import logging
 import operator
 import threading
 from configparser import ConfigParser
-from typing import Any, Callable
+from typing import Any, Callable, get_type_hints
 
 from besser.bot.core.message import Message
 from besser.bot.core.transition import Transition
@@ -12,6 +12,7 @@ from besser.bot.core.entity.entity import Entity
 from besser.bot.core.intent.intent import Intent
 from besser.bot.core.intent.intent_parameter import IntentParameter
 from besser.bot.core.property import Property
+from besser.bot.core.processors.processor import Processor
 from besser.bot.core.session import Session
 from besser.bot.core.state import State
 from besser.bot.core.file import File
@@ -49,6 +50,7 @@ class Bot:
         global_initial_states (list[State, Intent]): List of tuples of initial global states and their triggering intent
         global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
+        processors (list[Processors]): List of processors used by the bot
     """
 
     def __init__(self, name: str):
@@ -66,6 +68,7 @@ class Bot:
         self.entities: list[Entity] = []
         self.global_initial_states: list[tuple[State, Intent]] = []
         self.global_state_component: dict[State, list[State]] = dict()
+        self.processors: list[Processor] = []
 
     @property
     def name(self):
@@ -351,6 +354,7 @@ class Bot:
         """
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
+        message = self.process(session=session, message=message, is_user_message=True)
         session.message = message
         logging.info(f'Received message: {message}')
         session.predicted_intent = self._nlp_engine.predict_intent(session)
@@ -371,11 +375,34 @@ class Bot:
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
         # keep previous message here? 
+        file = self.process(session=session, message=file, is_user_message=True)
         session.message = file.name
         session.file = file
         logging.info('Received file')
         session.current_state.receive_file(session)
-              
+
+    def process(self, session: Session, message: Any, is_user_message: bool) -> Any:
+        """Runs the bot processors in a message.
+
+        Only processors that process messages of the same type as the given message will be run.
+        If the message to process is a user message, only processors that process user messages will be run.
+        If the message to process is a bot message, only processors that process bot messages will be run.
+
+        Args:
+            session (Session): the current session
+            message (Any): the message to be processed
+            is_user_message (bool): indicates whether the message is a user message (True) or a bot message (False)
+
+        Returns:
+            Any: the processed message
+        """
+        for processor in self.processors:
+            method_return_type = get_type_hints(processor.process).get('return')
+            if method_return_type is not None and isinstance(message, method_return_type):
+                if (processor.bot_messages and not is_user_message) or (processor.user_messages and is_user_message):
+                    message = processor.process(session=session, message=message)
+        return message
+
     def set_global_fallback_body(self, body: Callable[[Session], None]) -> None:
         """Set the fallback body for all bot states.
 

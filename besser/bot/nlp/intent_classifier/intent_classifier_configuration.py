@@ -1,8 +1,5 @@
 from abc import ABC
 
-from besser.bot.exceptions.exceptions import LLMSuiteNotFound
-from besser.bot.nlp import llm
-
 
 class IntentClassifierConfiguration(ABC):
     """The Intent Classifier Configuration abstract class.
