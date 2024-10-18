@@ -1,0 +1,13 @@
+Version 1.4.0
+=============
+
+New Features
+-------------
+
+- Monitoring UI added
+- Bot Processors
+
+Improvements
+-------------
+
+- Fixed terminating bot execution with ctrl + c

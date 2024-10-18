@@ -134,9 +134,9 @@ class SREngineNotFound(Exception):
         super().__init__(message)
 
 
-class LLMSuiteNotFound(Exception):
-    def __init__(self, suite, suites):
-        message = f"Chosen LLM suite \"{suite}\" is not supported, choose one of the following: \n"
-        for suite in suites:
-            message += suite + "\n"
+class ProcessorTargetUndefined(Exception):
+    def __init__(self, processor):
+        message = (f"The processor {processor.__class__.__name__} was not configured correctly, you need to specify " \
+                   f"which message needs to be processed. Reminder: Either \"user_messages\" or \"bot_messages\" (or " \
+                   f"both) need to be set to true.\n")
         super().__init__(message)
