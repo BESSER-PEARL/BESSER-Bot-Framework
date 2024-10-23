@@ -48,7 +48,7 @@ class YOLOWorldObjectDetector(ObjectDetector):
 
     def predict(self, img: np.ndarray) -> ObjectDetectionPrediction:
         timestamp = datetime.datetime.now()
-        results: list[Results] = self.yolo(img, stream=False)
+        results: list[Results] = self.yolo(img, stream=False, verbose=False)
         image_object_predictions: list[ImageObjectPrediction] = []
         for r in results:
             boxes = r.boxes
