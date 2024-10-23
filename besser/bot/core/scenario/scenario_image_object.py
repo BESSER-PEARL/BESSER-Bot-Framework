@@ -26,6 +26,8 @@ class ScenarioImageObject(ScenarioElement):
         self.score: float = score
 
     def evaluate(self, session: Session):
+        if session.detected_objects is None:
+            return False
         image_object_predictions: list[ImageObjectPrediction] = session.detected_objects.image_object_predictions
         filtered_image_object_predictions = [
             image_object_prediction for image_object_prediction in image_object_predictions
