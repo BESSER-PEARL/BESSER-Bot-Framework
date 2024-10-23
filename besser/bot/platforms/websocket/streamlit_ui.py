@@ -60,18 +60,20 @@ def video_input():
     cap.set(3, 1280)
     cap.set(4, 720)
     while True:
-        ws = session.session_state['websocket']
-        success, img = cap.read()
-        session.session_state['img'] = img
-        if success:
-            retval, buffer = cv2.imencode('.jpg', img)  # Encode as JPEG
-            base64_img = base64.b64encode(buffer).decode('utf-8')
-            payload = Payload(action=PayloadAction.USER_IMAGE,
-                              message=base64_img)
-            try:
-                ws.send(json.dumps(payload, cls=PayloadEncoder))
-            except Exception as e:
-                print('Your message (image from video input) could not be sent. The connection is already closed')
+        if 'img' not in session._session_state:
+            ws = session._session_state['websocket']
+            success, img = cap.read()
+            if success:
+                session.session_state['img'] = img
+                retval, buffer = cv2.imencode('.jpg', img)  # Encode as JPEG
+                base64_img = base64.b64encode(buffer).decode('utf-8')
+                payload = Payload(action=PayloadAction.USER_IMAGE,
+                                  message=base64_img)
+                try:
+                    ws.send(json.dumps(payload, cls=PayloadEncoder))
+                except Exception as e:
+                    print('Your message (image from video input) could not be sent. The connection is already closed')
+                    break
         time.sleep(VIDEO_INPUT_INTERVAL)
 
 
@@ -138,6 +140,7 @@ def main():
                 # Draw box
                 cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 255, 0), thickness=2)
             cv2.imshow("Image", img)
+            del streamlit_session._session_state['img']
             cv2.waitKey(1)
 
         message = Message(t=t, content=content, is_user=False, timestamp=datetime.now())
