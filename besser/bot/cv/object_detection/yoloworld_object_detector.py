@@ -1,4 +1,3 @@
-import datetime
 import math
 from typing import TYPE_CHECKING
 
@@ -46,8 +45,7 @@ class YOLOWorldObjectDetector(ObjectDetector):
     def train(self) -> None:
         pass
 
-    def predict(self, img: np.ndarray) -> ObjectDetectionPrediction:
-        timestamp = datetime.datetime.now()
+    def predict(self, img: np.ndarray) -> list[ImageObjectPrediction]:
         results: list[Results] = self.yolo(img, stream=False, verbose=False)
         image_object_predictions: list[ImageObjectPrediction] = []
         for r in results:
@@ -63,15 +61,8 @@ class YOLOWorldObjectDetector(ObjectDetector):
                     image_object_prediction: ImageObjectPrediction = ImageObjectPrediction(
                         image_object=image_object,
                         score=score,
+                        model_name=self.name,
                         x1=x1, y1=y1, x2=x2, y2=y2
                     )
                     image_object_predictions.append(image_object_prediction)
-
-        object_detection_prediction: ObjectDetectionPrediction = ObjectDetectionPrediction(
-            img=img,
-            image_object_predictions=image_object_predictions,
-            timestamp=timestamp,
-            model_name=self.name,
-            image_input_name='CAMERA'  # TODO: For now, this is ignored
-        )
-        return object_detection_prediction
+        return image_object_predictions

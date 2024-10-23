@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, TYPE_CHECKING
 
 import numpy as np
@@ -21,32 +22,22 @@ class CVEngine:
 
     Attributes:
         _bot (Bot): The bot the CVEngine belongs to
-        _object_detector (ObjectDetector or None): Object Detection System of the CVEngine
+        _object_detectors (list[ObjectDetector]): Object Detection Systems of the CVEngine
     """
 
     def __init__(self, bot: 'Bot'):
         self._bot: 'Bot' = bot
-        self._object_detector: ObjectDetector or None = None
+        self._object_detectors: list[ObjectDetector] = []
 
     @property
-    def object_detector(self):
+    def object_detectors(self):
         """ObjectDetector: The Object Detector of the CVEngine"""
-        return self._object_detector
-
-    @object_detector.setter
-    def object_detector(self, object_detector: ObjectDetector):
-        """Set the CVEngine's Object Detector.
-
-        Args:
-            object_detector (ObjectDetector): the Object Detector to set in the CVEngine
-        """
-        self._object_detector = object_detector
+        return self._object_detectors
 
     def initialize(self) -> None:
         """Initialize the CVEngine."""
-        if self._object_detector is None:
-            raise ValueError("Could not initialize the bot's CVEngine. You need to instantiate an ObjectDetector first.")
-        self._object_detector.initialize()
+        for object_detector in self._object_detectors:
+            object_detector.initialize()
 
     def get_property(self, prop: Property) -> Any:
         """Get a CV property's value from the CVEngine's bot.
@@ -63,7 +54,8 @@ class CVEngine:
 
     def train(self) -> None:
         """Train the CV components of the CVEngine."""
-        self._object_detector.train()
+        for object_detector in self._object_detectors:
+            object_detector.train()
 
     def detect_objects(self, img: np.ndarray) -> ObjectDetectionPrediction:
         """Detect objects from an image.
@@ -74,5 +66,12 @@ class CVEngine:
         Returns:
             ObjectDetectionPrediction: the object detection prediction
         """
-        object_detection_prediction: ObjectDetectionPrediction = self._object_detector.predict(img)
-        return object_detection_prediction
+        prediction = ObjectDetectionPrediction(
+            img=img,
+            image_object_predictions=[],
+            timestamp=datetime.datetime.now(),
+            image_input_name=None  # TODO: For now, this is ignored
+        )
+        for object_detector in self._object_detectors:
+            prediction.image_object_predictions.extend(object_detector.predict(img))
+        return prediction

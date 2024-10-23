@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
+from besser.bot.cv.object_detection.object_detection_prediction import ImageObjectPrediction
 
 if TYPE_CHECKING:
     from besser.bot.cv.cv_engine import CVEngine
@@ -29,7 +29,7 @@ class ObjectDetector(ABC):
         self._cv_engine: 'CVEngine' = cv_engine
         self.name: str = name
         self.parameters: dict = parameters
-        self._cv_engine.object_detector = self
+        self._cv_engine.object_detectors.append(self)
 
     def set_parameters(self, parameters: dict) -> None:
         """Set the Object Detector parameters.
@@ -50,13 +50,13 @@ class ObjectDetector(ABC):
         pass
 
     @abstractmethod
-    def predict(self, img: np.ndarray) -> ObjectDetectionPrediction:
+    def predict(self, img: np.ndarray) -> list[ImageObjectPrediction]:
         """Detect objects from an image.
 
         Args:
             img (np.ndarray): the image to detect objects from
 
         Returns:
-            ObjectDetectionPrediction: the object detection prediction
+            list[ImageObjectPrediction]: the image object predictions
         """
         pass
