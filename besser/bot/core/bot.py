@@ -7,6 +7,7 @@ from typing import Any, Callable, get_type_hints
 import numpy as np
 
 from besser.bot.core.message import Message
+from besser.bot.core.scenario.scenario import Scenario
 from besser.bot.core.transition import Transition
 from besser.bot.core.image.image_object import ImageObject
 from besser.bot.cv.cv_engine import CVEngine
@@ -21,7 +22,8 @@ from besser.bot.core.session import Session
 from besser.bot.core.state import State
 from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
-    DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound, DuplicatedImageObjectError
+    DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound, DuplicatedImageObjectError, \
+    DuplicatedScenarioError
 from besser.bot.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
     SimpleIntentClassifierConfiguration
 from besser.bot.nlp.nlp_engine import NLPEngine
@@ -57,6 +59,7 @@ class Bot:
         global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
         processors (list[Processors]): List of processors used by the bot
+        scenarios (list[Scenario]): List of scenarios used by the bot
     """
 
     def __init__(self, name: str):
@@ -74,6 +77,7 @@ class Bot:
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
         self.image_objects: list[ImageObject] = []
+        self.scenarios: list[Scenario] = []
         self.global_initial_states: list[tuple[State, Intent]] = []
         self.global_state_component: dict[State, list[State]] = dict()
         self.processors: list[Processor] = []
@@ -283,6 +287,21 @@ class Bot:
             if image_object.name == name:
                 return image_object
         return None
+
+    def new_scenario(self, name: str) -> Scenario:
+        """Create a new scenario in the bot.
+
+        Args:
+            name (str): the image object name. It must be unique in the bot
+
+        Returns:
+            Scenario: the scenario
+        """
+        new_scenario = Scenario(name)
+        if new_scenario in self.scenarios:
+            raise DuplicatedScenarioError(self, new_scenario)
+        self.scenarios.append(new_scenario)
+        return new_scenario
 
     def initial_state(self) -> State or None:
         """Get the bot's initial state. It can be None if it has not been set.

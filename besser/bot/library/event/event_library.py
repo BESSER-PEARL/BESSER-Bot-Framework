@@ -11,6 +11,7 @@ from besser.bot.core.intent.intent import Intent
 from besser.bot.core.image.image_object import ImageObject
 
 if TYPE_CHECKING:
+    from besser.bot.core.scenario.scenario import Scenario
     from besser.bot.core.session import Session
 
 
@@ -100,3 +101,18 @@ def image_object_detected(session: 'Session', event_params: dict) -> bool:
             if image_object_prediction.image_object == target_image_object and image_object_prediction.score >= target_score:
                 return True
     return False
+
+
+def scenario_matched(session: 'Session', event_params: dict) -> bool:
+    """This event checks if a specific scenario is matched in a user session.
+
+    Args:
+        session (Session): the current user session
+        event_params (dict): the event parameters
+
+    Returns:
+        bool: True if the target Scenario was matched, false otherwise
+    """
+    # TODO: Flag???
+    target_scenario: 'Scenario' = event_params['scenario']
+    return target_scenario.evaluate(session)

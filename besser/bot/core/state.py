@@ -4,6 +4,7 @@ import traceback
 from typing import Any, Callable, TYPE_CHECKING
 
 from besser.bot.core.intent.intent import Intent
+from besser.bot.core.scenario.scenario import Scenario
 from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
 from besser.bot.core.image.image_object import ImageObject
@@ -11,7 +12,7 @@ from besser.bot.cv.object_detection.object_detection_prediction import ObjectDet
 from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
     DuplicatedIntentMatchingTransitionError, EventSignatureError, IntentNotFound, StateNotFound
 from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation, file_received, \
-    image_object_detected
+    image_object_detected, scenario_matched
 from besser.bot.library.event.event_template import event_template
 from besser.bot.library.intent.intent_library import fallback_intent
 from besser.bot.library.state.state_library import default_body, default_fallback_body
@@ -291,6 +292,26 @@ class State:
         """
         event_params = {'image_object': image_object, 'score': score}
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=image_object_detected,
+                                           event_params=event_params))
+
+    def when_scenario_matched_go_to(
+            self,
+            scenario: Scenario,
+            dest: 'State'
+    ) -> None:
+        """Create a new `scenario matched` transition on this state.
+
+        Args:
+            scenario (Scenario): the scenario to be matched
+            dest (State): the destination state
+        """
+        if dest not in self._bot.states:
+            raise StateNotFound(self._bot, dest)
+        for transition in self.transitions:
+            if transition.is_auto():
+                raise ConflictingAutoTransitionError(self._bot, self)
+        event_params = {'scenario': scenario}
+        self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=scenario_matched,
                                            event_params=event_params))
 
     def when_file_received_go_to(self, dest: 'State', allowed_types: list[str] or str = None) -> None:

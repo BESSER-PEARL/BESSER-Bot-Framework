@@ -48,6 +48,13 @@ class DuplicatedImageObjectError(Exception):
         super().__init__(message)
 
 
+class DuplicatedScenarioError(Exception):
+
+    def __init__(self, bot, scenario):
+        message = f"Bot '{bot.name}' already contains a scenario with name '{scenario.name}'"
+        super().__init__(message)
+
+
 class DuplicatedIntentParameterError(Exception):
 
     def __init__(self, intent, name):
