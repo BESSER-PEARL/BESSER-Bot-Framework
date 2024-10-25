@@ -55,25 +55,31 @@ def video_input():
     """This function periodically sends images to the bot at a specific frequency (defined by VIDEO_INPUT_INTERVAL, in
     seconds)"""
     # TODO: FINISH WHEN SESSION IS CLOSED
+    runtime: Runtime = Runtime.instance()
     session = get_streamlit_session()
     cap = cv2.VideoCapture(0)
     cap.set(3, 1280)
     cap.set(4, 720)
     while True:
-        if 'img' not in session._session_state:
+        if 'last_img' not in session._session_state:
+            # Last image released, proceed with the next frame
             ws = session._session_state['websocket']
             success, img = cap.read()
             if success:
-                session.session_state['img'] = img
                 retval, buffer = cv2.imencode('.jpg', img)  # Encode as JPEG
                 base64_img = base64.b64encode(buffer).decode('utf-8')
                 payload = Payload(action=PayloadAction.USER_IMAGE,
                                   message=base64_img)
                 try:
                     ws.send(json.dumps(payload, cls=PayloadEncoder))
+                    session.session_state['last_img'] = img
                 except Exception as e:
                     print('Your message (image from video input) could not be sent. The connection is already closed')
+                    cap.release()
                     break
+        elif not runtime.is_active_session(session.id):
+            cap.release()
+            break
         time.sleep(VIDEO_INPUT_INTERVAL)
 
 
@@ -93,6 +99,7 @@ def main():
         # https://github.com/streamlit/streamlit/issues/2838
         streamlit_session = get_streamlit_session()
         payload: Payload = Payload.decode(payload_str)
+        content = None
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
             content = payload.message
             t = MessageType.STR
@@ -131,20 +138,23 @@ def main():
                 y2 = image_object_prediction['y2']
                 label = f'{image_object_prediction["name"]} {image_object_prediction["score"]}'
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                (text_width, text_height), baseline = cv2.getTextSize(label, font, fontScale=0.7, thickness=1)
+                (text_width, text_height), baseline = cv2.getTextSize(label, font, fontScale=1.5, thickness=2)
                 label_pos = (x1, y1 - 10)  # Put label above the box
                 # Draw a filled rectangle as background for the label
                 cv2.rectangle(img, (x1, y1 - text_height - baseline), (x1 + text_width, y1), color=(0, 255, 0),thickness=-1)
                 # Draw the text (label) on top of the background rectangle
-                cv2.putText(img, label, label_pos, font, fontScale=0.7, color=(0, 0, 0), thickness=1)
+                cv2.putText(img, label, label_pos, font, fontScale=1.5, color=(0, 0, 0), thickness=2)
                 # Draw box
                 cv2.rectangle(img, (x1, y1), (x2, y2), color=(0, 255, 0), thickness=2)
-            cv2.imshow("Image", img)
-            del streamlit_session._session_state['img']
-            cv2.waitKey(1)
-
-        message = Message(t=t, content=content, is_user=False, timestamp=datetime.now())
-        streamlit_session._session_state['queue'].put(message)
+            streamlit_session._session_state['img'] = img
+            # Release last saved image to send to the bot
+            del streamlit_session._session_state['last_img']
+            # To open new window showing the images...
+            #cv2.imshow("Image", img)
+            #cv2.waitKey(1)
+        if content is not None:
+            message = Message(t=t, content=content, is_user=False, timestamp=datetime.now())
+            streamlit_session._session_state['queue'].put(message)
         streamlit_session._handle_rerun_script_request()
 
     def on_error(ws, error):
@@ -210,6 +220,9 @@ def main():
     ws = st.session_state['websocket']
 
     with st.sidebar:
+        if 'img' in st.session_state:
+            st.subheader('Video Input')
+            st.image(st.session_state['img'], channels='BGR')
 
         if reset_button := st.button(label="Reset bot"):
             st.session_state['history'] = []
