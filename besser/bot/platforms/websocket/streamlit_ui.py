@@ -130,7 +130,7 @@ def main():
         elif payload.action == PayloadAction.BOT_REPLY_OBJECT_DETECTION.value:
             # Draw labelled bounding boxes in the camera screen
             image_object_predictions = json.loads(payload.message)['image_object_predictions']
-            img = st.session_state['img']
+            img = st.session_state['last_img']
             for image_object_prediction in image_object_predictions:
                 x1 = image_object_prediction['x1']
                 y1 = image_object_prediction['y1']
