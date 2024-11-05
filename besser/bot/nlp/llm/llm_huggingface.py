@@ -66,7 +66,7 @@ class LLMHuggingFace(LLM):
             context_messages.append({'role': 'user', 'content': f"Context: {self._global_context}"})
         if session and session.id in self._user_context:
             context_messages.append({'role': 'user', 'content': f"Context: {self._user_context[session.id]}"})
-        messages = context_messages + [{'role': 'user', 'content': message}]
+        messages = merge_llm_consecutive_messages(context_messages + [{'role': 'user', 'content': message}])
         outputs = self.pipe(messages, return_full_text=False, **parameters)
         answer = outputs[0]['generated_text']
         return answer
