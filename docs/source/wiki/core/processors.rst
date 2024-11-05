@@ -116,7 +116,7 @@ attempts to adapt the bot's responses based on the user's profile. The user prof
 
 .. code:: python
 
-    processor.add_user_model(user_profile)
+    processor.add_user_model(user_model)
 
 
 API References
