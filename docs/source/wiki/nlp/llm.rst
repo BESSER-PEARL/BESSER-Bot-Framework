@@ -58,11 +58,13 @@ The global context will be applied to every LLM prediction for any user.
 The user specific context is only applied for a specific user and can contain user specific information to personalize the LLM's behavior.
 
 Here an example where we extend the previous LLMOpenAI instance:
+
 .. code:: python
     # adding this global_context will cause the LLM to only answer in english.
     gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini', global_context='You only speak english.')
 
 Let's now suppose we have access to the user's name while executing the body of the current state:
+
 .. code:: python
 
     def answer_body(session: Session):
@@ -75,6 +77,7 @@ Let's now suppose we have access to the user's name while executing the body of 
         session.reply(answer)
 
 It is also possible to only add context information for a specific prompt:
+
 .. code:: python
 
     def answer_body(session: Session):
