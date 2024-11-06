@@ -62,7 +62,7 @@ class LLMHuggingFaceAPI(LLM):
     def initialize(self) -> None:
         pass
 
-    def predict(self, message: str, parameters: dict = None, session: 'Session' = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None, system_message: str = None) -> str:
         """Make a prediction, i.e., generate an output.
 
         Runs the `Text Generation Inference API task
@@ -72,7 +72,8 @@ class LLMHuggingFaceAPI(LLM):
             message (Any): the LLM input text
             parameters (dict): the LLM parameters to use in the prediction. If none is provided, the default LLM
                 parameters will be used
-
+            system_message (str): system message to give high priority context to the LLM
+            
         Returns:
             str: the LLM output
         """
@@ -85,9 +86,11 @@ class LLMHuggingFaceAPI(LLM):
         api_url = F"https://api-inference.huggingface.co/models/{self.name}"
         context_messages = ""
         if self._global_context:
-            context_messages = f"Context: {self._global_context}\n"
+            context_messages = f"{self._global_context}\n"
         if session and session.id in self._user_context:
-            context_messages = context_messages + f"Context: {self._user_context[session.id]}\n"
+            context_messages = context_messages + f"{self._user_context[session.id]}\n"
+        if system_message:
+            context_messages = context_messages + f"{system_message}\n"
         if context_messages != "":
             message = context_messages + message
         payload = {"inputs": message, "parameters": parameters}

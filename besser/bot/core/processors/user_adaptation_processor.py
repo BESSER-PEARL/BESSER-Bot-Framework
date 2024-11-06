@@ -6,28 +6,30 @@ from besser.bot.nlp.nlp_engine import NLPEngine
 
 
 class UserAdaptationProcessor(Processor):
-    """The UserAdaptationProcessor takes into account the user's profile and adapts the bot's responses to fit the 
+    """The UserAdaptationProcessor takes into account the user's profile and adapts the bot's responses to fit the
     profile. The goal is to increase the user experience.
 
-    This processor leverages LLMs to adapt the messages given a user profile. For static profiles, an adaptation will be 
+    This processor leverages LLMs to adapt the messages given a user profile. For static profiles, an adaptation will be
     done once. If the profile changes, then an adapation will be triggered again.
 
     Args:
         bot (Bot): The bot the processor belongs to
         llm_name (str): the name of the LLM to use.
-        context (str): additional context to improve the adaptation. should include information about the bot itself and the task it should accomplish
+        context (str): additional context to improve the adaptation. should include information about the bot itself
+        and the task it should accomplish
 
     Attributes:
         bot (Bot): The bot the processor belongs to
-        llm_name (str): the name of the LLM to use.
-        context (str): additional context to improve the adaptation. should include information about the bot itself and the task it should accomplish        
+        _llm_name (str): the name of the LLM to use.
+        _context (str): additional context to improve the adaptation. should include information about the bot itself
+        and the task it should accomplish
+        _user_model (dict): dictionary containing the user models
     """
     def __init__(self, bot: 'Bot', llm_name: str, context: str = None):
         super().__init__(bot=bot, bot_messages=True)
         self._llm_name: str = llm_name
         self._nlp_engine: 'NLPEngine' = bot.nlp_engine
-        # does it make sense to have a constructor param for context? It essentially does the same as the global_context attr of LLMs. 
-        # The only reason I added it here is to have a default context 'You are a chatbot' but I could just as well add it to the usre context?
+        self._user_model: dict = {}
         if context:
             self._context = context
         else:
@@ -35,16 +37,36 @@ class UserAdaptationProcessor(Processor):
 
 # add capability to improve/change prompt of context
     def process(self, session: 'Session', message: str) -> str:
+        """Method to process a message and adapt its content based on a given user model.
+
+        The stored user model will be fetched and sent as part of the context.
+
+        Args:
+            session (Session): the current session
+            message (str): the message to be processed
+
+        Returns:
+            str: the processed message
+        """
         llm: LLM = self._nlp_engine._llms[self._llm_name]
+        user_context = f"{self._context}\n\
+                You are capable of adapting your predefined answers based on a given user profile.\
+                Your goal is to increase the user experience by adapting the messages based on the different attributes of the user\
+                profile as best as possible and take all the attributes into account.\
+                You are free to adapt the messages in any way you like.\
+                The user should relate more. This is the user's profile\n \
+                {str(self._user_model[session.id])}"
         prompt = f"You need to adapt this message: {message}\n Only respond with the adapated message!"
-        llm_response: str = llm.predict(prompt, session=session)
+        llm_response: str = llm.predict(prompt, session=session, system_message=user_context)
         return llm_response
 
     def add_user_model(self, session: 'Session', user_model: dict) -> None:
-        user_context = f"You are capable of adapting your predefined answers based on a given user profile.\
-                Your goal is to increase the user experience by adapting the messages based on the different attributes of the user \
-                profile as best as possible and take all the attributes into account.\
-                You are free to adapt the messages in any way you like.\
-                    The user should relate more. This is the user's profile\n\
-                    {str(user_model)}\n"
-        self._nlp_engine._llms[self._llm_name].add_user_context(context=self._context + user_context, session=session)
+        """Method to store the user model internally.
+
+        The user model shall be stored stored internally.
+
+        Args:
+            session (Session): the current session
+            user_model (dict): the user model of a given user
+        """
+        self._user_model[session.id] = user_model

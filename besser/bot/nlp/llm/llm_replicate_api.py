@@ -60,16 +60,18 @@ class LLMReplicate(LLM):
         if 'REPLICATE_API_TOKEN' not in os.environ:
             os.environ['REPLICATE_API_TOKEN'] = self._nlp_engine.get_property(nlp.REPLICATE_API_KEY)
 
-    def predict(self, message: str, parameters: dict = None, session: 'Session' = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None, system_message: str = None) -> str:
         if not parameters:
             parameters = self.parameters.copy()
         else:
             parameters = parameters.copy()
         context_messages = ""
         if self._global_context:
-            context_messages = f"Context: {self._global_context}\n"
+            context_messages = f"{self._global_context}\n"
         if session and session.id in self._user_context:
-            context_messages = context_messages + f"Context: {self._user_context[session.id]}\n"
+            context_messages = context_messages + f"{self._user_context[session.id]}\n"
+        if system_message:
+            context_messages = context_messages + f"{system_message}\n"
         if context_messages != "":
             message = context_messages + message
         parameters['prompt'] = message

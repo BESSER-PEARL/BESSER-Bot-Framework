@@ -62,12 +62,14 @@ class LLMOpenAI(LLM):
     def initialize(self) -> None:
         self.client = OpenAI(api_key=self._nlp_engine.get_property(nlp.OPENAI_API_KEY))
 
-    def predict(self, message: str, parameters: dict = None, session: 'Session' = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None, system_message: str = None) -> str:
         messages = []
         if self._global_context:
             messages.append({"role": "system", "content": self._global_context})
         if session and session.id in self._user_context:
             messages.append({"role": "system", "content": self._user_context[session.id]})
+        if system_message:
+            messages.append({"role": "system", "content": system_message})
         messages.append({"role": "user", "content": message})
         if not parameters:
             parameters = self.parameters
@@ -78,7 +80,7 @@ class LLMOpenAI(LLM):
         )
         return response.choices[0].message.content
 
-    def chat(self, session: 'Session', parameters: dict = None) -> str:
+    def chat(self, session: 'Session', parameters: dict = None, system_message: str = None) -> str:
         if not parameters:
             parameters = self.parameters
         if self.num_previous_messages <= 0:
@@ -96,6 +98,8 @@ class LLMOpenAI(LLM):
             context_messages.append({"role": "system", "content": self._global_context})
         if session and session.id in self._user_context:
             context_messages.append({"role": "system", "content": self._user_context[session.id]})
+        if system_message:
+            context_messages.append({"role": "system", "content": system_message})
         response = self.client.chat.completions.create(
             model=self.name,
             messages=context_messages + messages,
