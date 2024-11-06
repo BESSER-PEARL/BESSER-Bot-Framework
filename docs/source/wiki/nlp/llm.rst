@@ -101,6 +101,11 @@ These are the currently available LLM wrappers in BBF:
 - :class:`~besser.bot.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`: For HuggingFace LLMs, through its `Inference API <https://huggingface.co/docs/api-inference>`_
 - :class:`~besser.bot.nlp.llm.llm_replicate_api.LLMReplicate`: For `Replicate <https://replicate.com/>`_ LLMs, through its API
 
+.. note::
+
+   Models taken from Huggingface or Replicate might expect a specific prompting or context specification format to improve the results. Be sure to carefully read the guidelines for each model for an optimal experience.
+
+
 API References
 --------------
 
