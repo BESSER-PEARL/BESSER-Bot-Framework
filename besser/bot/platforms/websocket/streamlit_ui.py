@@ -54,13 +54,19 @@ def main():
         bot_name = 'Chatbot Demo'
     st.header(bot_name)
     st.markdown("[Github](https://github.com/BESSER-PEARL/BESSER-Bot-Framework)")
+
+    def submit_input():
+        # Necessary callback due to buf after 1.27.0 (https://github.com/streamlit/streamlit/issues/7629)
+        # It was fixed for rerun but with _handle_rerun_script_request it doesn't work
+        st.session_state['submit_input'] = True
     # User input component. Must be declared before history writing
-    user_input = st.chat_input("What is up?")
+    user_input = st.chat_input("What is up?", on_submit=submit_input)
 
     def on_message(ws, payload_str):
         # https://github.com/streamlit/streamlit/issues/2838
         streamlit_session = get_streamlit_session()
         payload: Payload = Payload.decode(payload_str)
+        content = None
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
             content = payload.message
             t = MessageType.STR
@@ -88,8 +94,10 @@ def main():
         elif payload.action == PayloadAction.BOT_REPLY_RAG.value:
             t = MessageType.RAG_ANSWER
             content = payload.message
-        message = Message(t=t, content=content, is_user=False, timestamp=datetime.now())
-        streamlit_session._session_state['queue'].put(message)
+        if content is not None:
+            message = Message(t=t, content=content, is_user=False, timestamp=datetime.now())
+            streamlit_session._session_state['queue'].put(message)
+
         streamlit_session._handle_rerun_script_request()
 
     def on_error(ws, error):
@@ -268,8 +276,8 @@ def main():
                 ws.send(json.dumps(payload, cls=PayloadEncoder))
                 del st.session_state['buttons']
                 break
-
-    if user_input:
+    if st.session_state['submit_input']:
+        st.session_state['submit_input'] = False
         if 'buttons' in st.session_state:
             del st.session_state['buttons']
         with st.chat_message("user"):
