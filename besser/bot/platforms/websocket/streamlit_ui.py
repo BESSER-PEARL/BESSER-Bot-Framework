@@ -126,6 +126,9 @@ def main():
         1: 'user'
     }
 
+    if 'submit_input' not in st.session_state:
+        st.session_state['submit_input'] = False
+
     if 'history' not in st.session_state:
         st.session_state['history'] = []
 
