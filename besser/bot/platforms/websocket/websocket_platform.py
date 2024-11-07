@@ -154,6 +154,34 @@ class WebSocketPlatform(Platform):
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
+
+    def reply_markdown(self, session: Session, message: str) -> None:
+        """Send a bot reply to a specific user, containing text in Markdown format.
+
+        Args:
+            session (Session): the user session
+            message (str): the message in Markdown format to send to the user
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        session.save_message(Message(t=MessageType.MARKDOWN, content=message, is_user=False, timestamp=datetime.now()))
+        payload = Payload(action=PayloadAction.BOT_REPLY_MARKDOWN,
+                          message=message)
+        self._send(session.id, payload)
+
+    def reply_html(self, session: Session, message: str) -> None:
+        """Send a bot reply to a specific user, containing text in HTML format.
+
+        Args:
+            session (Session): the user session
+            message (str): the message in HTML format to send to the user
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        session.save_message(Message(t=MessageType.HTML, content=message, is_user=False, timestamp=datetime.now()))
+        payload = Payload(action=PayloadAction.BOT_REPLY_HTML,
+                          message=message)
+        self._send(session.id, payload)
         
     def reply_file(self, session: Session, file: File) -> None:
         """Send a file reply to a specific user

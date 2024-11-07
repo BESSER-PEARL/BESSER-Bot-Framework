@@ -70,6 +70,12 @@ def main():
         if payload.action == PayloadAction.BOT_REPLY_STR.value:
             content = payload.message
             t = MessageType.STR
+        elif payload.action == PayloadAction.BOT_REPLY_MARKDOWN.value:
+            content = payload.message
+            t = MessageType.MARKDOWN
+        elif payload.action == PayloadAction.BOT_REPLY_HTML.value:
+            content = payload.message
+            t = MessageType.HTML
         elif payload.action == PayloadAction.BOT_REPLY_FILE.value:
             content = payload.message
             t = MessageType.FILE
@@ -201,6 +207,8 @@ def main():
                                    key=file_name + str(time.time()))
             elif message.type == MessageType.LOCATION:
                 st.map(message.content)
+            elif message.type == MessageType.HTML:
+                st.html(message.content)
             elif message.type == MessageType.RAG_ANSWER:
                 # TODO: Avoid duplicate in history and queue
                 st.write(f'🔮 {message.content["answer"]}')
@@ -256,11 +264,14 @@ def main():
                             st.write(f'- **Source:** {doc["metadata"]["source"]}')
                             st.write(f'- **Page:** {doc["metadata"]["page"]}')
                             st.write(f'- **Content:** {doc["content"]}')
-            elif message.type == MessageType.STR:
+            elif message.type in [MessageType.STR, MessageType.MARKDOWN]:
                 st.session_state['history'].append(message)
                 with st.spinner(''):
                     time.sleep(t)
                 st.write(message.content)
+            elif message.type == MessageType.HTML:
+                st.session_state['history'].append(message)
+                st.html(message.content)
 
     if 'buttons' in st.session_state:
         buttons = st.session_state['buttons']

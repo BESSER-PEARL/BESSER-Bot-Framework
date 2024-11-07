@@ -48,6 +48,30 @@ After that, you can use the platform to send different kinds of messages to the 
 
     websocket_platform.reply(session, 'Hello!')
 
+- Text messages in `Markdown <https://www.markdownguide.org/>`_ format:
+
+.. code:: python
+
+    websocket_platform.reply_markdown(session, """
+        # Welcome to the chatbot experience
+        ## Section 1
+        - one
+        - two
+    """)
+
+- Text messages in `HTML <https://en.wikipedia.org/wiki/HTML>`_ format:
+
+.. code:: python
+
+    websocket_platform.reply_html(session, """
+        <h1>Title</h1>
+        <ul>
+            <li>Apples</li>
+            <li>Bananas</li>
+            <li>Cherries</li>
+        </ul>
+    """)
+
 - Pandas `DataFrames <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_:
 
 .. code:: python
