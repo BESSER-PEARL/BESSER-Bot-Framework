@@ -12,7 +12,7 @@ class ScenarioImageObject(ScenarioElement):
             image_object: ImageObject,
             score: float = 0,
             min: int = 1,
-            max: int = 1
+            max: int = 0
     ):
         if min < 1:
             raise ValueError(f'Error creating {self.name}: min must be > 0')
