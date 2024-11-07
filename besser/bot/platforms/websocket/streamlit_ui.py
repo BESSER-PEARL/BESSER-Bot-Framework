@@ -22,7 +22,8 @@ from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 
 # Time interval to check if a streamlit session is still active, in seconds
 SESSION_MONITORING_INTERVAL = 1
-
+# New bot messages are printed with a typing effect. This is the time between words being printed, in seconds
+TYPING_TIME = 0.05
 
 def get_streamlit_session() -> AppSession or None:
     session_id = get_script_run_ctx().session_id
@@ -227,25 +228,13 @@ def main():
             else:
                 st.write(message.content)
 
-    first_message = True
     while not st.session_state['queue'].empty():
         with st.chat_message("assistant"):
             message = st.session_state['queue'].get()
-            if hasattr(message, '__len__'):
-                t = len(message.content) / 1000 * 3
-            else:
-                t = 2
-            if t > 3:
-                t = 3
-            elif t < 1 and first_message:
-                t = 1
-            first_message = False
             if message.type == MessageType.OPTIONS:
                 st.session_state['buttons'] = message.content
             elif message.type == MessageType.FILE:
                 st.session_state['history'].append(message)
-                with st.spinner(''):
-                    time.sleep(t)
                 file: File = File.from_dict(message.content)
                 file_name = file.name
                 file_type = file.type
@@ -269,9 +258,11 @@ def main():
                             st.write(f'- **Content:** {doc["content"]}')
             elif message.type in [MessageType.STR, MessageType.MARKDOWN]:
                 st.session_state['history'].append(message)
-                with st.spinner(''):
-                    time.sleep(t)
-                st.write(message.content)
+                def stream_text():
+                    for word in message.content.split(" "):
+                        yield word + " "
+                        time.sleep(TYPING_TIME)
+                st.write_stream(stream_text)
             elif message.type == MessageType.HTML:
                 st.session_state['history'].append(message)
                 st.html(message.content)
