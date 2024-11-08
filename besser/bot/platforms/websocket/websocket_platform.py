@@ -23,7 +23,7 @@ from besser.bot.nlp.rag.rag import RAGMessage
 from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
-from besser.bot.platforms.websocket import streamlit_ui
+from besser.bot.platforms.websocket.streamlit_ui import streamlit_ui
 from besser.bot.core.file import File
 
 if TYPE_CHECKING:
