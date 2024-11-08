@@ -5,6 +5,8 @@ import logging
 import os
 from datetime import datetime
 
+import cv2
+import numpy as np
 import plotly
 import subprocess
 import threading
@@ -195,6 +197,25 @@ class WebSocketPlatform(Platform):
         session.save_message(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
                           message=file.to_dict())
+        self._send(session.id, payload)
+
+    def reply_image(self, session: Session, img: np.ndarray) -> None:
+        """Send an image reply to a specific user.
+
+        Before being sent, the image is encoded as jpg and then as a base64 string. This must be known before dedocing
+        the image on the client side.
+
+        Args:
+            session (Session): the user session
+            img (np.ndarray): the image to send
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        retval, buffer = cv2.imencode('.jpg', img)  # Encode as JPEG
+        base64_img = base64.b64encode(buffer).decode('utf-8')
+        session.save_message(Message(t=MessageType.FILE, content=base64_img, is_user=False, timestamp=datetime.now()))
+        payload = Payload(action=PayloadAction.BOT_REPLY_IMAGE,
+                          message=base64_img)
         self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame) -> None:
