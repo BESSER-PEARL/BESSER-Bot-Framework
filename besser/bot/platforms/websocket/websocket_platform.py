@@ -38,7 +38,7 @@ class WebSocketPlatform(Platform):
     bidirectional communication between server and client (i.e. sending and receiving messages).
 
     Note:
-        We provide a UI (:doc:`streamlit_ui`) implementing a WebSocket client to communicate with the bot, though you
+        We provide different interfaces implementing a WebSocket client to communicate with the bot, though you
         can use or create your own UI as long as it has a WebSocket client that connects to the bot's WebSocket server.
 
     Args:

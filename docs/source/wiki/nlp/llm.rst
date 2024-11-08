@@ -52,6 +52,7 @@ we can do more advanced tasks through prompt engineering.
 
 Adding context information to an LLM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 To improve / customize the LLM's behavior, it is also possible to add context information to an LLM.
 Here, we differentiate between a global context and user-specific context information.
 The global context will be applied to every LLM prediction for any user.
@@ -60,6 +61,7 @@ The user specific context is only applied for a specific user and can contain us
 Here an example where we extend the previous LLMOpenAI instance:
 
 .. code:: python
+
     # adding this global_context will cause the LLM to only answer in english.
     gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini', global_context='You only speak english.')
 

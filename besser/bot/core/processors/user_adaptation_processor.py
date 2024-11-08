@@ -63,7 +63,7 @@ class UserAdaptationProcessor(Processor):
     def add_user_model(self, session: 'Session', user_model: dict) -> None:
         """Method to store the user model internally.
 
-        The user model shall be stored stored internally.
+        The user model shall be stored internally.
 
         Args:
             session (Session): the current session
