@@ -60,6 +60,10 @@ class PayloadAction(Enum):
     """
 
     BOT_REPLY_RAG = 'bot_reply_rag'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a RAG (Retrieval Augmented
+    Generation) answer, which contains an LLM-generated answer and a set of documents the LLM used as context
+    (see :class:`besser.bot.nlp.rag.rag.RAGMessage`).
+    """
 
 
 class Payload:
