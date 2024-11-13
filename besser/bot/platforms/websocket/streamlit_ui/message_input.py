@@ -9,14 +9,14 @@ from besser.bot.platforms.websocket.streamlit_ui.vars import BUTTONS, SUBMIT_INP
 
 
 def message_input():
-    def submit_input():
+    def submit_text():
         # Necessary callback due to buf after 1.27.0 (https://github.com/streamlit/streamlit/issues/7629)
         # It was fixed for rerun but with _handle_rerun_script_request it doesn't work
-        st.session_state[SUBMIT_INPUT] = True
+        st.session_state[SUBMIT_TEXT] = True
 
-    user_input = st.chat_input("What is up?", on_submit=submit_input)
-    if st.session_state[SUBMIT_INPUT]:
-        st.session_state[SUBMIT_INPUT] = False
+    user_input = st.chat_input("What is up?", on_submit=submit_text)
+    if st.session_state[SUBMIT_TEXT]:
+        st.session_state[SUBMIT_TEXT] = False
         if BUTTONS in st.session_state:
             del st.session_state[BUTTONS]
         with st.chat_message(USER):

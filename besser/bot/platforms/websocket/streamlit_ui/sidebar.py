@@ -4,12 +4,11 @@ import queue
 from datetime import datetime
 
 import streamlit as st
-from audio_recorder_streamlit import audio_recorder
 
 from besser.bot.core.file import File
 from besser.bot.core.message import MessageType, Message
 from besser.bot.platforms.payload import PayloadEncoder, PayloadAction, Payload
-from besser.bot.platforms.websocket.streamlit_ui.vars import WEBSOCKET, HISTORY, QUEUE, LAST_FILE, LAST_VOICE_MESSAGE
+from besser.bot.platforms.websocket.streamlit_ui.vars import WEBSOCKET, HISTORY, QUEUE, SUBMIT_AUDIO, SUBMIT_FILE
 
 
 def sidebar():
@@ -22,30 +21,41 @@ def sidebar():
             payload = Payload(action=PayloadAction.RESET)
             ws.send(json.dumps(payload, cls=PayloadEncoder))
 
-        if voice_bytes := audio_recorder(text=None, pause_threshold=2):
-            if LAST_VOICE_MESSAGE not in st.session_state or st.session_state[LAST_VOICE_MESSAGE] != voice_bytes:
-                st.session_state[LAST_VOICE_MESSAGE] = voice_bytes
-                # Encode the audio bytes to a base64 string
-                voice_message = Message(t=MessageType.AUDIO, content=voice_bytes, is_user=True, timestamp=datetime.now())
-                st.session_state.history.append(voice_message)
-                voice_base64 = base64.b64encode(voice_bytes).decode('utf-8')
-                payload = Payload(action=PayloadAction.USER_VOICE, message=voice_base64)
-                try:
-                    ws.send(json.dumps(payload, cls=PayloadEncoder))
-                except Exception as e:
-                    st.error('Your message could not be sent. The connection is already closed')
+        def submit_audio():
+            # Necessary callback due to buf after 1.27.0 (https://github.com/streamlit/streamlit/issues/7629)
+            # It was fixed for rerun but with _handle_rerun_script_request it doesn't work
+            st.session_state[SUBMIT_AUDIO] = True
 
-        if uploaded_file := st.file_uploader("Choose a file", accept_multiple_files=False):
-            if LAST_FILE not in st.session_state or st.session_state[LAST_FILE] != uploaded_file:
-                st.session_state[LAST_FILE] = uploaded_file
-                bytes_data = uploaded_file.read()
-                file_object = File(file_base64=base64.b64encode(bytes_data).decode('utf-8'), file_name=uploaded_file.name,
-                                   file_type=uploaded_file.type)
-                payload = Payload(action=PayloadAction.USER_FILE, message=file_object.get_json_string())
-                file_message = Message(t=MessageType.FILE, content=file_object.to_dict(), is_user=True,
-                                       timestamp=datetime.now())
-                st.session_state.history.append(file_message)
-                try:
-                    ws.send(json.dumps(payload, cls=PayloadEncoder))
-                except Exception as e:
-                    st.error('Your message could not be sent. The connection is already closed')
+        voice_bytes_io = st.audio_input(label='Say something', on_change=submit_audio)
+        if st.session_state[SUBMIT_AUDIO]:
+            st.session_state[SUBMIT_AUDIO] = False
+            voice_bytes = voice_bytes_io.read()
+            # Encode the audio bytes to a base64 string
+            voice_message = Message(t=MessageType.AUDIO, content=voice_bytes, is_user=True, timestamp=datetime.now())
+            st.session_state.history.append(voice_message)
+            voice_base64 = base64.b64encode(voice_bytes).decode('utf-8')
+            payload = Payload(action=PayloadAction.USER_VOICE, message=voice_base64)
+            try:
+                ws.send(json.dumps(payload, cls=PayloadEncoder))
+            except Exception as e:
+                st.error('Your message could not be sent. The connection is already closed')
+
+        def submit_file():
+            # Necessary callback due to buf after 1.27.0 (https://github.com/streamlit/streamlit/issues/7629)
+            # It was fixed for rerun but with _handle_rerun_script_request it doesn't work
+            st.session_state[SUBMIT_FILE] = True
+
+        uploaded_file = st.file_uploader("Choose a file", accept_multiple_files=False, on_change=submit_file)
+        if st.session_state[SUBMIT_FILE]:
+            st.session_state[SUBMIT_FILE] = False
+            bytes_data = uploaded_file.read()
+            file_object = File(file_base64=base64.b64encode(bytes_data).decode('utf-8'), file_name=uploaded_file.name,
+                               file_type=uploaded_file.type)
+            payload = Payload(action=PayloadAction.USER_FILE, message=file_object.get_json_string())
+            file_message = Message(t=MessageType.FILE, content=file_object.to_dict(), is_user=True,
+                                   timestamp=datetime.now())
+            st.session_state.history.append(file_message)
+            try:
+                ws.send(json.dumps(payload, cls=PayloadEncoder))
+            except Exception as e:
+                st.error('Your message could not be sent. The connection is already closed')

@@ -2,8 +2,6 @@
 ASSISTANT = 'assistant'
 BUTTONS = 'buttons'
 HISTORY = 'history'
-LAST_FILE = 'last_file'
-LAST_VOICE_MESSAGE = 'last_voice_message'
 QUEUE = 'queue'
 SESSION_MONITORING = 'session_monitoring'
 SUBMIT_INPUT = 'submit_input'

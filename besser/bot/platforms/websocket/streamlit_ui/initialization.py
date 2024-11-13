@@ -7,14 +7,20 @@ import websocket
 from streamlit.runtime.scriptrunner_utils.script_run_context import add_script_run_ctx
 
 from besser.bot.platforms.websocket.streamlit_ui.session_management import session_monitoring
-from besser.bot.platforms.websocket.streamlit_ui.vars import SESSION_MONITORING_INTERVAL, SUBMIT_INPUT, HISTORY, QUEUE, \
-    WEBSOCKET, SESSION_MONITORING
+from besser.bot.platforms.websocket.streamlit_ui.vars import SESSION_MONITORING_INTERVAL, SUBMIT_TEXT, HISTORY, QUEUE, \
+    WEBSOCKET, SESSION_MONITORING, SUBMIT_AUDIO, SUBMIT_FILE
 from besser.bot.platforms.websocket.streamlit_ui.websocket_callbacks import on_open, on_error, on_message, on_close, on_ping, on_pong
 
 
 def initialize():
-    if SUBMIT_INPUT not in st.session_state:
-        st.session_state[SUBMIT_INPUT] = False
+    if SUBMIT_TEXT not in st.session_state:
+        st.session_state[SUBMIT_TEXT] = False
+
+    if SUBMIT_AUDIO not in st.session_state:
+        st.session_state[SUBMIT_AUDIO] = False
+
+    if SUBMIT_FILE not in st.session_state:
+        st.session_state[SUBMIT_FILE] = False
 
     if HISTORY not in st.session_state:
         st.session_state[HISTORY] = []
