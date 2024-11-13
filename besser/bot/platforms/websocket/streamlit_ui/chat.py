@@ -1,7 +1,6 @@
 import base64
 import json
 import time
-import uuid
 from datetime import datetime
 
 import streamlit as st
@@ -33,7 +32,8 @@ def write_or_stream(content, stream: bool):
         st.write(content)
 
 
-def write_message(message: Message, stream: bool = False):
+def write_message(message: Message, key_count: int, stream: bool = False):
+    key = f'message_{key_count}'
     with st.chat_message(user_type[message.is_user]):
         if message.type == MessageType.AUDIO:
             st.audio(message.content, format="audio/wav")
@@ -43,11 +43,21 @@ def write_message(message: Message, stream: bool = False):
             file_name = file.name
             file_type = file.type
             file_data = base64.b64decode(file.base64.encode('utf-8'))
-            st.download_button(label='Download ' + file_name, file_name=file_name, data=file_data, mime=file_type,
-                               key=file_name + str(time.time()))
+            st.download_button(label='Download ' + file_name, file_name=file_name, data=file_data, mime=file_type, key=key)
 
         elif message.type == MessageType.IMAGE:
             st.image(message.content)
+
+        elif message.type == MessageType.OPTIONS:
+            def send_option():
+                option = st.session_state[key]
+                message = Message(t=MessageType.STR, content=option, is_user=True, timestamp=datetime.now())
+                st.session_state.history.append(message)
+                payload = Payload(action=PayloadAction.USER_MESSAGE, message=option)
+                ws = st.session_state[WEBSOCKET]
+                ws.send(json.dumps(payload, cls=PayloadEncoder))
+
+            st.pills(label='Choose an option', options=message.content, selection_mode='single', on_change=send_option, key=key)
 
         elif message.type == MessageType.LOCATION:
             st.map(message.content)
@@ -56,10 +66,10 @@ def write_message(message: Message, stream: bool = False):
             st.html(message.content)
 
         elif message.type == MessageType.DATAFRAME:
-            st.dataframe(message.content)
+            st.dataframe(message.content, key=key)
 
         elif message.type == MessageType.PLOTLY:
-            st.plotly_chart(message.content, key=uuid.uuid4())
+            st.plotly_chart(message.content, key=key)
 
         elif message.type == MessageType.RAG_ANSWER:
             # TODO: Add stream text
@@ -79,30 +89,13 @@ def write_message(message: Message, stream: bool = False):
 
 
 def load_chat():
+    key_count = 0
     for message in st.session_state[HISTORY]:
-        write_message(message, stream=False)
+        write_message(message, key_count, stream=False)
+        key_count += 1
 
     while not st.session_state[QUEUE].empty():
         message = st.session_state[QUEUE].get()
-        if message.type not in [MessageType.OPTIONS]:
-            st.session_state[HISTORY].append(message)
-        if message.type == MessageType.OPTIONS:
-            st.session_state[BUTTONS] = message.content
-        else:
-            write_message(message, stream=True)
-
-    if BUTTONS in st.session_state:
-        buttons = st.session_state[BUTTONS]
-        cols = st.columns(1)
-        for i, option in enumerate(buttons):
-            if cols[0].button(option):
-                with st.chat_message("user"):
-                    st.write(option)
-                message = Message(t=MessageType.STR, content=option, is_user=True, timestamp=datetime.now())
-                st.session_state.history.append(message)
-                payload = Payload(action=PayloadAction.USER_MESSAGE,
-                                  message=option)
-                ws = st.session_state[WEBSOCKET]
-                ws.send(json.dumps(payload, cls=PayloadEncoder))
-                del st.session_state[BUTTONS]
-                break
+        st.session_state[HISTORY].append(message)
+        write_message(message, key_count, stream=True)
+        key_count += 1
