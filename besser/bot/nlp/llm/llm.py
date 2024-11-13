@@ -22,18 +22,26 @@ class LLM(ABC):
         nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
         name (str): the LLM name
         parameters (dict): the LLM parameters
+        global_context (str): the global context to be provided to the LLM for each request
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the bot the LLM belongs to
         name (str): the LLM name
         parameters (dict): the LLM parameters
+        _global_context (str): the global context to be provided to the LLM for each request
+        _user_context (dict): aggregation of user specific contexts to be provided to the LLM for each request
+        _user_contexts (dict): dictionary containing the different context elements making up the user's context
+            user specific context to be provided to the LLM for each request
     """
 
-    def __init__(self, nlp_engine: 'NLPEngine', name: str, parameters: dict):
+    def __init__(self, nlp_engine: 'NLPEngine', name: str, parameters: dict, global_context: str = None):
         self._nlp_engine: 'NLPEngine' = nlp_engine
         self.name: str = name
         self.parameters: dict = parameters
         self._nlp_engine._llms[name] = self
+        self._global_context: str = global_context
+        self._user_context: dict = dict
+        self._user_contexts: dict = dict
 
     def set_parameters(self, parameters: dict) -> None:
         """Set the LLM parameters.
@@ -49,20 +57,23 @@ class LLM(ABC):
         pass
 
     @abstractmethod
-    def predict(self, message: str, parameters: dict = None) -> str:
+    def predict(self, message: str, parameters: dict = None, session: 'Session' = None,
+                system_message: str = None) -> str:
         """Make a prediction, i.e., generate an output.
 
         Args:
             message (Any): the LLM input text
+            session (Session): the ongoing session, can be None if no context needs to be applied
             parameters (dict): the LLM parameters to use in the prediction. If none is provided, the default LLM
                 parameters will be used
+            system_message (str): system message to give high priority context to the LLM
 
         Returns:
             str: the LLM output
         """
         pass
 
-    def chat(self, session: 'Session', parameters: dict = None) -> str:
+    def chat(self, session: 'Session', parameters: dict = None, system_message: str = None) -> str:
         """Make a prediction, i.e., generate an output.
 
         This function can provide the chat history to the LLM for the output generation, simulating a conversation or
@@ -71,7 +82,8 @@ class LLM(ABC):
         Args:
             session (Session): the user session
             parameters (dict): the LLM parameters. If none is provided, the RAG's default value will be used
-
+            system_message (str): system message to give high priority context to the LLM
+            
         Returns:
             str: the LLM output
         """
@@ -100,3 +112,38 @@ class LLM(ABC):
         """
         logging.warning(f'Intent Classification not implemented in {self.__class__.__name__}')
         return []
+
+    def add_user_context(self, session: 'Session', context: str, context_name: str) -> None:
+        """Add user-specific context.
+
+        Args:
+            session (Session): the ongoing session
+            context (str): the user-specific context
+            context_name (str): the key given to the specific user context
+        """
+        if session.id not in self._user_context:
+            self._user_contexts[session.id] = {}
+        self._user_contexts[session.id][context_name] = context
+        context_message = ""
+        for context_element in self._user_contexts[session.id]:
+            context_message = context_message + self._user_contexts[session.id][context_element] + "\n"
+        self._user_context[session.id] = context_message
+        
+    def remove_user_context(self, session: 'Session', context_name: str) -> None:
+        """Remove user-specific context.
+
+        Args:
+            session (Session): the ongoing session
+            context_name (str): the key given to the specific user context
+        """
+        if session.id not in self._user_context or context_name not in self._user_contexts[session.id]:
+            return
+        else:
+            self._user_contexts[session.id].pop(context_name)
+        context_message = ""
+        for context_element in self._user_contexts[session.id]:
+            context_message = context_message + self._user_contexts[session.id][context_element] + "\n"
+        if context_message != "":
+            self._user_context[session.id] = context_message
+        else:
+            self._user_context.pop(session.id)

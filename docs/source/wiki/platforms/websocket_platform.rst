@@ -12,14 +12,21 @@ The next figure shows how this connection works:
 .. figure:: ../../img/websocket_diagram.png
    :alt: Intent diagram
 
-   The bot we just created, has 2 states linked by an intent.
+   Figure illustrating the WebSocket protocol.
 
-We provide a UI (:doc:`../../api/platforms/streamlit_ui`) implementing a WebSocket client to communicate with the bot,
-though you can use or create your own UI as long as it has a WebSocket client that connects to the bot's WebSocket
-server. This is how our chatbot UI looks like:
+User Interface
 
-.. figure:: ../../img/websocket_demo.gif
-   :alt: WebSocket UI demo
+BBF comes with some User Interfaces (WebSocket clients) to use the WebSocket platform.
+
+Of course, you are free to use or create your own UI as long as it has a WebSocket client that connects to the bot's WebSocket server.
+
+.. toctree::
+   :maxdepth: 1
+
+   websocket_platform/streamlit_ui
+   websocket_platform/chat_widget
+
+(Their source code can be found in the besser.bot.platforms.websocket package)
 
 .. note::
 
@@ -47,6 +54,30 @@ After that, you can use the platform to send different kinds of messages to the 
 .. code:: python
 
     websocket_platform.reply(session, 'Hello!')
+
+- Text messages in `Markdown <https://www.markdownguide.org/>`_ format:
+
+.. code:: python
+
+    websocket_platform.reply_markdown(session, """
+        # Welcome to the chatbot experience
+        ## Section 1
+        - one
+        - two
+    """)
+
+- Text messages in `HTML <https://en.wikipedia.org/wiki/HTML>`_ format:
+
+.. code:: python
+
+    websocket_platform.reply_html(session, """
+        <h1>Title</h1>
+        <ul>
+            <li>Apples</li>
+            <li>Bananas</li>
+            <li>Cherries</li>
+        </ul>
+    """)
 
 - Pandas `DataFrames <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_:
 
