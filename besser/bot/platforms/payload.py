@@ -23,6 +23,14 @@ class PayloadAction(Enum):
     BOT_REPLY_STR = 'bot_reply_str'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`str` object."""
 
+    BOT_REPLY_MARKDOWN = 'bot_reply_markdown'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`str` object
+    in Markdown format."""
+
+    BOT_REPLY_HTML = 'bot_reply_html'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`str` object
+    in HTML format."""
+
     BOT_REPLY_FILE = 'bot_reply_file'
     """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a :class:`file.File` 
     object."""
@@ -52,6 +60,10 @@ class PayloadAction(Enum):
     """
 
     BOT_REPLY_RAG = 'bot_reply_rag'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing a RAG (Retrieval Augmented
+    Generation) answer, which contains an LLM-generated answer and a set of documents the LLM used as context
+    (see :class:`besser.bot.nlp.rag.rag.RAGMessage`).
+    """
 
 
 class Payload:

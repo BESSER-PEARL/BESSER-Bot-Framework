@@ -1,4 +1,3 @@
-audio-recorder-streamlit==0.0.8
 chromadb==0.5.4
 dateparser==1.1.8
 keras==2.14.0
@@ -22,7 +21,7 @@ spacy==3.7.2
 SpeechRecognition==3.10.0
 # spellux @ git+https://github.com/Aran30/spellux  # Not available in PyPi. Install manually with `pip install git+https://github.com/Aran30/spellux.git`
 sqlalchemy==2.0.29
-streamlit==1.27.2
+streamlit==1.40.0
 streamlit-antd-components==0.3.2
 tensorflow==2.14.0
 text2num==2.5.0
