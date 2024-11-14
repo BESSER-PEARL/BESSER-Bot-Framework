@@ -111,7 +111,7 @@ When processed, the recognized language will be stored as a session variable in 
 UserAdaptationProcessor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :class:`UserAdaptationProcessor <besser.bot.core.processors.language_detection_processor.UserAdaptationProcessor>`
+The :class:`UserAdaptationProcessor <besser.bot.core.processors.user_adaptation_processor.UserAdaptationProcessor>`
 attempts to adapt the bot's responses based on the user's profile. The user profile can be added using the following call:
 
 .. code:: python

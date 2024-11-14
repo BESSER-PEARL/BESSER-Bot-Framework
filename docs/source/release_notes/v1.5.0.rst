@@ -4,14 +4,17 @@ Version 1.5.0
 New Features
 -------------
 
-- Markdown and HTML replies in WebSocketPlatform
-- Chat Widget UI
-- New Processor: UserAdaptationProcessor
-- Reply image in WebSocektPlatform
-- LLM Global and User context
+- New User Interface for the WebSocketPlatform: :doc:`Chat Widget <../wiki/platforms/websocket_platform/chat_widget>`.
+- New Processor: :any:`user-adaptation-processor`
+- New LLM feature: :any:`llm-context`
+- New types of replies included in the WebSocketPlatform:
+
+  - HTML Text
+  - Markdown Text
+  - Images
 
 Improvements
 -------------
 
-- Upgrade Streamlit v1.40.0
-- Typing effect on bot messages in streamlit UI
+- Upgraded Streamlit version to 1.40.0, updating the Streamlit UI with the latest improvements
+- Added typing effect on bot messages in Streamlit UI
