@@ -50,6 +50,8 @@ This LLM can be used within any bot state (in both the body and the fallback bod
 There are plenty of possibilities to take advantage of LLMs in a chatbot. The previous is a very simple use case, but
 we can do more advanced tasks through prompt engineering.
 
+.. _llm-context:
+
 Adding context information to an LLM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
