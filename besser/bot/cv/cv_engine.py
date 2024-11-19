@@ -7,6 +7,7 @@ from besser.bot import cv
 from besser.bot.core.property import Property
 from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
 from besser.bot.cv.object_detection.object_detector import ObjectDetector
+from besser.bot.cv.vllm.vllm import VLLM
 
 if TYPE_CHECKING:
     from besser.bot.core.bot import Bot
@@ -23,21 +24,30 @@ class CVEngine:
     Attributes:
         _bot (Bot): The bot the CVEngine belongs to
         _object_detectors (list[ObjectDetector]): Object Detection Systems of the CVEngine
+        _vllms (dict[str, VLLM]): The VLLMs of the CVEngine. Keys are the names and values are the VLLMs themselves.
     """
 
     def __init__(self, bot: 'Bot'):
         self._bot: 'Bot' = bot
         self._object_detectors: list[ObjectDetector] = []
+        self._vllms: dict[str, VLLM] = {}
 
     @property
     def object_detectors(self):
-        """ObjectDetector: The Object Detector of the CVEngine"""
+        """list[ObjectDetector]: The Object Detector of the CVEngine"""
         return self._object_detectors
+
+    @property
+    def vllms(self):
+        """dict[str, VLLM]: The VLLMs of the CVEngine"""
+        return self._vllms
 
     def initialize(self) -> None:
         """Initialize the CVEngine."""
         for object_detector in self._object_detectors:
             object_detector.initialize()
+        for vllm_name, vllm in self._vllms.items():
+            vllm.initialize()
 
     def get_property(self, prop: Property) -> Any:
         """Get a CV property's value from the CVEngine's bot.
