@@ -40,7 +40,7 @@ def person_body(session: Session):
 
 
 person_state.set_body(person_body)
-person_state.go_to(initial_state)
+person_state.when_no_intent_matched_go_to(initial_state)
 
 # RUN APPLICATION
 

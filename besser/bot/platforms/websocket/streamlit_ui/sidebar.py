@@ -8,13 +8,17 @@ import streamlit as st
 from besser.bot.core.file import File
 from besser.bot.core.message import MessageType, Message
 from besser.bot.platforms.payload import PayloadEncoder, PayloadAction, Payload
-from besser.bot.platforms.websocket.streamlit_ui.vars import WEBSOCKET, HISTORY, QUEUE, SUBMIT_AUDIO, SUBMIT_FILE
+from besser.bot.platforms.websocket.streamlit_ui.vars import WEBSOCKET, HISTORY, QUEUE, SUBMIT_AUDIO, SUBMIT_FILE, IMG
 
 
 def sidebar():
     ws = st.session_state[WEBSOCKET]
 
     with st.sidebar:
+        if IMG in st.session_state:
+            st.subheader('Video Input')
+            st.image(st.session_state['img'], channels='BGR')
+
         if reset_button := st.button(label="Reset bot"):
             st.session_state[HISTORY] = []
             st.session_state[QUEUE] = queue.Queue()

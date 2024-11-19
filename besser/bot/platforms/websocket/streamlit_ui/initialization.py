@@ -8,7 +8,8 @@ from streamlit.runtime.scriptrunner_utils.script_run_context import add_script_r
 
 from besser.bot.platforms.websocket.streamlit_ui.session_management import session_monitoring
 from besser.bot.platforms.websocket.streamlit_ui.vars import SESSION_MONITORING_INTERVAL, SUBMIT_TEXT, HISTORY, QUEUE, \
-    WEBSOCKET, SESSION_MONITORING, SUBMIT_AUDIO, SUBMIT_FILE
+    WEBSOCKET, SESSION_MONITORING, SUBMIT_AUDIO, SUBMIT_FILE, VIDEO_INPUT_ENABLED, VIDEO_INPUT
+from besser.bot.platforms.websocket.streamlit_ui.video_input import video_input
 from besser.bot.platforms.websocket.streamlit_ui.websocket_callbacks import on_open, on_error, on_message, on_close, on_ping, on_pong
 
 
@@ -55,3 +56,9 @@ def initialize():
         add_script_run_ctx(session_monitoring_thread)
         session_monitoring_thread.start()
         st.session_state[SESSION_MONITORING] = session_monitoring_thread
+
+    if VIDEO_INPUT_ENABLED and VIDEO_INPUT not in st.session_state:  # TODO: MAKE THIS OPTIONAL
+        video_input_thread = threading.Thread(target=video_input)
+        add_script_run_ctx(video_input_thread)
+        video_input_thread.start()
+        st.session_state[VIDEO_INPUT] = video_input_thread
