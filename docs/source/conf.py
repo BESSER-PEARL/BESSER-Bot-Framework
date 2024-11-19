@@ -89,10 +89,18 @@ def generate_api_rst_files(preffix, dir, output_dir):
         'db/sidebar.py',
         'db/table_overview.py',
         'db/utils.py',
+        'platforms/chat.py',
+        'platforms/initialization.py',
+        'platforms/message_input.py',
+        'platforms/session_management.py',
+        'platforms/sidebar.py',
+        'platforms/streamlit_ui.py',
+        'platforms/vars.py',
+        'platforms/websocket_callbacks.py',
+
     ]
     api_excluded_files = [
         # Files that for which we won't automatically generate .rst files and WILL appear in the toctree
-        'platforms/streamlit_ui.py',
     ]
     api_excluded_files.extend(api_excluded_files_toctree)
     os.makedirs(output_dir, exist_ok=True)

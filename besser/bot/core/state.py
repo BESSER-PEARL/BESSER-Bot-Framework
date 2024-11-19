@@ -200,6 +200,8 @@ class State:
         Args:
             dest (State): the destination state
         """
+        if dest not in self._bot.states:
+            raise StateNotFound(self._bot, dest)
         if self.transitions:
             raise ConflictingAutoTransitionError(self._bot, self)
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=auto, event_params={}))
@@ -269,6 +271,11 @@ class State:
             target (Any): the target value to which will be used in the operation with the stored value
             dest (State): the destination state
         """
+        if dest not in self._bot.states:
+            raise StateNotFound(self._bot, dest)
+        for transition in self.transitions:
+            if transition.is_auto():
+                raise ConflictingAutoTransitionError(self._bot, self)
         event_params = {'var_name': var_name, 'operation': operation, 'target': target}
 
         self.transitions.append(Transition(name=self._t_name(), source=self, dest=dest, event=variable_matches_operation,

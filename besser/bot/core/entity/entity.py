@@ -74,6 +74,7 @@ class Entity:
         """
         entity_json = {
             'base_entity': self.base_entity,
+            'description': self.description,
             'entries': []
         }
         if not self.base_entity:

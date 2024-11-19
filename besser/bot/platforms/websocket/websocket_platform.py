@@ -24,7 +24,7 @@ from besser.bot.nlp.rag.rag import RAGMessage
 from besser.bot.platforms import websocket
 from besser.bot.platforms.payload import Payload, PayloadAction, PayloadEncoder
 from besser.bot.platforms.platform import Platform
-from besser.bot.platforms.websocket import streamlit_ui
+from besser.bot.platforms.websocket.streamlit_ui import streamlit_ui
 from besser.bot.core.file import File
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ class WebSocketPlatform(Platform):
     bidirectional communication between server and client (i.e. sending and receiving messages).
 
     Note:
-        We provide a UI (:doc:`streamlit_ui`) implementing a WebSocket client to communicate with the bot, though you
+        We provide different interfaces implementing a WebSocket client to communicate with the bot, though you
         can use or create your own UI as long as it has a WebSocket client that connects to the bot's WebSocket server.
 
     Args:
@@ -169,6 +169,34 @@ class WebSocketPlatform(Platform):
         payload = Payload(action=PayloadAction.BOT_REPLY_STR,
                           message=message)
         self._send(session.id, payload)
+
+    def reply_markdown(self, session: Session, message: str) -> None:
+        """Send a bot reply to a specific user, containing text in Markdown format.
+
+        Args:
+            session (Session): the user session
+            message (str): the message in Markdown format to send to the user
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        session.save_message(Message(t=MessageType.MARKDOWN, content=message, is_user=False, timestamp=datetime.now()))
+        payload = Payload(action=PayloadAction.BOT_REPLY_MARKDOWN,
+                          message=message)
+        self._send(session.id, payload)
+
+    def reply_html(self, session: Session, message: str) -> None:
+        """Send a bot reply to a specific user, containing text in HTML format.
+
+        Args:
+            session (Session): the user session
+            message (str): the message in HTML format to send to the user
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        session.save_message(Message(t=MessageType.HTML, content=message, is_user=False, timestamp=datetime.now()))
+        payload = Payload(action=PayloadAction.BOT_REPLY_HTML,
+                          message=message)
+        self._send(session.id, payload)
         
     def reply_file(self, session: Session, file: File) -> None:
         """Send a file reply to a specific user
@@ -182,6 +210,25 @@ class WebSocketPlatform(Platform):
         session.save_message(Message(t=MessageType.FILE, content=file.get_json_string(), is_user=False, timestamp=datetime.now()))
         payload = Payload(action=PayloadAction.BOT_REPLY_FILE,
                           message=file.to_dict())
+        self._send(session.id, payload)
+
+    def reply_image(self, session: Session, img: np.ndarray) -> None:
+        """Send an image reply to a specific user.
+
+        Before being sent, the image is encoded as jpg and then as a base64 string. This must be known before dedocing
+        the image on the client side.
+
+        Args:
+            session (Session): the user session
+            img (np.ndarray): the image to send
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        retval, buffer = cv2.imencode('.jpg', img)  # Encode as JPEG
+        base64_img = base64.b64encode(buffer).decode('utf-8')
+        session.save_message(Message(t=MessageType.FILE, content=base64_img, is_user=False, timestamp=datetime.now()))
+        payload = Payload(action=PayloadAction.BOT_REPLY_IMAGE,
+                          message=base64_img)
         self._send(session.id, payload)
 
     def reply_dataframe(self, session: Session, df: DataFrame) -> None:

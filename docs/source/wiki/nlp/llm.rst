@@ -50,6 +50,45 @@ This LLM can be used within any bot state (in both the body and the fallback bod
 There are plenty of possibilities to take advantage of LLMs in a chatbot. The previous is a very simple use case, but
 we can do more advanced tasks through prompt engineering.
 
+.. _llm-context:
+
+Adding context information to an LLM
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To improve / customize the LLM's behavior, it is also possible to add context information to an LLM.
+Here, we differentiate between a global context and user-specific context information.
+The global context will be applied to every LLM prediction for any user.
+The user specific context is only applied for a specific user and can contain user specific information to personalize the LLM's behavior.
+
+Here an example where we extend the previous LLMOpenAI instance:
+
+.. code:: python
+
+    # adding this global_context will cause the LLM to only answer in english.
+    gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini', global_context='You only speak english.')
+
+Let's now suppose we have access to the user's name while executing the body of the current state:
+
+.. code:: python
+
+    def answer_body(session: Session):
+        user_name = session.message
+        # For this specific session, the LLM will always be given the "context" string as additional information.
+        gpt.add_user_context(session=session, context=f"The user is called {user_name}", context_name="user_name_context") 
+        answer = gpt.predict(session.message) # Predicts the output for the given input (the user message)
+        # It's also possible to remove context elements from the user specific context. 
+        gpt.remove_user_context(session=session, context_name="user_name_context")
+        session.reply(answer)
+
+It is also possible to only add context information for a specific prompt:
+
+.. code:: python
+
+    def answer_body(session: Session):
+        user_name = session.message
+        answer = gpt.predict(session=session.message, system_message=f'Start your response using the name of the user which is {user_name}')
+        session.reply(answer)
+
 Available LLMs
 --------------
 
@@ -69,12 +108,19 @@ These are the currently available LLM wrappers in BBF:
 - :class:`~besser.bot.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`: For HuggingFace LLMs, through its `Inference API <https://huggingface.co/docs/api-inference>`_
 - :class:`~besser.bot.nlp.llm.llm_replicate_api.LLMReplicate`: For `Replicate <https://replicate.com/>`_ LLMs, through its API
 
+.. note::
+
+   Models taken from Huggingface or Replicate might expect a specific prompting or context specification format to improve the results. Be sure to carefully read the guidelines for each model for an optimal experience.
+
+
 API References
 --------------
 
 - Bot: :class:`besser.bot.core.bot.Bot`
 - LLM: :class:`besser.bot.nlp.llm.llm.LLM`
 - LLM.predict(): :meth:`besser.bot.nlp.llm.llm.LLM.predict`
+- LLM.add_user_context(): :meth:`besser.bot.nlp.llm.llm.LLM.add_user_context`
+- LLM.remove_user_context(): :meth:`besser.bot.nlp.llm.llm.LLM.remove_user_context`
 - LLMHuggingFace: :class:`besser.bot.nlp.llm.llm_huggingface.LLMHuggingFace`:
 - LLMHuggingFaceAPI: :class:`besser.bot.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`:
 - LLMOpenAI: :class:`besser.bot.nlp.llm.llm_openai_api.LLMOpenAI`
