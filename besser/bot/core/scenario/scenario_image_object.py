@@ -1,7 +1,7 @@
 from besser.bot.core.image.image_object import ImageObject
 from besser.bot.core.scenario.scenario_element import ScenarioElement
 from besser.bot.core.session import Session
-from besser.bot.cv.object_detection.object_detection_prediction import ImageObjectPrediction
+from besser.bot.cv.prediction.image_prediction import ImageObjectPrediction
 
 
 class ScenarioImageObject(ScenarioElement):
@@ -26,9 +26,9 @@ class ScenarioImageObject(ScenarioElement):
         self.score: float = score
 
     def evaluate(self, session: Session):
-        if session.detected_objects is None:
+        if session.image_prediction is None:
             return False
-        image_object_predictions: list[ImageObjectPrediction] = session.detected_objects.image_object_predictions
+        image_object_predictions: list[ImageObjectPrediction] = session.image_prediction.image_object_predictions
         filtered_image_object_predictions = [
             image_object_prediction for image_object_prediction in image_object_predictions
             if image_object_prediction.image_object == self.image_object and image_object_prediction.score >= self.score

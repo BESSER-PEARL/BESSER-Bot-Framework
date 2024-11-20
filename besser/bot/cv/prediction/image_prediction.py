@@ -4,6 +4,7 @@ import json
 import numpy as np
 
 from besser.bot.core.image.image_object import ImageObject
+from besser.bot.core.image.image_property import ImageProperty
 
 
 class ImageObjectPrediction:
@@ -38,18 +39,27 @@ class ImageObjectPrediction:
         self.y2: int = y2
 
 
-class ObjectDetectionPrediction:
-    """The prediction result of an ObjectDetector for a specific image.
+class ImagePropertyPrediction:
+
+    def __init__(self, image_property: ImageProperty, score: float):
+        self.image_property: ImageProperty = image_property
+        self.score: float = score
+
+
+class ImagePrediction:
+    """The prediction result of the CVEngine processes for a specific image.
 
     Args:
-        img (np.ndarray): the image on which the object detection was done
+        img (np.ndarray): the image on which the image prediction was done
         image_object_predictions (list[ImageObjectPrediction]): the list of predicted objects within the image
+        image_property_predictions (list[ImagePropertyPrediction]): the list of predicted properties within the image
         timestamp (datetime.datetime): the time at which the prediction was done
         image_input_name (str): the name of the image input source
 
     Attributes:
-        img (np.ndarray): the image on which the object detection was done
+        img (np.ndarray): the image on which the image prediction was done
         image_object_predictions (list[ImageObjectPrediction]): the list of predicted objects within the image
+        image_property_predictions (list[ImagePropertyPrediction]): the list of predicted properties within the image
         timestamp (datetime.datetime): the time at which the prediction was done
         image_input_name (str): the name of the image input source
     """
@@ -57,12 +67,14 @@ class ObjectDetectionPrediction:
             self,
             img: np.ndarray,
             image_object_predictions: list[ImageObjectPrediction],
+            image_property_predictions: list[ImagePropertyPrediction],
             timestamp: datetime.datetime,
             image_input_name: str
 
     ):
         self.img: np.ndarray = img
         self.image_object_predictions: list[ImageObjectPrediction] = image_object_predictions
+        self.image_property_predictions: list[ImagePropertyPrediction] = image_property_predictions
         self.timestamp: datetime.datetime = timestamp
         self.image_input_name: str = image_input_name
 
@@ -83,33 +95,33 @@ class ObjectDetectionPrediction:
         return image_object_predictions
 
 
-class ObjectDetectionPredictionEncoder(json.JSONEncoder):
-    """Encoder for the :class:`ObjectDetectionPrediction` class.
+class ImagenPredictionEncoder(json.JSONEncoder):
+    """Encoder for the :class:`ImagePrediction` class.
 
     Example:
         .. code::
 
             import json
-            encoded_object_detection_prediction = json.dumps(object_detection_prediction, cls=ObjectDetectionPredictionEncoder)
+            encoded_image_prediction = json.dumps(image_prediction, cls=ImagenPredictionEncoder)
     """
 
     def default(self, obj):
-        """Returns a serializable object for a :class:`ObjectDetectionPrediction`
+        """Returns a serializable object for a :class:`ImagePrediction`
 
         Args:
             obj: the object to serialize
 
         Returns:
-            dict: the serialized object detection prediction
+            dict: the serialized image prediction
         """
-        if isinstance(obj, ObjectDetectionPrediction):
-            # Convert the ObjectDetectionPrediction object to a dictionary
-            object_detection_prediction_dict = {
+        if isinstance(obj, ImagePrediction):
+            # Convert the ImagePrediction object to a dictionary
+            image_prediction_dict = {
                 # 'img': obj.img.tolist(),
                 'image_object_predictions': []
             }
             for image_object_prediction in obj.image_object_predictions:
-                object_detection_prediction_dict['image_object_predictions'].append({
+                image_prediction_dict['image_object_predictions'].append({
                     'name': image_object_prediction.image_object.name,
                     'score': image_object_prediction.score,
                     'x1': image_object_prediction.x1,
@@ -117,5 +129,6 @@ class ObjectDetectionPredictionEncoder(json.JSONEncoder):
                     'y1': image_object_prediction.y1,
                     'y2': image_object_prediction.y2,
                 })
-            return object_detection_prediction_dict
+                # TODO: add image_property_predictions
+            return image_prediction_dict
         return super().default(obj)

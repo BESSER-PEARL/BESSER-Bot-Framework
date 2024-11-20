@@ -18,7 +18,7 @@ from websockets.sync.server import ServerConnection, WebSocketServer, serve
 
 from besser.bot.core.message import Message, MessageType
 from besser.bot.core.session import Session
-from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPredictionEncoder
+from besser.bot.cv.prediction.image_prediction import ImagenPredictionEncoder
 from besser.bot.exceptions.exceptions import PlatformMismatchError
 from besser.bot.nlp.rag.rag import RAGMessage
 from besser.bot.platforms import websocket
@@ -96,8 +96,8 @@ class WebSocketPlatform(Platform):
                         img = cv2.imdecode(np_data, cv2.IMREAD_COLOR)  # Decode numpy array back to image
                         self._bot.receive_image(session.id, img)
                         # To display detected objects, optional
-                        payload = Payload(action=PayloadAction.BOT_REPLY_OBJECT_DETECTION,
-                                          message=json.dumps(session.detected_objects, cls=ObjectDetectionPredictionEncoder))
+                        payload = Payload(action=PayloadAction.BOT_REPLY_IMAGE_PREDICTION,
+                                          message=json.dumps(session.image_prediction, cls=ImagenPredictionEncoder))
                         self._send(session.id, payload)
 
                     elif payload.action == PayloadAction.RESET.value:

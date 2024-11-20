@@ -37,7 +37,6 @@ def video_input():
                     print('Your message (image from video input) could not be sent. The connection is already closed')
                     cap.release()
                     break
-        elif not runtime.is_active_session(session.id):
         if (not runtime.is_active_session(session.id)) or (not session.session_state[VIDEO_INPUT_ENABLED]):
             cap.release()
             for key in [VIDEO_INPUT, LAST_IMG, IMG]:

@@ -68,9 +68,8 @@ class PayloadAction(Enum):
     (see :class:`besser.bot.nlp.rag.rag.RAGMessage`).
     """
 
-    BOT_REPLY_OBJECT_DETECTION = 'bot_reply_object_detection'
-    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing an object detection 
-    prediction."""
+    BOT_REPLY_IMAGE_PREDICTION = 'bot_reply_image_prediction'
+    """PayloadAction: Indicates that the payload's purpose is to send a bot reply containing an image prediction."""
 
 
 class Payload:

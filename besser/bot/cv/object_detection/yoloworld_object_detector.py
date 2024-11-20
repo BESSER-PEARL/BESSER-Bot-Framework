@@ -6,7 +6,7 @@ from ultralytics import YOLOWorld
 from ultralytics.engine.results import Results
 
 from besser.bot.core.image.image_object import ImageObject
-from besser.bot.cv.object_detection.object_detection_prediction import ImageObjectPrediction, ObjectDetectionPrediction
+from besser.bot.cv.prediction.image_prediction import ImageObjectPrediction
 from besser.bot.cv.object_detection.object_detector import ObjectDetector
 
 if TYPE_CHECKING:

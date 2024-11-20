@@ -451,8 +451,8 @@ class Bot:
         """
         session = self._sessions[session_id]
         # TODO: Raise exception SessionNotFound
-        session.detected_objects = self._cv_engine.detect_objects(img)
-        session.current_state.receive_detected_objects(session)
+        session.image_prediction = self._cv_engine.predict_image(img)
+        session.current_state.receive_image_prediction(session)
 
     def process(self, session: Session, message: Any, is_user_message: bool) -> Any:
         """Runs the bot processors in a message.

@@ -8,7 +8,7 @@ from besser.bot.core.scenario.scenario import Scenario
 from besser.bot.core.session import Session
 from besser.bot.core.transition import Transition
 from besser.bot.core.image.image_object import ImageObject
-from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
+from besser.bot.cv.prediction.image_prediction import ImagePrediction
 from besser.bot.exceptions.exceptions import BodySignatureError, ConflictingAutoTransitionError, \
     DuplicatedIntentMatchingTransitionError, EventSignatureError, IntentNotFound, StateNotFound
 from besser.bot.library.event.event_library import auto, intent_matched, variable_matches_operation, file_received, \
@@ -372,25 +372,27 @@ class State:
                               f"'{self._name}' in bot '{self._bot.name}'. See the attached exception:")
                 traceback.print_exc()
 
-    def receive_detected_objects(self, session: Session) -> None:
-        """Receive the detected objects (which are predicted from an image sent to the bot) from a user session.
+    def receive_image_prediction(self, session: Session) -> None:
+        """Receive the image prediction (generated after an image is sent to the bot) from a user session.
 
-        When receiving detected objects it looks for the state's transition whose trigger event is to match that intent.
-        The fallback body is run when the received intent does not match any transition intent (i.e. fallback intent).
+        When receiving the image prediction it looks for the state's transition whose trigger event is to match
+        a scenario based on the image prediction.
+        The fallback body is run when the received image prediction does not match any transition scenario
+        (i.e. fallback).
 
         Args:
-            session (Session): the user session that sent the message
+            session (Session): the user session that sent the image
         """
-        detected_objects: ObjectDetectionPrediction = session.detected_objects
-        if detected_objects is None:
-            logging.error("Something went wrong, no object detection was stored in the session")
+        image_prediction: ImagePrediction = session.image_prediction
+        if image_prediction is None:
+            logging.error("Something went wrong, no image prediction was stored in the session")
             return
         for transition in self.transitions:  # TODO: ONLY CHECK OBJECT DETECTION TRANSITIONS???
             if transition.is_event_true(session):
-                session.flags['detected_objects'] = False
+                session.flags['image_prediction'] = False
                 session.move(transition)
                 return
-        session.flags['detected_objects'] = False
+        session.flags['image_prediction'] = False
 
     def receive_file(self, session: Session) -> None:
         """Receive a file from a user session.

@@ -94,10 +94,10 @@ def image_object_detected(session: 'Session', event_params: dict) -> bool:
         bool: True if the target ImageObject was detected in the Object Detection, with a score higher than the
             specified in the event parameters
     """
-    if session.flags['detected_objects']:
+    if session.flags['image_prediction']:
         target_image_object: ImageObject = event_params['image_object']
         target_score: ImageObject = event_params['score']
-        for image_object_prediction in session.detected_objects.image_object_predictions:
+        for image_object_prediction in session.image_prediction.image_object_predictions:
             if image_object_prediction.image_object == target_image_object and image_object_prediction.score >= target_score:
                 return True
     return False

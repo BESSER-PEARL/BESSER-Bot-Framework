@@ -5,7 +5,7 @@ import numpy as np
 
 from besser.bot import cv
 from besser.bot.core.property import Property
-from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
+from besser.bot.cv.prediction.image_prediction import ImagePrediction
 from besser.bot.cv.object_detection.object_detector import ObjectDetector
 from besser.bot.cv.vllm.vllm import VLLM
 
@@ -67,21 +67,23 @@ class CVEngine:
         for object_detector in self._object_detectors:
             object_detector.train()
 
-    def detect_objects(self, img: np.ndarray) -> ObjectDetectionPrediction:
-        """Detect objects from an image.
+    def predict_image(self, img: np.ndarray) -> ImagePrediction:
+        """Run image prediction on the CV components of the CVEngine.
 
         Args:
-            img (np.ndarray): the image to detect objects from
+            img (np.ndarray): the target image
 
         Returns:
-            ObjectDetectionPrediction: the object detection prediction
+            ImagePrediction: the image prediction
         """
-        prediction = ObjectDetectionPrediction(
+        prediction = ImagePrediction(
             img=img,
             image_object_predictions=[],
+            image_property_predictions=[],
             timestamp=datetime.datetime.now(),
             image_input_name=None  # TODO: For now, this is ignored
         )
         for object_detector in self._object_detectors:
             prediction.image_object_predictions.extend(object_detector.predict(img))
+        # TODO: Run image property predictions
         return prediction

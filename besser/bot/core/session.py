@@ -7,7 +7,7 @@ from pandas import DataFrame
 from besser.bot.core.message import Message, MessageType, get_message_type
 from besser.bot.core.transition import Transition
 from besser.bot.core.file import File
-from besser.bot.cv.object_detection.object_detection_prediction import ObjectDetectionPrediction
+from besser.bot.cv.prediction.image_prediction import ImagePrediction
 from besser.bot.db import DB_MONITORING
 from besser.bot.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
 from besser.bot.nlp.rag.rag import RAGMessage
@@ -38,7 +38,7 @@ class Session:
         _dictionary (str): Storage of private data for this session
         _message (str): The last message sent to the bot by this session
         _predicted_intent (IntentClassifierPrediction): The last predicted intent for this session
-        _detected_objects (ObjectDetectionPrediction): The last detected objects for this session
+        _image_prediction (ImagePrediction): The last detected objects for this session
         _file (File or None): The last file sent to the bot.
         flags (dict[str, bool]): A dictionary of boolean flags.
             A `predicted_intent flag` is set to true when an intent is received. When the evaluation of the
@@ -62,12 +62,12 @@ class Session:
         self._dictionary: dict[str, Any] = {}
         self._message: str or None = None
         self._predicted_intent: IntentClassifierPrediction or None = None
-        self._detected_objects: ObjectDetectionPrediction or None = None
+        self._image_prediction: ImagePrediction or None = None
         self._file: File or None = None
         self.flags: dict[str, bool] = {
             'predicted_intent': False,
             'file': False,
-            'detected_objects': False
+            'image_prediction': False
         }
 
     @property
@@ -133,19 +133,19 @@ class Session:
         self.flags['predicted_intent'] = True
 
     @property
-    def detected_objects(self):
-        """ObjectDetectionPrediction: The last detected objects for this session"""
-        return self._detected_objects
+    def image_prediction(self):
+        """ImagePrediction: The last image prediction for this session"""
+        return self._image_prediction
 
-    @detected_objects.setter
-    def detected_objects(self, detected_objects: ObjectDetectionPrediction):
-        """Set the last detected objects for this session.
+    @image_prediction.setter
+    def image_prediction(self, image_prediction: ImagePrediction):
+        """Set the last image prediction for this session.
 
         Args:
-            detected_objects (ObjectDetectionPrediction): the last detected objects
+            image_prediction (ImagePrediction): the last image prediction
         """
-        self._detected_objects = detected_objects
-        self.flags['detected_objects'] = True
+        self._image_prediction = image_prediction
+        self.flags['image_prediction'] = True
 
     def get_chat_history(self, n: int = None) -> list[Message]:
         """Get the history of messages between this session and its bot.

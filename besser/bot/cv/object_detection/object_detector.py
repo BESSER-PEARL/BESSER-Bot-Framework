@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from besser.bot.cv.object_detection.object_detection_prediction import ImageObjectPrediction
+from besser.bot.cv.prediction.image_prediction import ImageObjectPrediction
 
 if TYPE_CHECKING:
     from besser.bot.cv.cv_engine import CVEngine

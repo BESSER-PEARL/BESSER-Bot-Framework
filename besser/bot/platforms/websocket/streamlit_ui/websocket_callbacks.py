@@ -58,7 +58,7 @@ def on_message(ws, payload_str):
     elif payload.action == PayloadAction.BOT_REPLY_RAG.value:
         t = MessageType.RAG_ANSWER
         content = payload.message
-    elif payload.action == PayloadAction.BOT_REPLY_OBJECT_DETECTION.value:
+    elif payload.action == PayloadAction.BOT_REPLY_IMAGE_PREDICTION.value:
         # Draw labelled bounding boxes in the camera screen
         image_object_predictions = json.loads(payload.message)['image_object_predictions']
         img = streamlit_session._session_state[LAST_IMG]
