@@ -1,23 +1,36 @@
 import base64
 import json
 import queue
+import threading
 from datetime import datetime
 
 import streamlit as st
+from streamlit.runtime.scriptrunner_utils.script_run_context import add_script_run_ctx
 
 from besser.bot.core.file import File
 from besser.bot.core.message import MessageType, Message
 from besser.bot.platforms.payload import PayloadEncoder, PayloadAction, Payload
-from besser.bot.platforms.websocket.streamlit_ui.vars import WEBSOCKET, HISTORY, QUEUE, SUBMIT_AUDIO, SUBMIT_FILE, IMG
+from besser.bot.platforms.websocket.streamlit_ui.vars import WEBSOCKET, HISTORY, QUEUE, SUBMIT_AUDIO, SUBMIT_FILE, IMG, \
+    VIDEO_INPUT_ENABLED, VIDEO_INPUT, VIDEO_INPUT_INTERVAL
+from besser.bot.platforms.websocket.streamlit_ui.video_input import video_input
 
 
 def sidebar():
     ws = st.session_state[WEBSOCKET]
 
     with st.sidebar:
+        st.session_state[VIDEO_INPUT_ENABLED] = st.toggle(label='Enable video input')
+        if st.session_state[VIDEO_INPUT_ENABLED]:
+            st.session_state[VIDEO_INPUT_INTERVAL] = st.number_input(label='Video input interval', min_value=0.01, max_value=60.0, step=0.01, value=0.2)
+            if VIDEO_INPUT not in st.session_state:
+                video_input_thread = threading.Thread(target=video_input)
+                add_script_run_ctx(video_input_thread)
+                video_input_thread.start()
+                st.session_state[VIDEO_INPUT] = video_input_thread
+
         if IMG in st.session_state:
             st.subheader('Video Input')
-            st.image(st.session_state['img'], channels='BGR')
+            st.image(st.session_state[IMG], channels='BGR')
 
         if reset_button := st.button(label="Reset bot"):
             st.session_state[HISTORY] = []
