@@ -85,5 +85,6 @@ class CVEngine:
         )
         for object_detector in self._object_detectors:
             prediction.image_object_predictions.extend(object_detector.predict(img))
-        # TODO: Run image property predictions
+        for vllm_name, vllm in self._vllms.items():
+            prediction.image_property_predictions.extend(vllm.predict_image_properties(img))
         return prediction

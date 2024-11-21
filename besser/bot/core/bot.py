@@ -6,6 +6,7 @@ from typing import Any, Callable, get_type_hints
 
 import numpy as np
 
+from besser.bot.core.image.image_property import ImageProperty
 from besser.bot.core.message import Message
 from besser.bot.core.scenario.scenario import Scenario
 from besser.bot.core.transition import Transition
@@ -23,7 +24,7 @@ from besser.bot.core.state import State
 from besser.bot.core.file import File
 from besser.bot.exceptions.exceptions import BotNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
     DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound, DuplicatedImageObjectError, \
-    DuplicatedScenarioError
+    DuplicatedScenarioError, DuplicatedImagePropertyError
 from besser.bot.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
     SimpleIntentClassifierConfiguration
 from besser.bot.nlp.nlp_engine import NLPEngine
@@ -55,6 +56,7 @@ class Bot:
         intents (list[Intent]): The bot intents
         entities (list[Entity]): The bot entities
         image_objects (list[ImageObject]): The bot image objects
+        image_properties (list[ImageProperty]): The bot image properties
         global_initial_states (list[State, Intent]): List of tuples of initial global states and their triggering intent
         global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
@@ -77,6 +79,7 @@ class Bot:
         self.intents: list[Intent] = []
         self.entities: list[Entity] = []
         self.image_objects: list[ImageObject] = []
+        self.image_properties: list[ImageProperty] = []
         self.scenarios: list[Scenario] = []
         self.global_initial_states: list[tuple[State, Intent]] = []
         self.global_state_component: dict[State, list[State]] = dict()
@@ -263,7 +266,7 @@ class Bot:
 
         Args:
             name (str): the image object name. It must be unique in the bot
-            description (str or None): a description of the image, optional
+            description (str or None): a description of the image object, optional
 
         Returns:
             ImageObject: the image object
@@ -288,11 +291,41 @@ class Bot:
                 return image_object
         return None
 
+    def new_image_property(self, name: str, description: str or None = None) -> ImageProperty:
+        """Create a new image property in the bot.
+
+        Args:
+            name (str): the image property name. It must be unique in the bot
+            description (str or None): a description of the image, optional
+
+        Returns:
+            ImageProperty: the image property
+        """
+        new_image_property = ImageProperty(name, description)
+        if new_image_property in self.image_properties:
+            raise DuplicatedImagePropertyError(self, new_image_property)
+        self.image_properties.append(new_image_property)
+        return new_image_property
+
+    def get_image_property(self, name: str) -> ImageProperty or None:
+        """Get an image property of the bot.
+
+        Args:
+            name (str): the image property name
+
+        Returns:
+            ImageProperty or None: the image property, or None if it does not exist
+        """
+        for image_property in self.image_properties:
+            if image_property.name == name:
+                return image_property
+        return None
+
     def new_scenario(self, name: str) -> Scenario:
         """Create a new scenario in the bot.
 
         Args:
-            name (str): the image object name. It must be unique in the bot
+            name (str): the scenario name. It must be unique in the bot
 
         Returns:
             Scenario: the scenario

@@ -48,6 +48,13 @@ class DuplicatedImageObjectError(Exception):
         super().__init__(message)
 
 
+class DuplicatedImagePropertyError(Exception):
+
+    def __init__(self, bot, image_property):
+        message = f"Bot '{bot.name}' already contains an image property with name '{image_property.name}'"
+        super().__init__(message)
+
+
 class DuplicatedScenarioError(Exception):
 
     def __init__(self, bot, scenario):
