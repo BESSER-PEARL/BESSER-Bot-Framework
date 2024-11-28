@@ -40,8 +40,8 @@ class LLM(ABC):
         self.parameters: dict = parameters
         self._nlp_engine._llms[name] = self
         self._global_context: str = global_context
-        self._user_context: dict = dict
-        self._user_contexts: dict = dict
+        self._user_context: dict = dict()
+        self._user_contexts: dict = dict()
 
     def set_parameters(self, parameters: dict) -> None:
         """Set the LLM parameters.
