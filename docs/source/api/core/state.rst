@@ -1,7 +1,7 @@
 state
 =====
 
-.. automodule:: besser.bot.core.state
+.. automodule:: besser.agent.core.state
    :members:
    :private-members:
    :undoc-members:

@@ -1,7 +1,7 @@
 any
 ===
 
-.. automodule:: besser.bot.nlp.ner.base.any
+.. automodule:: besser.agent.nlp.ner.base.any
    :members:
    :private-members:
    :undoc-members:

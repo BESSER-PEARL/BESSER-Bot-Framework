@@ -1,7 +1,7 @@
 Supported Languages
 ===================
 
-The follwing list reflects the languages supported by the BBF for which we additionally tested their correctness:
+The following list reflects the languages supported by the BBF for which we additionally tested their correctness:
 
 .. list-table:: 
     :header-rows: 1    

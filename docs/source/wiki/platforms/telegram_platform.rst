@@ -1,11 +1,11 @@
 Telegram platform
 =================
 
-The Telegram Platform allows a bot to communicate with the users using `Telegram <https://telegram.org/>`_.
+The Telegram Platform allows an agent to communicate with the users using `Telegram <https://telegram.org/>`_.
 
-Telegram is a great platform for chatbots. You can create a Telegram bot through the
-`Bot Father <https://core.telegram.org/bots/tutorial>`_ and then, link it to our BBF chatbot. This way,
-you can define your chatbot architecture and logics, and then use your Telegram bot as the communication channel.
+Telegram is a great platform for chatbots/agents. You can create a Telegram bot through the
+`Bot Father <https://core.telegram.org/bots/tutorial>`_ and then, link it to our BBF agent. This way,
+you can define your agent architecture and logics, and then use your Telegram bot as the communication channel.
 
 Our Telegram Platform uses the `python-telegram-bot <https://github.com/python-telegram-bot/python-telegram-bot>`_
 library, which is a Telegram Bot API wrapper for Python.
@@ -13,23 +13,23 @@ library, which is a Telegram Bot API wrapper for Python.
 .. figure:: ../../img/telegram_demo.gif
    :alt: Telegram demo
 
-   Example chatbot using Telegram
+   Example agent using Telegram
 
 .. note::
 
-    There are some properties the bot needs in order to properly set the Telegram connection. More details in the
+    There are some properties the agent needs in order to properly set the Telegram connection. More details in the
     :any:`configuration properties <properties-telegram_platform>` documentation.
 
 How to use it
 -------------
 
-After you instantiate your bot, simply call the following function:
+After you instantiate your agent, simply call the following function:
 
 .. code:: python
 
-    bot = Bot('example_bot')
+    agent = Agent('example_bot')
     ...
-    telegram_platform = bot.use_telegram_platform()
+    telegram_platform = agent.use_telegram_platform()
 
 After that, you can use the platform to send different kinds of messages to the user
 (from :any:`state bodies<state-body>`):
@@ -63,8 +63,8 @@ After that, you can use the platform to send different kinds of messages to the 
 
 .. note::
 
-    The bot cannot detect when a user opens the Telegram chat window. Therefore, to start the conversation, it is needed
-    a first message to "wake the bot up". After that, it will start running the initial state.
+    The agent cannot detect when a user opens the Telegram chat window. Therefore, to start the conversation, it is needed
+    a first message to "wake the agent up". After that, it will start running the initial state.
 
 ⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
 
@@ -74,9 +74,9 @@ Handlers
 The python-telegram-bot library (Telegram Bot API Python wrapper under our Telegram Platform) uses
 `handlers <https://docs.python-telegram-bot.org/en/latest/telegram.ext.handlers-tree.html>`_ to handle
 bot updates (e.g., the user sends a text message, an image, a command, etc.). Our Telegram Platform interface allows
-you to add custom handlers to your bot, so this feature is not lost when using BBF.
+you to add custom handlers to your agent, so this feature is not lost when using BBF.
 
-This is an example handler function that will be executed when bot receives the ``/help`` command:
+This is an example handler function that will be executed when the agent receives the ``/help`` command:
 
 .. code:: python
 
@@ -85,7 +85,7 @@ This is an example handler function that will be executed when bot receives the 
     ...
     async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
         session_id = str(update.effective_chat.id)
-        session = bot.get_or_create_session(session_id)
+        session = agent.get_or_create_session(session_id)
         session.reply('Please introduce a number between 1 and 10')
 
     help_handler = CommandHandler('help', help)
@@ -94,12 +94,12 @@ This is an example handler function that will be executed when bot receives the 
 
 .. note::
 
-    You can take the built-in handlers as a reference to create handlers integrated with the bot.
+    You can take the built-in handlers as a reference to create handlers integrated with the agent.
 
 Our Telegram Platform has the following built in handlers:
 
-- One to handle all user text messages (that simply captures the messages and sends them to the bot).
-- A *reset* handler that resets the bot when the user writes the command ``/reset``.
+- One to handle all user text messages (that simply captures the messages and sends them to the agent).
+- A *reset* handler that resets the agent when the user writes the command ``/reset``.
 - A voice message handler (you need to set the :doc:`../nlp/speech2text` component to enable voice messages)
 - A file handler to receive files from the user
 - An image handler to receive images from the user (images are a subset of files)
@@ -130,14 +130,14 @@ forwarded:
         # The session id is the Telegram chat_id
         telegram_platform.send_audio(session.id, my_audio, title='Hello World')
 
-Note that the TelegramPlatform wrappers also involve other actions. For instance, when the bot replies a message, it can be
+Note that the TelegramPlatform wrappers also involve other actions. For instance, when the agent replies a message, it can be
 added to a chat history :doc:`database <../db/monitoring_db>`. You can also customize what is done when calling any function.
 You could update the chat history to record the audio messages, either adding the audio or simply a log message:
 
 .. code:: python
 
     from datetime import datetime
-    from besser.bot.core.message import Message, MessageType
+    from besser.agent.core.message import Message, MessageType
 
     def custom_send_audio(session: Session, audio):
         message = Message(MessageType.AUDIO, audio, is_user=False, timestamp=datetime.now())
@@ -151,15 +151,15 @@ You could update the chat history to record the audio messages, either adding th
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.get_or_create_session(): :meth:`besser.bot.core.bot.Bot.get_or_create_session`
-- Bot.use_telegram_platform(): :meth:`besser.bot.core.bot.Bot.use_telegram_platform`
-- File: :class:`besser.bot.core.file.File`
-- Message: :class:`besser.bot.core.message.Message`
-- MessageType: :class:`besser.bot.core.message.MessageType`
-- TelegramPlatform: :class:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform`
-- TelegramPlatform.add_handler(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.add_handler`
-- TelegramPlatform.reply(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply`
-- TelegramPlatform.reply_file(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_file`
-- TelegramPlatform.reply_image(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_image`
-- TelegramPlatform.reply_location(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_location`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.get_or_create_session(): :meth:`besser.agent.core.agent.Agent.get_or_create_session`
+- Agent.use_telegram_platform(): :meth:`besser.agent.core.agent.Agent.use_telegram_platform`
+- File: :class:`besser.agent.core.file.File`
+- Message: :class:`besser.agent.core.message.Message`
+- MessageType: :class:`besser.agent.core.message.MessageType`
+- TelegramPlatform: :class:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform`
+- TelegramPlatform.add_handler(): :meth:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform.add_handler`
+- TelegramPlatform.reply(): :meth:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform.reply`
+- TelegramPlatform.reply_file(): :meth:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform.reply_file`
+- TelegramPlatform.reply_image(): :meth:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform.reply_image`
+- TelegramPlatform.reply_location(): :meth:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform.reply_location`

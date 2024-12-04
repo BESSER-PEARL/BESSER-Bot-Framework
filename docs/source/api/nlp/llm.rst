@@ -1,7 +1,7 @@
 llm
 ===
 
-.. automodule:: besser.bot.nlp.llm.llm
+.. automodule:: besser.agent.nlp.llm.llm
    :members:
    :private-members:
    :undoc-members:

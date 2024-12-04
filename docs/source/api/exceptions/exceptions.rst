@@ -1,7 +1,7 @@
 exceptions
 ==========
 
-.. automodule:: besser.bot.exceptions.exceptions
+.. automodule:: besser.agent.exceptions.exceptions
    :members:
    :private-members:
    :undoc-members:

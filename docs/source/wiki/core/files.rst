@@ -1,7 +1,7 @@
 Files
 =====
 
-The :class:`File class <besser.bot.core.file.File>` was added as a way to help with the definition of file objects that are both sent and received by users.
+The :class:`File class <besser.agent.core.file.File>` was added as a way to help with the definition of file objects that are both sent and received by users.
 
 File Object Definition
 ----------------------
@@ -27,12 +27,12 @@ Receiving and Sending Files
 
 If a developer wants to add the handling of receiving files to a platform, apart from the platform specific
 implementation (that is independent of the BBF), the received file will need to be transformed into a file object
-and forwarded to the running bot as follows ("bot" will be the running bot instance that should be available
+and forwarded to the running agent as follows ("agent" will be the running agent instance that should be available
 in the platform): 
 
 .. code:: python
 
-    bot.receive_file(session.id, file=file)
+    agent.receive_file(session.id, file=file)
 
 In case a file transition was specified, the transition will take place and the file object will be available in the 
 Session attribute:
@@ -46,7 +46,7 @@ Session attribute:
         file_base64_data = file.base64
         # further processing here
 
-For sending files to the users, bot creators will first have to create a file object and use the following
+For sending files to the users, agent creators will first have to create a file object and use the following
 platform-specific function (not every platform might support it): 
 
 .. code:: python
@@ -62,7 +62,7 @@ platform-specific function (not every platform might support it):
 API References
 --------------
 
-- File: :class:`besser.bot.core.file.File`
-- Bot.receive_file(): :meth:`besser.bot.core.bot.Bot.receive_file`
-- WebSocketPlatform.reply_file(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
-- TelegramPlatform.reply_file(): :meth:`besser.bot.platforms.telegram.telegram_platform.TelegramPlatform.reply_file`
+- File: :class:`besser.agent.core.file.File`
+- Agent.receive_file(): :meth:`besser.agent.core.agent.Agent.receive_file`
+- WebSocketPlatform.reply_file(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
+- TelegramPlatform.reply_file(): :meth:`besser.agent.platforms.telegram.telegram_platform.TelegramPlatform.reply_file`

@@ -1,40 +1,40 @@
 Configuration properties
 ========================
 
-A bot needs some parameters to be set to properly work. In this section, you will find all of them, and we will explain
-you how to load them in the bot.
+An agent needs some parameters to be set to properly work. In this section, you will find all of them, and we will explain
+you how to load them in the agent.
 
-A bot :class:`Property <besser.bot.core.property.Property>` has a section, a name, a type and a default value
-(for when the property is not defined by the bot developer).
+An agent :class:`Property <besser.agent.core.property.Property>` has a section, a name, a type and a default value
+(for when the property is not defined by the agent developer).
 
 
 Loading properties
 ------------------
 
-You can define your bot properties in 2 different ways:
+You can define your agent properties in 2 different ways:
 
-- **Using a configuration `.ini` file:** It is a file containing all the bot properties. Let's see an example
+- **Using a configuration `.ini` file:** It is a file containing all the agent properties. Let's see an example
   ``config.ini`` file:
 
-.. literalinclude:: ../../../besser/bot/test/examples/config.ini
+.. literalinclude:: ../../../besser/agent/test/examples/config.ini
 
-Now you have to load the file into the chatbot:
-
-.. code:: python
-
-    bot = Bot('example_bot')
-    bot.load_properties('config.ini')
-
-- **Setting individual properties:** You can also set (and get) properties individually from the bot code.
+Now you have to load the file into the agent:
 
 .. code:: python
 
-    from besser.bot.nlp import NLP_LANGUAGE
+    agent = Agent('example_agent')
+    agent.load_properties('config.ini')
+
+- **Setting individual properties:** You can also set (and get) properties individually from the agent code.
+
+.. code:: python
+
+    from besser.agent.nlp import NLP_LANGUAGE
     ...
-    bot = Bot('example_bot')
-    bot.set_property(NLP_LANGUAGE, 'es')
+    agent = Agent('example_agent')
+    agent.set_property(NLP_LANGUAGE, 'es')
     ...
-    language = bot.get_property(NLP_LANGUAGE)
+    language = agent.get_property(NLP_LANGUAGE)
 
 .. note::
 
@@ -44,18 +44,18 @@ You can also create your own properties:
 
 .. code:: python
 
-    from besser.bot.core.property import Property
+    from besser.agent.core.property import Property
     ...
     FACEBOOK_PROFILE = Property('facebook', 'facebook.profile', str, 'https://www.facebook.com/foo')
     ...
-    bot.set_property(FACEBOOK_PROFILE, 'https://www.facebook.com/john_doe')
+    agent.set_property(FACEBOOK_PROFILE, 'https://www.facebook.com/john_doe')
 
 Next, let's see all the built in properties, divided by sections.
 
 NLP
 ---
 
-.. automodule:: besser.bot.nlp
+.. automodule:: besser.agent.nlp
    :members:
 
 .. _properties-websocket_platform:
@@ -63,7 +63,7 @@ NLP
 WebSocket Platform
 ------------------
 
-.. automodule:: besser.bot.platforms.websocket
+.. automodule:: besser.agent.platforms.websocket
    :members:
 
 .. _properties-telegram_platform:
@@ -71,7 +71,7 @@ WebSocket Platform
 Telegram Platform
 ------------------
 
-.. automodule:: besser.bot.platforms.telegram
+.. automodule:: besser.agent.platforms.telegram
    :members:
 
 .. _properties-database:
@@ -79,13 +79,13 @@ Telegram Platform
 Database
 --------
 
-.. automodule:: besser.bot.db
+.. automodule:: besser.agent.db
    :members:
 
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.set_property(): :meth:`besser.bot.core.bot.Bot.set_property`
-- Bot.get_property(): :meth:`besser.bot.core.bot.Bot.get_property`
-- Property: :class:`besser.bot.core.property.Property`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.set_property(): :meth:`besser.agent.core.agent.Agent.set_property`
+- Agent.get_property(): :meth:`besser.agent.core.agent.Agent.get_property`
+- Property: :class:`besser.agent.core.property.Property`

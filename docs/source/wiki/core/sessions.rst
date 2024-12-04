@@ -1,9 +1,9 @@
 Sessions
 ========
 
-A chatbot is designed once, and when it is deployed there is not a copy
-of it for each user. There is a single chatbot instance. Therefore, we need a way to organize each user context.
-Of course, at the same time there can be multiple users, each of them in a different bot state, with different values
+An agent is designed once, and when it is deployed there is not a copy
+of it for each user. There is a single agent instance. Therefore, we need a way to organize each user context.
+Of course, at the same time there can be multiple users, each of them in a different agent state, with different values
 for some variables, etc. To handle this, we introduce the Session object.
 
 **A session is an object assigned to each user where it is stored private data.**
@@ -31,8 +31,8 @@ You are able to to manipulate the user session in 2 places:
 We will stick to the body use case, although the same can be done in events.
 
 To understand how this internally works, we must know that the body function is defined once, and assigned to a state.
-Whenever a user moves to a state, this function is executed by the bot, but taking as argument the user session.
-This way the bot can read and write user-specific data stored there and it cannot do it with other users data.
+Whenever a user moves to a state, this function is executed by the agent, but taking as argument the user session.
+This way the agent can read and write user-specific data stored there and it cannot do it with other users data.
 
 Let's see the different things we can do with a user session.
 
@@ -61,9 +61,9 @@ Let's see the different things we can do with a user session.
 API References
 --------------
 
-- Session: :class:`besser.bot.core.session.Session`
-- Session.delete(): :meth:`besser.bot.core.session.Session.delete`
-- Session.get(): :meth:`besser.bot.core.session.Session.get`
-- Session.get_chat_history(): :meth:`besser.bot.core.session.Session.get_chat_history`
-- Session.reply(): :meth:`besser.bot.core.session.Session.reply`
-- Session.set(): :meth:`besser.bot.core.session.Session.set`
+- Session: :class:`besser.agent.core.session.Session`
+- Session.delete(): :meth:`besser.agent.core.session.Session.delete`
+- Session.get(): :meth:`besser.agent.core.session.Session.get`
+- Session.get_chat_history(): :meth:`besser.agent.core.session.Session.get_chat_history`
+- Session.reply(): :meth:`besser.agent.core.session.Session.reply`
+- Session.set(): :meth:`besser.agent.core.session.Session.set`

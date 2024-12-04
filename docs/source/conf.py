@@ -144,12 +144,12 @@ f"""{module_name}
         file.write(package_rst)
 
 
-generate_api_rst_files('../../', 'besser/bot/core', './api/core')
-generate_api_rst_files('../../', 'besser/bot/exceptions', './api/exceptions')
-generate_api_rst_files('../../', 'besser/bot/library', './api/library')
-generate_api_rst_files('../../', 'besser/bot/nlp', './api/nlp')
-generate_api_rst_files('../../', 'besser/bot/db', './api/db')
-generate_api_rst_files('../../', 'besser/bot/platforms', './api/platforms')
+generate_api_rst_files('../../', 'besser/agent/core', './api/core')
+generate_api_rst_files('../../', 'besser/agent/exceptions', './api/exceptions')
+generate_api_rst_files('../../', 'besser/agent/library', './api/library')
+generate_api_rst_files('../../', 'besser/agent/nlp', './api/nlp')
+generate_api_rst_files('../../', 'besser/agent/db', './api/db')
+generate_api_rst_files('../../', 'besser/agent/platforms', './api/platforms')
 
 
 def linkcode_resolve(domain, info):

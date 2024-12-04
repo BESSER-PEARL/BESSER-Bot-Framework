@@ -1,7 +1,7 @@
 utils
 =====
 
-.. automodule:: besser.bot.nlp.utils
+.. automodule:: besser.agent.nlp.utils
    :members:
    :private-members:
    :undoc-members:

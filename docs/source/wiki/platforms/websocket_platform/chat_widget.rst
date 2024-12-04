@@ -1,9 +1,9 @@
 Chat widget
 ===========
 
-The chat widget UI allows to integrate a chatbot in any webpage. It is located in a window corner, expanded/hidden when clicking on an icon.
+The chat widget UI allows to integrate an agent in any webpage. It is located in a window corner, expanded/hidden when clicking on an icon.
 
-This is how our chatbot UI looks like:
+This is how our agent UI looks like:
 
 .. figure:: ../../../img/chat_widget_demo.gif
    :alt: Chat Widget demo
@@ -12,7 +12,7 @@ This is how our chatbot UI looks like:
 Parameters
 ----------
 
-The file data/args.json contains parameters you can set to customize the chat widget (websocket address, bot icon, colors, ...)
+The file data/args.json contains parameters you can set to customize the chat widget (websocket address, agent icon, colors, ...)
 
 How to use it
 -------------

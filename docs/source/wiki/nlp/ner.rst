@@ -5,7 +5,7 @@ NER is a Natural Language Processing task that involves identifying and categori
 predefined categories such as the names of persons, organizations, locations, dates, etc.
 
 In the :doc:`entities wiki <../core/entities>`, you have seen how to create your own entities, which then are embedded
-into :any:`intent parameters<intents-with-parameters>`. The NER component of a chatbot will be in charge of recognize
+into :any:`intent parameters<intents-with-parameters>`. The NER component of an agent will be in charge of recognize
 them within the user messages.
 
 Simple NER
@@ -38,7 +38,7 @@ combination of both). Let's see an example entity:
 
 .. code:: python
 
-    email_entity = bot.new_entity(
+    email_entity = agent.new_entity(
         name='email_entity',
         description='An entity containing email addresses',
     )
@@ -46,5 +46,5 @@ combination of both). Let's see an example entity:
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.new_entity(): :meth:`besser.bot.core.bot.Bot.new_entity`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.new_entity(): :meth:`besser.agent.core.agent.Agent.new_entity`

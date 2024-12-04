@@ -1,7 +1,7 @@
 platform
 ========
 
-.. automodule:: besser.bot.platforms.platform
+.. automodule:: besser.agent.platforms.platform
    :members:
    :private-members:
    :undoc-members:

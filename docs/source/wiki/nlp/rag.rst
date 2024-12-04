@@ -25,22 +25,22 @@ The key components of RAG are:
 - **Retriever**: Given an input, it gets the most similar chunks from the vector store by comparing the vector embeddings.
 - **Generator (LLM)**: It receives the original query and the retrieved data, and generates the answer.
 
-BBF allows you to integrate this process into your bots. Our implementation uses
+BBF allows you to integrate this process into your agent. Our implementation uses
 `LangChain <https://python.langchain.com/>`_, which is a framework for developing apps with LLMs. It comes with a
 wide library of resources we can use to customize our RAG's components.
 
-Let's see how to seamlessly integrate a RAG component into our bot.
-You can also check the :doc:`../../examples/rag_bot` for a complete example.
+Let's see how to seamlessly integrate a RAG component into our agent.
+You can also check the :doc:`../../examples/rag_agent` for a complete example.
 
-First of all, we create our bot:
+First of all, we create our agent:
 
 .. code:: python
 
-    from besser.bot.core.bot import Bot
+    from besser.agent.core.agent import Agent
 
-    bot = Bot('greetings_bot')
-    bot.load_properties('config.ini')
-    websocket_platform = bot.use_websocket_platform(use_ui=True)
+    agent = Agent('greetings_agent')
+    agent.load_properties('config.ini')
+    websocket_platform = agent.use_websocket_platform(use_ui=True)
 
 Now, we have to create the RAG components using the LangChain library.
 
@@ -103,9 +103,9 @@ An LLM, using the BBF :doc:`LLM wrappers <llm>`:
 
 .. code:: python
 
-    from besser.bot.nlp.llm.llm_openai_api import LLMOpenAI
+    from besser.agent.nlp.llm.llm_openai_api import LLMOpenAI
 
-    gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini')
+    gpt = LLMOpenAI(agent=agent, name='gpt-4o-mini')
 
 RAG
 ---
@@ -115,7 +115,7 @@ Now we can create the RAG
 .. code:: python
 
     rag = RAG(
-        bot=bot,
+        agent=agent,
         vector_store=vector_store,
         splitter=splitter,
         llm_name='gpt-4o-mini',
@@ -168,7 +168,7 @@ Finally, let's use the RAG within a state (it can be used in both the body and t
         websocket_platform.reply_rag(session, rag_message)
 
 
-A :class:`~besser.bot.nlp.rag.rag.RAGMessage` is the return object of the RAG. It contains the generated answer together
+A :class:`~besser.agent.nlp.rag.rag.RAGMessage` is the return object of the RAG. It contains the generated answer together
 with the retrieved documents, and additional metadata.
 
 The :doc:`../platforms/websocket_platform` includes a method to reply this kind of messages, and our Streamlit UI can display them within
@@ -177,15 +177,15 @@ expander containers that show the retrieved documents to the user.
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.load_properties(): :meth:`besser.bot.core.bot.Bot.load_properties`
-- Bot.use_websocket_platform(): :meth:`besser.bot.core.bot.Bot.use_websocket_platform`
-- LLMOpenAI: :class:`besser.bot.nlp.llm.llm_openai_api.LLMOpenAI`
-- RAG: :class:`besser.bot.nlp.rag.rag.RAG`
-- RAG.load_pdfs(): :meth:`besser.bot.nlp.rag.rag.RAG.load_pdfs`
-- RAG.run(): :meth:`besser.bot.nlp.rag.rag.RAG.run`
-- RAGMessage: :class:`besser.bot.nlp.rag.rag.RAGMessage`
-- Session: :class:`besser.bot.core.session.Session`
-- Session.reply(): :meth:`besser.bot.core.session.Session.reply`
-- Session.run_rag(): :meth:`besser.bot.core.session.Session.run_rag`
-- WebSocketPlatform.reply_rag(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.load_properties(): :meth:`besser.agent.core.agent.Agent.load_properties`
+- Agent.use_websocket_platform(): :meth:`besser.agent.core.agent.Agent.use_websocket_platform`
+- LLMOpenAI: :class:`besser.agent.nlp.llm.llm_openai_api.LLMOpenAI`
+- RAG: :class:`besser.agent.nlp.rag.rag.RAG`
+- RAG.load_pdfs(): :meth:`besser.agent.nlp.rag.rag.RAG.load_pdfs`
+- RAG.run(): :meth:`besser.agent.nlp.rag.rag.RAG.run`
+- RAGMessage: :class:`besser.agent.nlp.rag.rag.RAGMessage`
+- Session: :class:`besser.agent.core.session.Session`
+- Session.reply(): :meth:`besser.agent.core.session.Session.reply`
+- Session.run_rag(): :meth:`besser.agent.core.session.Session.run_rag`
+- WebSocketPlatform.reply_rag(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`

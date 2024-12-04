@@ -2,13 +2,13 @@ Examples
 ========
 
 
-Bots
-----
+agents
+------
 
 .. toctree::
 
-   examples/greetings_bot
-   examples/weather_bot
-   examples/llm_bot
-   examples/rag_bot
-   examples/telegram_bot
+   examples/greetings_agent
+   examples/weather_agent
+   examples/llm_agent
+   examples/rag_agent
+   examples/telegram_agent

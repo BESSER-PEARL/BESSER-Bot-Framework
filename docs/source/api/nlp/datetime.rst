@@ -1,7 +1,7 @@
 datetime
 ========
 
-.. automodule:: besser.bot.nlp.ner.base.datetime
+.. automodule:: besser.agent.nlp.ner.base.datetime
    :members:
    :private-members:
    :undoc-members:

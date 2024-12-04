@@ -1,7 +1,7 @@
 pipelines
 =========
 
-.. automodule:: besser.bot.nlp.preprocessing.pipelines
+.. automodule:: besser.agent.nlp.preprocessing.pipelines
    :members:
    :private-members:
    :undoc-members:

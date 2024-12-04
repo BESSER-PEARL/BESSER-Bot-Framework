@@ -3,17 +3,17 @@ Monitoring Database
 
 ****This section is under development and may change in future versions**
 
-If you would like to monitor the bot performance, to discover if it is properly recognizing the message intents or the
+If you would like to monitor the agent performance, to discover if it is properly recognizing the message intents or the
 parameters, what kind of messages are throwing the fallback state (i.e. when no intent is recognized), the confidence on
 the intent predictions,... or gather some information about the users, like what are the most frequent questions or how
-many interactions they need in order to achieve their goal when using the chatbot... You can rely on a database to store
+many interactions they need in order to achieve their goal when using the agent... You can rely on a database to store
 usage information for later monitoring and analysis!
 
-BBF bots have a :class:`MonitoringDB <besser.bot.db.monitoring_db.MonitoringDB>` attribute (optionally used) in charge
-of managing the DB connection and the data insertion. When running the bot, right after its training, it connects to
-the DB (:meth:`MonitoringDB.connect_to_db() <besser.bot.db.monitoring_db.MonitoringDB.connect_to_db()>`) and initializes
+BBF agents have a :class:`MonitoringDB <besser.agent.db.monitoring_db.MonitoringDB>` attribute (optionally used) in charge
+of managing the DB connection and the data insertion. When running the agent, right after its training, it connects to
+the DB (:meth:`MonitoringDB.connect_to_db() <besser.agent.db.monitoring_db.MonitoringDB.connect_to_db()>`) and initializes
 it, creating the tables if they don't exist
-(:meth:`MonitoringDB.initialize_db() <besser.bot.db.monitoring_db.MonitoringDB.initialize_db()>`). This process is
+(:meth:`MonitoringDB.initialize_db() <besser.agent.db.monitoring_db.MonitoringDB.initialize_db()>`). This process is
 hidden from the user. To activate it, you simply need to define the
 :any:`configuration properties <properties-database>` to properly connect to the database, BBF is in charge of the rest.
 
@@ -24,7 +24,7 @@ Database Schema
 This section describes the followed database schema, with a description of each table in the database.
 
 Note that the creation of the tables is automatic. This section is purely informative. You may need this information
-in order to retrieve data for the bot monitoring analysis.
+in order to retrieve data for the agent monitoring analysis.
 
 
 Table session
@@ -39,12 +39,12 @@ This table stores a record for each new session.
     CREATE TABLE IF NOT EXISTS public.session
     (
         id INTEGER NOT NULL DEFAULT nextval('session_id_seq1'::regclass),
-        bot_name CHARACTER VARYING NOT NULL,
+        agent_name CHARACTER VARYING NOT NULL,
         session_id CHARACTER VARYING NOT NULL,
         platform_name CHARACTER VARYING NOT NULL,
         "timestamp" TIMESTAMP without time zone NOT NULL,
         CONSTRAINT session_pkey PRIMARY KEY (id),
-        CONSTRAINT session_bot_name_session_id_key UNIQUE (bot_name, session_id)
+        CONSTRAINT session_agent_name_session_id_key UNIQUE (agent_name, session_id)
     )
 
 **Example table entries:**
@@ -54,31 +54,31 @@ This table stores a record for each new session.
     :align: left
 
     * - id
-      - bot_name
+      - agent_name
       - session_id
       - platform_name
       - timestamp
 
     * - 1
-      - greetings_bot
+      - greetings_agent
       - aaddaab5-o065-40f4-a996-b584d63b0k0d
       - WebSocketPlatform
       - 2024-05-02 14:52:47
 
     * - 2
-      - greetings_bot
+      - greetings_agent
       - 6642498531
       - TelegramPlatform
       - 2024-05-02 14:53:46
 
     * - 3
-      - weather_bot
+      - weather_agent
       - 6ff6cf75-d6ea-495b-a465-fe4856e1b5f9
       - WebSocketPlatform
       - 2024-05-02 14:53:50
 
-In this example, there are 3 different sessions recorded into the database, where the 2 first are from a bot called
-*greetings_bot* and the 3rd from a *weather_bot*. The platform of the session and the creation time (*timestamp* column)
+In this example, there are 3 different sessions recorded into the database, where the 2 first are from an agent called
+*greetings_agent* and the 3rd from a *weather_agent*. The platform of the session and the creation time (*timestamp* column)
 are also stored in the database.
 
 
@@ -150,15 +150,15 @@ Some components may need this table in order to retrieve the chat history of a s
 Table transition
 ~~~~~~~~~~~~~~~~
 
-Every time a user :doc:`transitions <../core/transitions>` from one bot state to another, a new record is inserted into this table, keeping track
-of the followed paths within the bot's state machine.
+Every time a user :doc:`transitions <../core/transitions>` from one agent state to another, a new record is inserted into this table, keeping track
+of the followed paths within the agent's state machine.
 
 Each transition contains the source and destination state names and the name of the event that triggered it. For some
 predefined events of BBF, some additional information is stored in the *info* column:
 
-- :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>`:
+- :any:`intent_matching <besser.agent.library.event.event_library.intent_matched>`:
   the name of the matched intent is stored.
-- :any:`variable_matches_operation <besser.bot.library.event.event_library.variable_matches_operation>`:
+- :any:`variable_matches_operation <besser.agent.library.event.event_library.variable_matches_operation>`:
   <var> <operation> <target> is stored as a single string.
 
 
@@ -219,7 +219,7 @@ Table intent_prediction
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Every user message goes through the :doc:`intent_classification <../nlp/intent_classification>` process. This table
-stores all user messages together with the intent predictions. This information can be then used to analyse the bot
+stores all user messages together with the intent predictions. This information can be then used to analyse the agent
 performance.
 
 **Table schema (PostgreSQL):**
@@ -295,7 +295,7 @@ Table parameter
 ~~~~~~~~~~~~~~~
 
 This table stores the recognized parameters from every intent prediction (process done by the :doc:`NER <../nlp/ner>`
-component of the bot). Each recognized parameter references to its intent prediction (the corresponding entry in the
+component of the agent). Each recognized parameter references to its intent prediction (the corresponding entry in the
 *intent_prediction* table). Note that there can be several parameters referencing to the same intent prediction.
 
 **Table schema (PostgreSQL):**

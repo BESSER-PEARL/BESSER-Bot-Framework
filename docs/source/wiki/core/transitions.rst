@@ -1,9 +1,9 @@
 Transitions
 ===========
 
-Transitions define the connections between bot :doc:`states <states>` and how/when are they triggered.
+Transitions define the connections between agent :doc:`states <states>` and how/when are they triggered.
 
-A transition is a rule that says that the bot must move from a source state to a destination state when some event
+A transition is a rule that says that the agent must move from a source state to a destination state when some event
 occurs.
 
 .. warning::
@@ -13,24 +13,24 @@ occurs.
 
 In this section, we will explain how to create transitions, including the *events* that trigger them, and the various methods available for creating predefined transitions in an easy way.
 
-Let's say we have the following bot:
+Let's say we have the following agent:
 
 .. code:: python
 
-    bot = Bot('example_bot')
+    agent = Agent('example_agent')
 
-    state1 = bot.new_state('state1', initial=True)
-    state2 = bot.new_state('state2')
-    state3 = bot.new_state('state3')
+    state1 = agent.new_state('state1', initial=True)
+    state2 = agent.new_state('state2')
+    state3 = agent.new_state('state3')
     ...
 
 Intent transitions
 ------------------
 
-When the user sends a message to the bot, it gets the user intent and uses it to decide which state to move to. When the
-user intent matches with a specified transition intent, the bot moves to the specified transition destination state.
+When the user sends a message to the agent, it gets the user intent and uses it to decide which state to move to. When the
+user intent matches with a specified transition intent, the agent moves to the specified transition destination state.
 
-Therefore, :any:`intent_matching <besser.bot.library.event.event_library.intent_matched>` is a pre-defined event
+Therefore, :any:`intent_matching <besser.agent.library.event.event_library.intent_matched>` is a pre-defined event
 integrated into BBF, so you only need to define the transition:
 
 .. code:: python
@@ -38,7 +38,7 @@ integrated into BBF, so you only need to define the transition:
     state1.when_intent_matched_go_to(yes_intent, state2)
     state1.when_intent_matched_go_to(no_intent, state3)
 
-Visually, this would be the current bot architecture:
+Visually, this would be the current agent architecture:
 
 .. figure:: ../../img/transitions_example.png
    :alt: Intent diagram
@@ -50,18 +50,18 @@ You can also define where to go when none of the previous intents is matched:
 
     state1.when_no_intent_matched_go_to(state4)
 
-Note **that there is the possibility that the bot cannot transition to any state**. For example, if we do not define the
-last transition, when neither yes_intent nor no_intent are matched the bot would not know where to move.
-In that scenario, the bot would run the state1's fallback body, without moving to another state
+Note **that there is the possibility that the agent cannot transition to any state**. For example, if we do not define the
+last transition, when neither yes_intent nor no_intent are matched the agent would not know where to move.
+In that scenario, the agent would run the state1's fallback body, without moving to another state
 (see :any:`state-fallback-body` for more info).
-Thus, it is up to the bot creator to choose whether, in case no intent is matched, a transition to another state takes place or not.
+Thus, it is up to the agent creator to choose whether, in case no intent is matched, a transition to another state takes place or not.
 
 
 Session variables transitions
 -----------------------------
 
-Another kind of event that can make a bot move to another state is
-:any:`variable_matches_operation <besser.bot.library.event.event_library.variable_matches_operation>`. This event
+Another kind of event that can make an agent move to another state is
+:any:`variable_matches_operation <besser.agent.library.event.event_library.variable_matches_operation>`. This event
 compares a value stored in the user session with another one (the target value) applying an operation. If the operation
 returns true, the event does as well, and therefore transitioning to the transition's destination.
 
@@ -83,8 +83,8 @@ File transitions
 -----------------------------
 
 It is also possible to cause a transition in case a file is sent by the user with the event called 
-:any:`file_received <besser.bot.library.event.event_library.file_received>`. This event
-is only triggered if a user sent a file to a bot. 
+:any:`file_received <besser.agent.library.event.event_library.file_received>`. This event
+is only triggered if a user sent a file to an agent.
 
 To create a transition triggered by this kind of event, simply add:
 
@@ -92,7 +92,7 @@ To create a transition triggered by this kind of event, simply add:
 
     state1.when_file_received_go_to(state2)
 
-Note that it is also possible to define a list of allowed file types, such that bot creators can impose
+Note that it is also possible to define a list of allowed file types, such that agent creators can impose
 restrictions to what can be sent by users to avoid unwanted file types to be processed. 
 
 To add this rule to the transition, simply add:
@@ -105,13 +105,13 @@ Automatic transitions
 ---------------------
 
 Another simple but useful kind of transition is the automatic transition. When a state finishes the execution of its
-body, if it has an automatic transition the bot will always move to the transition's destination.
+body, if it has an automatic transition the agent will always move to the transition's destination.
 
 This is really useful when, after a sequence of states, we want to automatically return to the starting point of the
 conversation.
 
 The implicit event associated with this kind of transition is the
-:any:`auto <besser.bot.library.event.event_library.auto>` event, a special event that always returns true.
+:any:`auto <besser.agent.library.event.event_library.auto>` event, a special event that always returns true.
 
 This is how to create an auto transition:
 
@@ -156,7 +156,7 @@ arguments: the user :doc:`session <sessions>` and a dictionary called *event_par
 
 This event checks the temperature in a specific city (previously provided by the user and stored in its session). If
 it is above some temperature (defined in the event parameters), it will return true, triggering the relevant transition
-and moving to another state where the bot could, for instance, warn the user about the high temperature in the city. In
+and moving to another state where the agent could, for instance, warn the user about the high temperature in the city. In
 this (fictitious) example, to make a request to the API we need an APPID, provided in the event parameters as well.
 
 Once we have defined the event function, we can attach it to a transition (here, from state1 to state2):
@@ -172,13 +172,13 @@ allow to have event-specific information (note that this parameters' values coul
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.new_state(): :meth:`besser.bot.core.bot.Bot.new_state`
-- State: :class:`besser.bot.core.state.State`
-- State.go_to(): :meth:`besser.bot.core.state.State.go_to`
-- State.when_intent_matched_go_to(): :meth:`besser.bot.core.state.State.when_intent_matched_go_to`
-- State.when_event_go_to(): :meth:`besser.bot.core.state.State.when_event_go_to`
-- State.when_no_intent_matched_go_to(): :meth:`besser.bot.core.state.State.when_no_intent_matched_go_to`
-- State.when_variable_matches_operation_go_to(): :meth:`besser.bot.core.state.State.when_variable_matches_operation_go_to`
-- Session: :class:`besser.bot.core.session.Session`
-- Session.get(): :meth:`besser.bot.core.session.Session.get`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.new_state(): :meth:`besser.agent.core.agent.Agent.new_state`
+- State: :class:`besser.agent.core.state.State`
+- State.go_to(): :meth:`besser.agent.core.state.State.go_to`
+- State.when_intent_matched_go_to(): :meth:`besser.agent.core.state.State.when_intent_matched_go_to`
+- State.when_event_go_to(): :meth:`besser.agent.core.state.State.when_event_go_to`
+- State.when_no_intent_matched_go_to(): :meth:`besser.agent.core.state.State.when_no_intent_matched_go_to`
+- State.when_variable_matches_operation_go_to(): :meth:`besser.agent.core.state.State.when_variable_matches_operation_go_to`
+- Session: :class:`besser.agent.core.session.Session`
+- Session.get(): :meth:`besser.agent.core.session.Session.get`

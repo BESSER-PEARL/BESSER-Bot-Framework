@@ -1,28 +1,28 @@
 Intents
 =======
 
-Intents define the *intentions* or *goals* the user can express to a bot. In this article we review how to create
+Intents define the *intentions* or *goals* the user can express to an agent. In this article we review how to create
 intents with BBF.
 
 Simple intents
 --------------
 
-First of all, we need to create a bot and some states:
+First of all, we need to create an agent and some states:
 
 .. code:: python
 
-    bot = Bot('example_bot')
+    agent = Agent('example_agent')
     ...
-    initial_state = bot.new_state('initial_state')
-    handle_hello_state = bot.new_state('handle_hello_state')
+    initial_state = agent.new_state('initial_state')
+    handle_hello_state = agent.new_state('handle_hello_state')
 
-Let's say we want to say hello to the bot. For that, we need an intent that defines how do "hello" messages look like.
-To do that, we create an intent writing some **training sentences** as example messages we expect the bot to understand
+Let's say we want to say hello to the agent. For that, we need an intent that defines how do "hello" messages look like.
+To do that, we create an intent writing some **training sentences** as example messages we expect the agent to understand
 in a "hello" message:
 
 .. code:: python
 
-    hello_intent = bot.new_intent('hello_intent', [
+    hello_intent = agent.new_intent('hello_intent', [
         'hello',
         'hi'
     ])
@@ -34,14 +34,14 @@ this intent is expected to be received and where the user is expected to move on
 
     initial_state.when_intent_matched_go_to(hello_intent, handle_hello_state)
 
-When the user is in initial_state, the bot is waiting for a user message. Once the user sends a message, the bot will
+When the user is in initial_state, the agent is waiting for a user message. Once the user sends a message, the agent will
 classify it into one of the possible incoming intents in initial_state (here, only hello_intent can be recognized). If
 the message's intent is hello_intent, the user will move to handle_hello_state, as we have defined it.
 
 .. figure:: ../../img/intents_diagram.png
    :alt: Intent diagram
 
-   The bot we just created, has 2 states linked by an intent.
+   The agent we just created, has 2 states linked by an intent.
 
 
 
@@ -50,14 +50,14 @@ the message's intent is hello_intent, the user will move to handle_hello_state, 
 Intents with parameters
 -----------------------
 
-Intents can have embedded :class:`parameters <besser.bot.core.intent.intent_parameter.IntentParameter>`. This means that
-we can extract data from a user message. At the same time, this can help reducing the number of intents in a bot.
+Intents can have embedded :class:`parameters <besser.agent.core.intent.intent_parameter.IntentParameter>`. This means that
+we can extract data from a user message. At the same time, this can help reducing the number of intents in an agent.
 
 We are going to create an intent to ask about the weather in a city.
 
 .. code:: python
 
-    weather_intent = bot.new_intent('weather_intent', [
+    weather_intent = agent.new_intent('weather_intent', [
         'what is the weather in CITY?',
         'tell me the weather in CITY',
         'weather in CITY'
@@ -81,7 +81,7 @@ See the :doc:`entities <entities>` guide to learn about them.
 
     .. code:: python
 
-        weather_intent = bot.new_intent('weather_intent', training_sentences, parameters)
+        weather_intent = agent.new_intent('weather_intent', training_sentences, parameters)
 
 Then, we can create a transition that is triggered when the user intent matches weather_intent:
 
@@ -98,9 +98,9 @@ an example intent with a description:
 
 .. code:: python
 
-    help_intent = bot.new_intent(
+    help_intent = agent.new_intent(
         name='help_intent',
-        description='The user needs help to be able to use the chatbot properly or to find some information'
+        description='The user needs help to be able to use the agent properly or to find some information'
     )
 
 
@@ -141,15 +141,15 @@ Within a :any:`state-body` we can access the latest predicted intent from the us
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.new_state(): :meth:`besser.bot.core.bot.Bot.new_state`
-- Bot.new_intent(): :meth:`besser.bot.core.bot.Bot.new_intent`
-- Intent: :class:`besser.bot.core.intent.intent.Intent`
-- Intent.parameter(): :meth:`besser.bot.core.intent.intent.Intent.parameter`
-- IntentClassifierPrediction: :class:`besser.bot.nlp.intent_classifier.intent_classifier_prediction.IntentClassifierPrediction`
-- IntentParameter: :class:`besser.bot.core.intent.intent_parameter.IntentParameter`
-- MatchedParameter: :class:`besser.bot.nlp.ner.matched_parameter.MatchedParameter`
-- State: :class:`besser.bot.core.state.State`
-- State.when_intent_matched_go_to(): :meth:`besser.bot.core.state.State.when_intent_matched_go_to`
-- Session: :class:`besser.bot.core.session.Session`
-- Session.reply(): :meth:`besser.bot.core.session.Session.reply`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.new_state(): :meth:`besser.agent.core.agent.Agent.new_state`
+- Agent.new_intent(): :meth:`besser.agent.core.agent.Agent.new_intent`
+- Intent: :class:`besser.agent.core.intent.intent.Intent`
+- Intent.parameter(): :meth:`besser.agent.core.intent.intent.Intent.parameter`
+- IntentClassifierPrediction: :class:`besser.agent.nlp.intent_classifier.intent_classifier_prediction.IntentClassifierPrediction`
+- IntentParameter: :class:`besser.agent.core.intent.intent_parameter.IntentParameter`
+- MatchedParameter: :class:`besser.agent.nlp.ner.matched_parameter.MatchedParameter`
+- State: :class:`besser.agent.core.state.State`
+- State.when_intent_matched_go_to(): :meth:`besser.agent.core.state.State.when_intent_matched_go_to`
+- Session: :class:`besser.agent.core.session.Session`
+- Session.reply(): :meth:`besser.agent.core.session.Session.reply`

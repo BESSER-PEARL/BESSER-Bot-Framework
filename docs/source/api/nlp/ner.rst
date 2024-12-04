@@ -1,7 +1,7 @@
 ner
 ===
 
-.. automodule:: besser.bot.nlp.ner.ner
+.. automodule:: besser.agent.nlp.ner.ner
    :members:
    :private-members:
    :undoc-members:

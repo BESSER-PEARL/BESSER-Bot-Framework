@@ -34,10 +34,10 @@ If you clone this project, installing the requirements from the requirements.txt
 
 ### Example bots
 
-- [greetings_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/greetings_bot.py): Very simple bot for the first contact with the framework
-- [weather_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/weather_bot.py): Introducing [entities](https://besser-bot-framework.readthedocs.io/latest/wiki/core/entities.html)
-- [llm_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/llm_bot.py): Introducing [Large Language Models (LLMs)](https://besser-bot-framework.readthedocs.io/latest/wiki/nlp/llm.html)
-- [rag_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/rag_bot.py): Introducing [Retrieval Augmented Generation (RAG)](https://besser-bot-framework.readthedocs.io/latest/wiki/nlp/rag.html)
-- [telegram_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/bot/test/examples/telegram_bot.py): Introducing the [TelegramPlatform](https://besser-bot-framework.readthedocs.io/latest/wiki/platforms/telegram_platform.html)
+- [greetings_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/agent/test/examples/greetings_bot.py): Very simple bot for the first contact with the framework
+- [weather_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/agent/test/examples/weather_bot.py): Introducing [entities](https://besser-bot-framework.readthedocs.io/latest/wiki/core/entities.html)
+- [llm_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/agent/test/examples/llm_bot.py): Introducing [Large Language Models (LLMs)](https://besser-bot-framework.readthedocs.io/latest/wiki/nlp/llm.html)
+- [rag_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/agent/test/examples/rag_bot.py): Introducing [Retrieval Augmented Generation (RAG)](https://besser-bot-framework.readthedocs.io/latest/wiki/nlp/rag.html)
+- [telegram_bot](https://github.com/BESSER-PEARL/BESSER-Bot-Framework/blob/main/besser/agent/test/examples/telegram_bot.py): Introducing the [TelegramPlatform](https://besser-bot-framework.readthedocs.io/latest/wiki/platforms/telegram_platform.html)
 
 For more example bots, check out the [BBF-bot-examples](https://github.com/BESSER-PEARL/BBF-bot-examples) repository!

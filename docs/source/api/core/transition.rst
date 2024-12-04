@@ -1,7 +1,7 @@
 transition
 ==========
 
-.. automodule:: besser.bot.core.transition
+.. automodule:: besser.agent.core.transition
    :members:
    :private-members:
    :undoc-members:

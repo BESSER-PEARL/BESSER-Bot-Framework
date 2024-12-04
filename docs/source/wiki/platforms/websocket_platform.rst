@@ -1,7 +1,7 @@
 WebSocket platform
 ==================
 
-The WebSocket Platform allows a bot to communicate with the users using the
+The WebSocket Platform allows an agent to communicate with the users using the
 `WebSocket <https://en.wikipedia.org/wiki/WebSocket>`_ bidirectional communications protocol.
 
 This platform implements the WebSocket server, and it can establish connection with a client, allowing the
@@ -18,7 +18,7 @@ User Interface
 
 BBF comes with some User Interfaces (WebSocket clients) to use the WebSocket platform.
 
-Of course, you are free to use or create your own UI as long as it has a WebSocket client that connects to the bot's WebSocket server.
+Of course, you are free to use or create your own UI as long as it has a WebSocket client that connects to the agent's WebSocket server.
 
 .. toctree::
    :maxdepth: 1
@@ -26,23 +26,23 @@ Of course, you are free to use or create your own UI as long as it has a WebSock
    websocket_platform/streamlit_ui
    websocket_platform/chat_widget
 
-(Their source code can be found in the besser.bot.platforms.websocket package)
+(Their source code can be found in the besser.agent.platforms.websocket package)
 
 .. note::
 
-    There are some properties the bot needs in order to properly set the WebSocket connection. More details in the
+    There are some properties the agent needs in order to properly set the WebSocket connection. More details in the
     :any:`configuration properties <properties-websocket_platform>` documentation.
 
 How to use it
 -------------
 
-After you instantiate your bot, simply call the following function:
+After you instantiate your agent, simply call the following function:
 
 .. code:: python
 
-    bot = Bot('example_bot')
+    agent = Agent('example_agent')
     ...
-    websocket_platform = bot.use_websocket_platform(use_ui=True)
+    websocket_platform = agent.use_websocket_platform(use_ui=True)
 
 If you don't want to use the UI we provide, simply set use_ui to False.
 
@@ -60,7 +60,7 @@ After that, you can use the platform to send different kinds of messages to the 
 .. code:: python
 
     websocket_platform.reply_markdown(session, """
-        # Welcome to the chatbot experience
+        # Welcome to the agent experience
         ## Section 1
         - one
         - two
@@ -129,13 +129,13 @@ The WebSocket platform allows the following kinds of user messages:
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- Bot.use_websocket_platform(): :meth:`besser.bot.core.bot.Bot.use_websocket_platform`
-- WebSocketPlatform: :class:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform`
-- WebSocketPlatform.reply(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply`
-- WebSocketPlatform.reply_dataframe(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
-- WebSocketPlatform.reply_file(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
-- WebSocketPlatform.reply_location(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_location`
-- WebSocketPlatform.reply_options(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
-- WebSocketPlatform.reply_plotly(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`
-- WebSocketPlatform.reply_rag(): :meth:`besser.bot.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- Agent.use_websocket_platform(): :meth:`besser.agent.core.agent.Agent.use_websocket_platform`
+- WebSocketPlatform: :class:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform`
+- WebSocketPlatform.reply(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply`
+- WebSocketPlatform.reply_dataframe(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
+- WebSocketPlatform.reply_file(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
+- WebSocketPlatform.reply_location(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_location`
+- WebSocketPlatform.reply_options(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
+- WebSocketPlatform.reply_plotly(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`
+- WebSocketPlatform.reply_rag(): :meth:`besser.agent.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`

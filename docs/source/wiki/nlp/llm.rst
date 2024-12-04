@@ -27,19 +27,19 @@ it means something better has been created out there!).
 How to use
 ----------
 
-Let's see how to seamlessly integrate an LLM into our bot. You can also check the :doc:`../../examples/llm_bot` for a complete example.
+Let's see how to seamlessly integrate an LLM into our agent. You can also check the :doc:`../../examples/llm_agent` for a complete example.
 
 We are going to create an LLMOpenAI:
 
 .. code:: python
 
-    from besser.bot.nlp.llm.llm_openai_api import LLMOpenAI
+    from besser.agent.nlp.llm.llm_openai_api import LLMOpenAI
 
-    bot = Bot('example_bot')
+    agent = Agent('example_agent')
 
-    gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini')
+    gpt = LLMOpenAI(agent=agent, name='gpt-4o-mini')
 
-This LLM can be used within any bot state (in both the body and the fallback body):
+This LLM can be used within any agent state (in both the body and the fallback body):
 
 .. code:: python
 
@@ -47,7 +47,7 @@ This LLM can be used within any bot state (in both the body and the fallback bod
         answer = gpt.predict(session.message) # Predicts the output for the given input (the user message)
         session.reply(answer)
 
-There are plenty of possibilities to take advantage of LLMs in a chatbot. The previous is a very simple use case, but
+There are plenty of possibilities to take advantage of LLMs in an agent. The previous is a very simple use case, but
 we can do more advanced tasks through prompt engineering.
 
 .. _llm-context:
@@ -65,7 +65,7 @@ Here an example where we extend the previous LLMOpenAI instance:
 .. code:: python
 
     # adding this global_context will cause the LLM to only answer in english.
-    gpt = LLMOpenAI(bot=bot, name='gpt-4o-mini', global_context='You only speak english.')
+    gpt = LLMOpenAI(agent=agent, name='gpt-4o-mini', global_context='You only speak english.')
 
 Let's now suppose we have access to the user's name while executing the body of the current state:
 
@@ -93,20 +93,20 @@ Available LLMs
 --------------
 
 BBF comes with LLM wrappers that provide the necessary methods to use them. All LLM wrappers must implement the
-:class:`~besser.bot.nlp.llm.llm.LLM` class, which comes with the following methods to be implemented:
+:class:`~besser.agent.nlp.llm.llm.LLM` class, which comes with the following methods to be implemented:
 
-- :meth:`~besser.bot.nlp.llm.llm.LLM.initialize`: Initialize the LLM.
-- :meth:`~besser.bot.nlp.llm.llm.LLM.predict`: Generate the output for a given input.
-- :meth:`~besser.bot.nlp.llm.llm.LLM.chat`: Simulate a conversation. The LLM receives previous messages to be able to continue with a conversation. Necessary to get chat history from the :doc:`database <../db/monitoring_db>`. Not mandatory to implement.
-- :meth:`~besser.bot.nlp.llm.llm.LLM.intent_classification`: Predict the intent of a given message (it allows the
+- :meth:`~besser.agent.nlp.llm.llm.LLM.initialize`: Initialize the LLM.
+- :meth:`~besser.agent.nlp.llm.llm.LLM.predict`: Generate the output for a given input.
+- :meth:`~besser.agent.nlp.llm.llm.LLM.chat`: Simulate a conversation. The LLM receives previous messages to be able to continue with a conversation. Necessary to get chat history from the :doc:`database <../db/monitoring_db>`. Not mandatory to implement.
+- :meth:`~besser.agent.nlp.llm.llm.LLM.intent_classification`: Predict the intent of a given message (it allows the
   :any:`llm-intent-classifier` to use this LLM). Not mandatory to implement.
 
 These are the currently available LLM wrappers in BBF:
 
-- :class:`~besser.bot.nlp.llm.llm_openai_api.LLMOpenAI`: For `OpenAI <https://platform.openai.com/docs/models>`_ LLMs
-- :class:`~besser.bot.nlp.llm.llm_huggingface.LLMHuggingFace`: For `HuggingFace <https://huggingface.co/>`_ LLMs locally deployed
-- :class:`~besser.bot.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`: For HuggingFace LLMs, through its `Inference API <https://huggingface.co/docs/api-inference>`_
-- :class:`~besser.bot.nlp.llm.llm_replicate_api.LLMReplicate`: For `Replicate <https://replicate.com/>`_ LLMs, through its API
+- :class:`~besser.agent.nlp.llm.llm_openai_api.LLMOpenAI`: For `OpenAI <https://platform.openai.com/docs/models>`_ LLMs
+- :class:`~besser.agent.nlp.llm.llm_huggingface.LLMHuggingFace`: For `HuggingFace <https://huggingface.co/>`_ LLMs locally deployed
+- :class:`~besser.agent.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`: For HuggingFace LLMs, through its `Inference API <https://huggingface.co/docs/api-inference>`_
+- :class:`~besser.agent.nlp.llm.llm_replicate_api.LLMReplicate`: For `Replicate <https://replicate.com/>`_ LLMs, through its API
 
 .. note::
 
@@ -116,14 +116,14 @@ These are the currently available LLM wrappers in BBF:
 API References
 --------------
 
-- Bot: :class:`besser.bot.core.bot.Bot`
-- LLM: :class:`besser.bot.nlp.llm.llm.LLM`
-- LLM.predict(): :meth:`besser.bot.nlp.llm.llm.LLM.predict`
-- LLM.add_user_context(): :meth:`besser.bot.nlp.llm.llm.LLM.add_user_context`
-- LLM.remove_user_context(): :meth:`besser.bot.nlp.llm.llm.LLM.remove_user_context`
-- LLMHuggingFace: :class:`besser.bot.nlp.llm.llm_huggingface.LLMHuggingFace`:
-- LLMHuggingFaceAPI: :class:`besser.bot.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`:
-- LLMOpenAI: :class:`besser.bot.nlp.llm.llm_openai_api.LLMOpenAI`
-- LLMReplicate: :class:`besser.bot.nlp.llm.llm_replicate_api.LLMReplicate`:
-- Session: :class:`besser.bot.core.session.Session`
-- Session.reply(): :meth:`besser.bot.core.session.Session.reply`
+- Agent: :class:`besser.agent.core.agent.Agent`
+- LLM: :class:`besser.agent.nlp.llm.llm.LLM`
+- LLM.predict(): :meth:`besser.agent.nlp.llm.llm.LLM.predict`
+- LLM.add_user_context(): :meth:`besser.agent.nlp.llm.llm.LLM.add_user_context`
+- LLM.remove_user_context(): :meth:`besser.agent.nlp.llm.llm.LLM.remove_user_context`
+- LLMHuggingFace: :class:`besser.agent.nlp.llm.llm_huggingface.LLMHuggingFace`:
+- LLMHuggingFaceAPI: :class:`besser.agent.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`:
+- LLMOpenAI: :class:`besser.agent.nlp.llm.llm_openai_api.LLMOpenAI`
+- LLMReplicate: :class:`besser.agent.nlp.llm.llm_replicate_api.LLMReplicate`:
+- Session: :class:`besser.agent.core.session.Session`
+- Session.reply(): :meth:`besser.agent.core.session.Session.reply`

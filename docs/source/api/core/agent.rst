@@ -1,7 +1,7 @@
-bot
-===
+agent
+=====
 
-.. automodule:: besser.bot.core.bot
+.. automodule:: besser.agent.core.agent
    :members:
    :private-members:
    :undoc-members:
