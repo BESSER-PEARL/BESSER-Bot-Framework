@@ -1,0 +1,199 @@
+/* Chat widget styling */
+#chat-window {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 400px;
+  height: 600px;
+  max-height: 90vh;
+  max-width: 90vw;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, sans-serif;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  visibility: hidden;
+}
+
+#chat-window.visible {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+#chat-header {
+  background-color: #0078D7;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+
+#chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+.user-message {
+  padding: 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-left: auto;
+  background-color: #e1ffc7;
+}
+
+.agent-message {
+  padding: 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  width: fit-content;
+  margin-right: auto;
+  background-color: #eee;
+}
+
+.markdown-message {
+}
+
+.html-message {
+}
+
+.image-message {
+    max-width: 90%;
+    height: auto;
+    display: block;
+}
+
+.dataframe-message {
+    border-collapse: collapse;
+}
+
+.dataframe-message th, .dataframe-message td {
+    border: 1px solid #c4c4c4;
+    padding: 8px;
+    text-align: left;
+}
+
+.dataframe-message th {
+    background-color: #e1e1e1;
+    font-weight: bold;
+}
+
+.options-message {
+    background: none;
+    width: 90%;
+}
+
+.location-message {
+    width: 95%;
+    height: 300px;
+}
+
+.plotly-message {
+    background: none;
+    width: 95%;
+    height: 300px;
+}
+
+.button {
+    background-color: #0078D7;
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 8px;
+    margin-right: 10px;
+    margin-top: 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    overflow-wrap: break-word;
+    line-height: 2.5;
+}
+
+/* Full-screen modal style */
+.plotly-fullscreen-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Full-screen chart container */
+.plotly-fullscreen-chart {
+    width: 90%;
+    height: 90%;
+    background-color: #fff;
+}
+
+#chat-input {
+  display: flex;
+  border-top: 1px solid #eeeeee;
+}
+
+#chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  outline: none;
+}
+
+#chat-input button {
+  background-color: #0078D7;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+#chat-input button:hover {
+  background-color: #005fa3;
+}
+
+/* Circle button styling */
+#circle-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+}
+
+#circle-button img {
+  width: 50px;/* Adjust size as needed */
+  height: 50px;
+  top: 20px;
+  left: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+/* Rotated class that triggers the spin */
+.spin {
+    transform: rotate(360deg);
+}
+
+ /* Typing indicator styling */
+#typing-indicator {
+  display: none;
+  padding: 8px;
+  width: fit-content;
+}
+
+#typing-indicator img {
+  width: 40px; /* Adjust the size as needed */
+}

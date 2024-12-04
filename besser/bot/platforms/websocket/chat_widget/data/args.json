@@ -1,9 +1,0 @@
-{
-  "userName": "JohnDoe",
-  "chatbotName": "AmazingBot",
-  "themeColor": "#34a4bd",
-  "wsAddress": "ws://localhost:8765",
-  "messageInputPlaceHolder": "Write something...",
-  "icon": "img/bot_logo.jpeg",
-  "typingAnimation": "img/typing_dots.gif"
-}
