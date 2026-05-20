@@ -1,7 +1,7 @@
 import streamlit as st
 
 from baf.db.monitoring_db import MonitoringDB, TABLE_SESSION, TABLE_INTENT_PREDICTION, TABLE_PARAMETER, \
-    TABLE_TRANSITION, TABLE_CHAT, TABLE_EVENT
+    TABLE_TRANSITION, TABLE_CHAT, TABLE_EVENT, TABLE_REASONING_STEP
 from baf.db.monitoring_ui.utils import filter_df
 
 
@@ -12,6 +12,9 @@ def table_overview(monitoring_db: MonitoringDB):
 
     st.subheader(f'Table {TABLE_SESSION}')
     st.dataframe(filter_df(monitoring_db.get_table(TABLE_SESSION), TABLE_SESSION), use_container_width=True)
+
+    st.subheader(f'Table {TABLE_REASONING_STEP}')
+    st.dataframe(filter_df(monitoring_db.get_table(TABLE_REASONING_STEP), TABLE_REASONING_STEP), use_container_width=True)
 
     st.subheader(f'Table {TABLE_EVENT}')
     st.dataframe(filter_df(monitoring_db.get_table(TABLE_EVENT), TABLE_EVENT), use_container_width=True)

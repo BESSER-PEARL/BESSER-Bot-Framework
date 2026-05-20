@@ -9,7 +9,7 @@ console_handler = logging.StreamHandler()
 file_handler = logging.FileHandler("application.log", encoding='utf-8')
 
 # Set logging levels for handlers
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)
 file_handler.setLevel(logging.DEBUG)
 
 # Create formatters

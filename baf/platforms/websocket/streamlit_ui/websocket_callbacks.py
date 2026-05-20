@@ -11,6 +11,10 @@ import pandas as pd
 from baf.core.message import MessageType, Message
 from baf.exceptions.logger import logger
 from baf.platforms.payload import PayloadAction, Payload
+from baf.platforms.websocket.streamlit_ui.reasoning import (
+    append_reasoning_step,
+    apply_task_list_update,
+)
 from baf.platforms.websocket.streamlit_ui.session_management import get_streamlit_session
 from baf.platforms.websocket.streamlit_ui.vars import QUEUE, HISTORY, WEBSOCKET_READY
 
@@ -104,6 +108,20 @@ def on_message(ws, payload_str):
     elif payload.action == PayloadAction.AGENT_REPLY_RAG.value:
         t = MessageType.RAG_ANSWER
         content = payload.message
+    elif payload.action == PayloadAction.AGENT_REPLY_REASONING_STEP.value:
+        # Streamed reasoning step events are folded into a single
+        # REASONING_TRACE message in HISTORY so the UI renders one
+        # collapsible expander per loop instead of one chat row per step.
+        # All trace aggregation + rendering lives in
+        # baf.platforms.websocket.streamlit_ui.reasoning.
+        append_reasoning_step(streamlit_session, payload.message)
+        streamlit_session._handle_rerun_script_request()
+        return
+    elif payload.action == PayloadAction.AGENT_REPLY_TASK_LIST_UPDATE.value:
+        # Task list snapshots also fold into the in-progress trace.
+        apply_task_list_update(streamlit_session, payload.message)
+        streamlit_session._handle_rerun_script_request()
+        return
     if content is not None:
         message = Message(t=t, content=content, is_user=is_user, timestamp=datetime.now())
         try:

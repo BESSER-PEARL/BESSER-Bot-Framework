@@ -14,6 +14,7 @@ Table of contents
 
    wiki/core
    wiki/nlp
+   wiki/reasoning
    wiki/platforms
    wiki/db
    wiki/utils

@@ -7,7 +7,7 @@ from baf import nlp
 from baf.core.message import MessageType, Message
 from baf.exceptions.logger import logger
 from baf.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
-from baf.nlp.llm.llm import LLM
+from baf.nlp.llm.llm import LLM, LLMResponse, ToolCall
 
 if TYPE_CHECKING:
     from baf.core.agent import Agent
@@ -111,6 +111,54 @@ class LLMOpenAI(LLM):
             **parameters,
         )
         return response.choices[0].message.content
+
+    def predict_with_tools(
+            self,
+            messages: list[dict],
+            tools: list[dict],
+            parameters: dict = None,
+            system_message: str = None,
+    ) -> LLMResponse:
+        """Make a tool-calling prediction using OpenAI's native function-calling API.
+
+        Args:
+            messages (list[dict]): list of OpenAI-style chat messages. Tool result messages must include
+                ``"tool_call_id"`` matching the call they answer.
+            tools (list[dict]): list of OpenAI-style tool schemas. If empty, no tools are sent and the call
+                behaves like a normal chat completion.
+            parameters (dict): extra LLM parameters. If none is provided, ``self.parameters`` is used.
+            system_message (str): high-priority system message inserted before ``messages``.
+
+        Returns:
+            LLMResponse: either a final text response or a list of tool calls to execute.
+        """
+        if not parameters:
+            parameters = self.parameters
+        final_messages: list[dict] = []
+        if self._global_context:
+            final_messages.append({"role": "system", "content": self._global_context})
+        if system_message:
+            final_messages.append({"role": "system", "content": system_message})
+        final_messages.extend(messages)
+        response = self.client.chat.completions.create(
+            model=self.name,
+            messages=final_messages,
+            tools=tools if tools else None,
+            tool_choice="auto" if tools else None,
+            **parameters,
+        )
+        msg = response.choices[0].message
+        if getattr(msg, "tool_calls", None):
+            calls: list[ToolCall] = []
+            for tc in msg.tool_calls:
+                try:
+                    args = json.loads(tc.function.arguments) if tc.function.arguments else {}
+                except json.JSONDecodeError:
+                    logger.warning(f"LLMOpenAI: could not JSON-decode tool args: {tc.function.arguments!r}")
+                    args = {}
+                calls.append(ToolCall(id=tc.id, name=tc.function.name, arguments=args))
+            return LLMResponse(text=None, tool_calls=calls, raw=response)
+        return LLMResponse(text=msg.content, tool_calls=None, raw=response)
 
     def intent_classification(
             self,

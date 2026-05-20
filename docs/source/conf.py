@@ -41,7 +41,13 @@ extensions = [
 ]
 
 intersphinx_mapping = {
-    "langchain": ("https://api.python.langchain.com/en/latest", None),
+    # NOTE: The previous LangChain entry was
+    #   "langchain": ("https://api.python.langchain.com/en/latest", None)
+    # but that URL now redirects to a SPA on reference.langchain.com that
+    # returns HTML instead of a Sphinx ``objects.inv``. Sphinx then dumps
+    # the full HTML body into the build log. Re-add an entry here once
+    # LangChain restores a hosted ``objects.inv`` (or pin a local
+    # objects.inv via the second tuple element).
     "python": ("https://docs.python.org/3", None),
     "pandas": ("https://pandas.pydata.org/docs", None),
     "python-telegram-bot": ("https://docs.python-telegram-bot.org/en/v20.5", None),
@@ -81,6 +87,7 @@ paramlinks_hyperlink_param = "name"
 def generate_api_rst_files(preffix, dir, output_dir):
     api_excluded_files_toctree = [
         # Files that for which we won't automatically generate .rst files and WILL NOT appear in the toctree
+        'core/example_gui.py',  # auto-generated GUI example, uses constructor kwargs that no longer exist
         'db/db_connection.py',
         'db/flow_graph.py',
         'db/home.py',
@@ -147,13 +154,14 @@ f"""{module_name}
         file.write(package_rst)
 
 
-generate_api_rst_files('../../', 'baf/agent/core', './api/core')
-generate_api_rst_files('../../', 'baf/agent/exceptions', './api/exceptions')
-generate_api_rst_files('../../', 'baf/agent/library', './api/library')
-generate_api_rst_files('../../', 'baf/agent/nlp', './api/nlp')
-generate_api_rst_files('../../', 'baf/agent/db', './api/db')
-generate_api_rst_files('../../', 'baf/agent/platforms', './api/platforms')
-generate_api_rst_files('../../', 'baf/agent/utils', './api/utils')
+generate_api_rst_files('../../', 'baf/core', './api/core')
+generate_api_rst_files('../../', 'baf/exceptions', './api/exceptions')
+generate_api_rst_files('../../', 'baf/library', './api/library')
+generate_api_rst_files('../../', 'baf/nlp', './api/nlp')
+generate_api_rst_files('../../', 'baf/db', './api/db')
+generate_api_rst_files('../../', 'baf/platforms', './api/platforms')
+generate_api_rst_files('../../', 'baf/utils', './api/utils')
+generate_api_rst_files('../../', 'baf/reasoning', './api/reasoning')
 
 
 def linkcode_resolve(domain, info):

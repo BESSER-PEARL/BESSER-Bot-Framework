@@ -1,4 +1,6 @@
 import asyncio
+import importlib
+import inspect
 import json
 import operator
 import threading
@@ -35,6 +37,7 @@ from baf.platforms.websocket.websocket_platform import WebSocketPlatform
 from baf.platforms.github.github_platform import GitHubPlatform
 from baf.platforms.gitlab.gitlab_platform import GitLabPlatform
 from baf.platforms.a2a.a2a_platform import A2APlatform
+from baf.reasoning import Tool, Skill, Workspace
 
 
 class Agent:
@@ -66,6 +69,22 @@ class Agent:
         global_state_component (dict[State, list[State]]): Dictionary of global state components, where key is initial
             global state and values is set of states in corresponding global component
         processors (list[Processors]): List of processors used by the agent
+        _tools (dict[str, Tool]): Tools registered on the agent and exposed
+            to the predefined reasoning state. Keyed by tool name. Populated
+            by :meth:`add_tool` / :meth:`new_tool` / :meth:`load_tools`, the
+            ``@agent.tool`` decorator, and indirectly by :meth:`add_workspace`
+            / :meth:`new_workspace` (which register the universal
+            ``list_directory`` / ``read_file`` and — when at least one
+            workspace is writable — ``write_file`` / ``create_file`` /
+            ``delete_file`` tools).
+        _skills (dict[str, Skill]): Markdown-based playbooks the reasoning
+            state injects into the system prompt. Keyed by skill name.
+            Populated by :meth:`add_skill` / :meth:`new_skill` /
+            :meth:`load_skills`.
+        _workspaces (dict[str, Workspace]): Filesystem workspaces the agent
+            can browse and (when ``writable=True``) modify through the
+            universal workspace tools. Keyed by workspace name. Populated
+            by :meth:`add_workspace` / :meth:`new_workspace`.
     """
 
     def __init__(
@@ -94,6 +113,9 @@ class Agent:
         self.processors: list[Processor] = []
         self._user_profiles: Any = None
         self._agent_configurations: dict[str, Any] = {}
+        self._tools: dict[str, Tool] = {}
+        self._skills: dict[str, Skill] = {}
+        self._workspaces: dict[str, Workspace] = {}
 
         if user_profiles_path:
             self.load_user_profiles(user_profiles_path)
@@ -121,9 +143,8 @@ class Agent:
 
         Supported formats are YAML (``.yaml``, ``.yml``).
 
-        Example YAML properties file, ``config.yaml``:
-
-        .. literalinclude:: ../../../../baf/agent/test/examples/config.yaml
+        See ``baf/test/examples/config.yaml`` in the repository for a complete
+        example of an agent configuration file.
 
         Args:
             path (str): the path to the properties file
@@ -315,6 +336,267 @@ class Agent:
             raise DuplicatedInitialStateError(self, self.initial_state(), new_state)
         self.states.append(new_state)
         return new_state
+
+    # --- Reasoning extension ----------------------------------------------- #
+
+    def add_tool(self, tool: Tool) -> Tool:
+        """Add an already-constructed :class:`~baf.reasoning.tool.Tool` to the agent.
+
+        Mirrors :meth:`add_intent`: the caller builds the wrapper, this method
+        registers it. Use :meth:`new_tool` when you want to skip the explicit
+        ``Tool(...)`` construction.
+
+        Args:
+            tool (Tool): the tool wrapper to register.
+
+        Returns:
+            Tool: the registered tool wrapper.
+        """
+        if tool.name in self._tools:
+            logger.warning(f"[Agent] Replacing existing tool '{tool.name}'")
+        self._tools[tool.name] = tool
+        logger.info(f"[Agent] Registered tool: {tool.name}")
+        return tool
+
+    def new_tool(self, fn: Callable, name: str = None, description: str = None) -> Tool:
+        """Build a :class:`~baf.reasoning.tool.Tool` from a callable and register it.
+
+        See :class:`baf.reasoning.tool.Tool` for the auto-introspection rules.
+
+        Args:
+            fn (Callable): the function to expose. May be a bound method.
+            name (str): override the tool's public name. Defaults to ``fn.__name__``.
+            description (str): override the description shown to the LLM.
+                Defaults to the first line of ``fn.__doc__``.
+
+        Returns:
+            Tool: the registered tool wrapper.
+        """
+        return self.add_tool(Tool(fn, name=name, description=description))
+
+    def load_tools(self, path: str) -> list[Tool]:
+        """Load every public top-level callable from a Python module or folder of modules.
+
+        ``path`` may be a single ``.py`` file or a folder (non-recursive). For
+        each module, every callable whose name does not start with ``_`` is
+        registered as a tool. Callables imported from other modules are skipped
+        — only those *defined* in the loaded module are considered, so importing
+        helpers in ``tools.py`` does not pollute the tool registry.
+
+        Args:
+            path (str): path to a ``.py`` file or to a folder containing them.
+
+        Returns:
+            list[Tool]: the tools that were registered (may be empty).
+        """
+        target = Path(path)
+        if not target.exists():
+            raise FileNotFoundError(f"load_tools: path does not exist: {path}")
+
+        if target.is_file():
+            files = [target]
+        else:
+            files = sorted(p for p in target.iterdir() if p.is_file() and p.suffix == ".py")
+
+        registered: list = []
+        for file in files:
+            module_name = f"baf_loaded_tools_{file.stem}"
+            spec = importlib.util.spec_from_file_location(module_name, file)
+            if spec is None or spec.loader is None:
+                logger.warning(f"[Agent] Could not load tools from {file}: no spec")
+                continue
+            module = importlib.util.module_from_spec(spec)
+            try:
+                spec.loader.exec_module(module)
+            except Exception as e:
+                logger.warning(f"[Agent] Failed to import tools from {file}: {e}")
+                continue
+            for member_name, member in inspect.getmembers(module):
+                if member_name.startswith("_"):
+                    continue
+                if not callable(member):
+                    continue
+                # Skip classes and members imported from other modules.
+                if inspect.isclass(member):
+                    continue
+                if getattr(member, "__module__", None) != module.__name__:
+                    continue
+                registered.append(self.new_tool(member))
+        return registered
+
+    def tool(self, fn: Callable = None, *, name: str = None, description: str = None):
+        """Decorator form of :meth:`new_tool`.
+
+        Usable bare (``@agent.tool``) or with arguments (``@agent.tool(name='x')``).
+        """
+        def _wrap(f: Callable) -> Callable:
+            self.new_tool(f, name=name, description=description)
+            return f
+        if fn is None:
+            return _wrap
+        return _wrap(fn)
+
+    def add_skill(self, skill: Skill) -> Skill:
+        """Add an already-constructed :class:`~baf.reasoning.skill.Skill` to the agent.
+
+        Mirrors :meth:`add_intent`. Use :meth:`new_skill` to skip the explicit
+        ``Skill(...)`` construction (especially convenient for loading from a
+        ``.md`` file path).
+
+        Args:
+            skill (Skill): the skill to register.
+
+        Returns:
+            Skill: the registered skill.
+        """
+        if skill.name in self._skills:
+            logger.warning(f"[Agent] Replacing existing skill '{skill.name}'")
+        self._skills[skill.name] = skill
+        logger.info(f"[Agent] Registered skill: {skill.name}")
+        return skill
+
+    def new_skill(self, source: str, name: str = None, description: str = None) -> Skill:
+        """Build a :class:`~baf.reasoning.skill.Skill` and register it.
+
+        ``source`` is either a path to an existing ``.md`` file (loaded via
+        :meth:`Skill.from_file`) or a literal markdown string. The path
+        detection is automatic.
+
+        Args:
+            source (str): path to a ``.md`` file or the markdown content as a string.
+            name (str): override the skill name (otherwise taken from frontmatter,
+                a leading H1, or the filename stem).
+            description (str): override the description (otherwise taken from
+                frontmatter).
+
+        Returns:
+            Skill: the registered skill.
+        """
+        candidate = Path(source) if isinstance(source, str) else None
+        if candidate is not None and candidate.is_file() and candidate.suffix.lower() == ".md":
+            skill = Skill.from_file(str(candidate))
+            if name:
+                skill.name = name
+            if description:
+                skill.description = description
+        else:
+            skill = Skill(source, name=name, description=description)
+        return self.add_skill(skill)
+
+    def load_skills(self, folder: str) -> list[Skill]:
+        """Register every ``*.md`` file in ``folder`` (non-recursive) as a skill.
+
+        Args:
+            folder (str): path to a folder containing markdown files.
+
+        Returns:
+            list[Skill]: the skills that were registered.
+        """
+        return [self.add_skill(s) for s in Skill.from_folder(folder)]
+
+    def add_workspace(self, workspace: Workspace) -> Workspace:
+        """Add an already-constructed :class:`~baf.reasoning.workspace.Workspace` to the agent.
+
+        The first call also registers the universal ``list_directory`` /
+        ``read_file`` tools, and — if at least one registered workspace has
+        ``writable=True`` — the ``write_file`` / ``create_file`` /
+        ``delete_file`` tools.
+
+        Mirrors :meth:`add_intent`. Use :meth:`new_workspace` to skip the
+        explicit ``Workspace(...)`` construction.
+
+        Args:
+            workspace (Workspace): the workspace to register.
+
+        Returns:
+            Workspace: the registered workspace.
+
+        Raises:
+            ValueError: if a workspace with the same name is already registered.
+        """
+        if workspace.name in self._workspaces:
+            raise ValueError(f"Workspace '{workspace.name}' is already registered")
+        self._workspaces[workspace.name] = workspace
+        self._ensure_workspace_tools_registered()
+        logger.info(f"[Agent] Registered workspace: {workspace.name} "
+                    f"(root={workspace.root}, writable={workspace.writable})")
+        return workspace
+
+    def new_workspace(self, path: str, name: str = "workspace",
+                      description: str = None,
+                      writable: bool = True,
+                      max_read_bytes: int = 200_000) -> Workspace:
+        """Build a :class:`~baf.reasoning.workspace.Workspace` and register it.
+
+        Args:
+            path (str): the workspace root path.
+            name (str): the workspace identifier the LLM passes as the
+                ``workspace`` tool argument. Must be unique within the agent.
+            description (str): a short human-readable explanation of *what* the
+                workspace contains. Strongly recommended — without it the LLM
+                only sees the name and root path and may not realise it should
+                browse the workspace.
+            writable (bool): whether mutating operations are allowed on this
+                workspace (``write_file`` / ``create_file`` / ``delete_file``).
+                Defaults to True.
+            max_read_bytes (int): cap on ``read_file`` output, in bytes.
+
+        Returns:
+            Workspace: the registered workspace.
+        """
+        return self.add_workspace(Workspace(
+            path, name=name, description=description,
+            writable=writable, max_read_bytes=max_read_bytes,
+        ))
+
+    def _resolve_workspace(self, name: str = None) -> 'Workspace':
+        """Look up a workspace by name, or pick the only one when ``name`` is None.
+
+        Raises a ``ValueError`` (which the Tool wrapper turns into an LLM-readable
+        ERROR string) on missing or ambiguous lookups.
+        """
+        if name is None:
+            if len(self._workspaces) == 1:
+                return next(iter(self._workspaces.values()))
+            if not self._workspaces:
+                raise ValueError("No workspaces are registered")
+            raise ValueError(
+                f"Multiple workspaces are registered, please specify one of: "
+                f"{list(self._workspaces.keys())}"
+            )
+        if name not in self._workspaces:
+            raise ValueError(
+                f"Workspace '{name}' not found. Available: {list(self._workspaces.keys())}"
+            )
+        return self._workspaces[name]
+
+    def _ensure_workspace_tools_registered(self) -> None:
+        """Register the universal workspace tools.
+
+        Read tools (``list_directory``, ``read_file``) are registered as soon
+        as any workspace exists. Write tools (``write_file``, ``create_file``,
+        ``delete_file``) are registered only once at least one workspace has
+        ``writable=True`` — read-only-only setups never expose them to the LLM.
+
+        The tool callables themselves live in
+        :mod:`baf.library.tool.workspace_tools`. This method only owns the
+        gating policy (which family to expose, when) plus the dedup check.
+        Idempotent — already-registered tools are skipped.
+        """
+        # Imported lazily to avoid pulling baf.library.tool at module load time.
+        from baf.library.tool.workspace_tools import (
+            build_workspace_read_tools,
+            build_workspace_write_tools,
+        )
+
+        for fn in build_workspace_read_tools(self):
+            if fn.__name__ not in self._tools:
+                self.new_tool(fn)
+
+        if any(ws.writable for ws in self._workspaces.values()):
+            for fn in build_workspace_write_tools(self):
+                if fn.__name__ not in self._tools:
+                    self.new_tool(fn)
 
     def add_intent(self, intent: Intent) -> Intent:
         """Add an intent to the agent.
@@ -858,6 +1140,38 @@ class Agent:
         if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
             thread = threading.Thread(target=self._monitoring_db.insert_chat, args=(session, message))
             thread.start()
+
+    def _monitoring_db_insert_reasoning_event(
+        self,
+        session: Session,
+        kind: str,
+        payload: Any,
+    ) -> None:
+        """Insert a reasoning-state event (step or task-list snapshot) into the
+        dedicated ``reasoning_step`` table. Synchronous on purpose so a
+        subsequent ``link_pending_reasoning_events`` call sees the row.
+        """
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            self._monitoring_db.insert_reasoning_event(session, kind, payload)
+
+    def _monitoring_db_select_reasoning_events(
+        self,
+        session: Session,
+        until_timestamp=None,
+    ):
+        """Fetch all reasoning events for a session, in chronological order."""
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            return self._monitoring_db.select_reasoning_events(
+                session, until_timestamp=until_timestamp,
+            )
+        return None
+
+    def _monitoring_db_link_pending_reasoning_events(self, session: Session) -> None:
+        """Attach reasoning events with chat_id IS NULL to the most recent
+        chat row for ``session``. Best-effort, called at the end of every
+        reasoning loop."""
+        if self.get_property(DB_MONITORING) and self._monitoring_db.connected:
+            self._monitoring_db.link_pending_reasoning_events(session)
 
     def _monitoring_db_insert_event(self, event: Event) -> None:
         """Insert an event record into the monitoring database.

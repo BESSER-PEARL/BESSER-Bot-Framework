@@ -196,6 +196,61 @@ class Session:
         """
         self._agent._monitoring_db_insert_chat(self, message)
 
+    def save_reasoning_event(self, kind: str, payload: Any) -> None:
+        """Persist a reasoning-state event in the dedicated ``reasoning_step``
+        table.
+
+        Reasoning events (LLM tool calls, tool results, task list mutations,
+        push-backs, max_steps, reasoning_started/finished brackets) are NOT
+        stored in the chat table because they would mismatch the chat
+        message-type schema. This method routes them to their own table.
+
+        Args:
+            kind (str): ``'reasoning_step'`` for a single
+                :class:`~baf.library.state.reasoning_state_library.ReasoningStep`
+                event, or ``'task_list_update'`` for a full task list snapshot.
+            payload (Any): the structured event payload — a step dict or a
+                list of task dicts.
+        """
+        self._agent._monitoring_db_insert_reasoning_event(self, kind, payload)
+
+    def get_reasoning_events(self, until_timestamp: datetime = None) -> list[dict]:
+        """Get the reasoning-state events for this session.
+
+        Includes both step events and task-list snapshots, ordered by their
+        emission timestamp.
+
+        Args:
+            until_timestamp (datetime): if provided, only events at or before
+                this timestamp are returned.
+
+        Returns:
+            list[dict]: each entry has ``kind``, ``step_kind``, ``step``,
+            ``summary``, ``payload``, ``timestamp``, ``chat_id`` keys (some
+            may be None depending on ``kind``).
+        """
+        if not (self._agent.get_property(DB_MONITORING) and self._agent._monitoring_db.connected):
+            return []
+        df = self._agent._monitoring_db_select_reasoning_events(
+            self, until_timestamp=until_timestamp,
+        )
+        if df is None or df.empty:
+            return []
+        return df.to_dict(orient="records")
+
+    def link_pending_reasoning_events(self) -> None:
+        """Link reasoning events with chat_id IS NULL to the most recent chat
+        row for this session. Called once at the end of each reasoning loop
+        so the events emitted during that loop are tied to the chat reply
+        that closed it."""
+        try:
+            self._agent._monitoring_db_link_pending_reasoning_events(self)
+        except Exception as e:
+            logger.warning(
+                f"[Session] link_pending_reasoning_events failed for "
+                f"session {self.id}: {e}"
+            )
+
     def set(self, key: str, value: Any) -> None:
         """Set an entry to the session private data storage.
 

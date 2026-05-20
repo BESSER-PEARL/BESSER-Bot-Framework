@@ -21,6 +21,7 @@ class MessageType(Enum):
     AUDIO = 'audio'
     RAG_ANSWER = 'rag_answer'
     UI = 'ui'
+    REASONING_TRACE = 'reasoning_trace'  # UI-internal synthetic type aggregating streamed reasoning_step / task_list_update events
 
 
 def get_message_type(value: str):
