@@ -14,6 +14,10 @@ from baf.platforms.websocket.streamlit_ui.initialization import (
     ensure_websocket_connection,
     reconnect_websocket,
 )
+from baf.platforms.websocket.streamlit_ui.reasoning import (
+    is_empty_trace,
+    write_reasoning_trace,
+)
 from baf.platforms.websocket.streamlit_ui.vars import (
     TYPING_TIME,
     HISTORY,
@@ -46,6 +50,13 @@ def write_or_stream(content, stream: bool):
 
 
 def write_message(message: Message, key_count: int, stream: bool = False):
+    # Reasoning traces with no observable steps (e.g., an LLM-only reply
+    # that didn't invoke any tools) would render as an empty chat bubble —
+    # skip them entirely.
+    if message.type == MessageType.REASONING_TRACE \
+            and is_empty_trace(message.content if isinstance(message.content, dict) else {}):
+        return
+
     key = f'message_{key_count}'
     with st.chat_message(user_type[message.is_user]):
         if message.type == MessageType.AUDIO:
@@ -125,6 +136,9 @@ def write_message(message: Message, key_count: int, stream: bool = False):
                         st.write(f'- **Source:** {doc["metadata"]["source"]}')
                         st.write(f'- **Page:** {doc["metadata"]["page"]}')
                         st.write(f'- **Content:** {doc["content"]}')
+
+        elif message.type == MessageType.REASONING_TRACE:
+            write_reasoning_trace(message.content if isinstance(message.content, dict) else {})
 
         elif message.type in [MessageType.STR, MessageType.MARKDOWN]:
             write_or_stream(message.content, stream=(stream and isinstance(message.content, str)))

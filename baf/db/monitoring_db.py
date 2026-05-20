@@ -44,6 +44,19 @@ TABLE_CHAT = 'chat'
 TABLE_EVENT = 'event'
 """The name of the database table that contains the event records"""
 
+TABLE_REASONING_STEP = 'reasoning_step'
+"""The name of the database table that contains reasoning-state step events
+and task-list snapshots (a single per-session timeline of everything that
+happens inside the reasoning loop)."""
+
+# Two values stored in TableReasoningStep.kind
+REASONING_KIND_STEP = 'reasoning_step'
+"""kind value for a reasoning step event (LLM tool call, tool result, push-back,
+task add/complete/skip, max_steps, reasoning_started/finished)."""
+
+REASONING_KIND_TASK_LIST_UPDATE = 'task_list_update'
+"""kind value for a task list snapshot."""
+
 
 class MonitoringDB:
     """This class is an interface to connect to a database where user interactions with the agent are stored to monitor
@@ -142,6 +155,35 @@ class MonitoringDB:
             session_id = Column(Integer, ForeignKey(f'{TABLE_SESSION}.id', ondelete='CASCADE'), nullable=True)
             event = Column(String, nullable=False)
             info = Column(String, nullable=True)
+            timestamp = Column(DateTime, nullable=False)
+
+        class TableReasoningStep(Base):
+            """All reasoning-state events for a session — both per-step events
+            (LLM tool calls, tool results, task add/complete/skip, push-back,
+            max_steps, reasoning_started/finished brackets) and task-list
+            snapshots. ``chat_id`` is optional: each event may be linked to
+            the chat row that closed the reasoning loop, but events emitted
+            during the loop start unlinked and are attached afterwards."""
+            __tablename__ = TABLE_REASONING_STEP
+            id = Column(Integer, primary_key=True, autoincrement=True)
+            session_id = Column(Integer, ForeignKey(f'{TABLE_SESSION}.id', ondelete='CASCADE'), nullable=False)
+            # Optional FK to the chat row that finalised the reasoning loop.
+            # Nullable on insert; populated by link_pending_reasoning_events.
+            chat_id = Column(Integer, ForeignKey(f'{TABLE_CHAT}.id', ondelete='SET NULL'), nullable=True)
+            # 'reasoning_step' or 'task_list_update'.
+            kind = Column(String, nullable=False)
+            # For kind='reasoning_step', the ReasoningStepKind value (e.g. 'llm_tool_calls').
+            # NULL for task_list_update rows.
+            step_kind = Column(String, nullable=True)
+            # For kind='reasoning_step', the loop iteration number.
+            # NULL for task_list_update rows.
+            step = Column(Integer, nullable=True)
+            # For kind='reasoning_step', the short human-readable summary.
+            # NULL for task_list_update rows.
+            summary = Column(String, nullable=True)
+            # Full structured payload: the ReasoningStep dict for step rows,
+            # or the list of task dicts for task_list_update rows.
+            payload = Column(JSONB, nullable=False)
             timestamp = Column(DateTime, nullable=False)
 
         Base.metadata.create_all(self.conn)
@@ -387,6 +429,17 @@ class MonitoringDB:
             return
         session_db_id = result_session_id[0]
 
+        # Delete reasoning events first — chat rows referenced by chat_id
+        # would otherwise have to be SET NULL by CASCADE, costing an extra
+        # write. (FK CASCADE on session_id would also wipe these, but being
+        # explicit keeps deletion order predictable.)
+        try:
+            table_rs = Table(TABLE_REASONING_STEP, MetaData(), autoload_with=self.conn)
+            stmt_delete_rs = table_rs.delete().where(table_rs.c.session_id == session_db_id)
+            self.run_statement(stmt_delete_rs)
+        except Exception as e:
+            logger.debug(f"[MonitoringDB] delete_session: skipping reasoning_step ({e})")
+
         # Delete chat messages
         table_chat = Table(TABLE_CHAT, MetaData(), autoload_with=self.conn)
         stmt_delete_chat = table_chat.delete().where(table_chat.c.session_id == session_db_id)
@@ -476,6 +529,158 @@ class MonitoringDB:
             stmt = base_stmt.order_by(table.c.timestamp, table.c.id)
 
         return pd.read_sql_query(stmt, self.conn)
+
+    # ─── Reasoning step / task-list-update events ──────────────────────────── #
+
+    def insert_reasoning_event(
+        self,
+        session: Session,
+        kind: str,
+        payload: Any,
+    ) -> Optional[int]:
+        """Insert a row into the reasoning_step table.
+
+        Args:
+            session (Session): the session that produced the event.
+            kind (str): one of ``REASONING_KIND_STEP`` /
+                ``REASONING_KIND_TASK_LIST_UPDATE``.
+            payload (Any): for ``REASONING_KIND_STEP`` the ``ReasoningStep``
+                dict (``{"kind", "step", "summary", "details"}``); for
+                ``REASONING_KIND_TASK_LIST_UPDATE`` the list of task dicts
+                (``[{"id", "description", "status", "result"}, ...]``).
+
+        Returns:
+            int | None: the inserted row id, or None on failure.
+        """
+        table = Table(TABLE_REASONING_STEP, MetaData(), autoload_with=self.conn)
+        session_entry = self.select_session(session)
+        if session_entry.empty:
+            logger.warning(
+                "[MonitoringDB] insert_reasoning_event: no session row found, skipping"
+            )
+            return None
+
+        # Pull the per-step columns out of the payload so they're queryable
+        # without unwrapping the JSONB blob. None for task_list_update rows.
+        step_kind: Optional[str] = None
+        step_num: Optional[int] = None
+        summary: Optional[str] = None
+        if kind == REASONING_KIND_STEP and isinstance(payload, dict):
+            step_kind = payload.get("kind")
+            step_num = payload.get("step")
+            summary = payload.get("summary")
+
+        stmt = insert(table).values(
+            session_id=int(session_entry["id"][0]),
+            chat_id=None,
+            kind=kind,
+            step_kind=step_kind,
+            step=step_num,
+            summary=summary,
+            payload=payload,
+            timestamp=datetime.now(),
+        ).returning(table.c.id)
+        try:
+            result = self.conn.execute(stmt)
+            self.conn.commit()
+            row = result.fetchone()
+            return int(row[0]) if row else None
+        except Exception as e:
+            logger.error(f"[MonitoringDB] insert_reasoning_event failed: {e}")
+            self.conn.rollback()
+            return None
+
+    def select_reasoning_events(
+        self,
+        session: Session,
+        until_timestamp: Optional[datetime] = None,
+    ) -> pd.DataFrame:
+        """Retrieve all reasoning-state events for a session, in chronological order.
+
+        Args:
+            session (Session): the session whose events to fetch.
+            until_timestamp (Optional[datetime]): if provided, only events at
+                or before this timestamp are returned.
+
+        Returns:
+            pandas.DataFrame: rows with columns
+            ``id``, ``session_id``, ``chat_id``, ``kind``, ``step_kind``,
+            ``step``, ``summary``, ``payload``, ``timestamp``. Empty if the
+            table doesn't exist (e.g. older DB without the migration applied).
+        """
+        try:
+            table = Table(TABLE_REASONING_STEP, MetaData(), autoload_with=self.conn)
+        except Exception as e:
+            logger.warning(
+                f"[MonitoringDB] select_reasoning_events: reasoning_step table "
+                f"not available — returning empty: {e}"
+            )
+            return pd.DataFrame()
+
+        session_entry = self.select_session(session)
+        if session_entry.empty:
+            return pd.DataFrame()
+
+        stmt = select(table).where(table.c.session_id == int(session_entry["id"][0]))
+        if until_timestamp is not None:
+            stmt = stmt.where(table.c.timestamp <= until_timestamp)
+        stmt = stmt.order_by(table.c.timestamp, table.c.id)
+        return pd.read_sql_query(stmt, self.conn)
+
+    def link_pending_reasoning_events(self, session: Session) -> int:
+        """Attach all reasoning events with chat_id IS NULL to the most recent
+        chat row for the session.
+
+        Best-effort: if the reasoning_step or chat tables don't exist yet, or
+        no chat row exists for the session, the method does nothing and
+        returns 0. Called once per reasoning loop after the final
+        ``session.reply()``.
+
+        Returns:
+            int: number of rows linked.
+        """
+        try:
+            rs_table = Table(TABLE_REASONING_STEP, MetaData(), autoload_with=self.conn)
+            chat_table = Table(TABLE_CHAT, MetaData(), autoload_with=self.conn)
+        except Exception as e:
+            logger.debug(
+                f"[MonitoringDB] link_pending_reasoning_events: skipping ({e})"
+            )
+            return 0
+
+        session_entry = self.select_session(session)
+        if session_entry.empty:
+            return 0
+        session_db_id = int(session_entry["id"][0])
+
+        # Find the latest chat row for the session (highest id wins on ties).
+        latest_stmt = (
+            select(chat_table.c.id)
+            .where(chat_table.c.session_id == session_db_id)
+            .order_by(desc(chat_table.c.timestamp), desc(chat_table.c.id))
+            .limit(1)
+        )
+        result = self.conn.execute(latest_stmt).first()
+        if result is None:
+            return 0
+        latest_chat_id = int(result[0])
+
+        update_stmt = (
+            rs_table.update()
+            .where(
+                rs_table.c.session_id == session_db_id,
+                rs_table.c.chat_id.is_(None),
+            )
+            .values(chat_id=latest_chat_id)
+        )
+        try:
+            res = self.conn.execute(update_stmt)
+            self.conn.commit()
+            return res.rowcount or 0
+        except Exception as e:
+            logger.error(f"[MonitoringDB] link_pending_reasoning_events failed: {e}")
+            self.conn.rollback()
+            return 0
 
     def run_statement(self, stmt: Executable) -> CursorResult[Any] | None:
         """Executes a SQL statement.

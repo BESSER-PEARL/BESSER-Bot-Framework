@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from dataclasses import dataclass
+from typing import Any, Optional, TYPE_CHECKING
 
 from baf.exceptions.logger import logger
 from baf.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
@@ -9,6 +10,30 @@ if TYPE_CHECKING:
     from baf.core.session import Session
     from baf.nlp.intent_classifier.llm_intent_classifier import LLMIntentClassifier
     from baf.nlp.nlp_engine import NLPEngine
+
+
+@dataclass
+class ToolCall:
+    """A single tool invocation requested by an LLM during tool-calling."""
+    id: str
+    name: str
+    arguments: dict
+
+
+@dataclass
+class LLMResponse:
+    """The result of an LLM tool-calling call.
+
+    Exactly one of `text` or `tool_calls` should be set:
+    - `text` is set when the LLM returned a final answer.
+    - `tool_calls` is set (non-empty) when the LLM wants to invoke one or more tools.
+    """
+    text: Optional[str] = None
+    tool_calls: Optional[list[ToolCall]] = None
+    raw: Any = None  # provider-specific raw response, optional
+
+    def is_final(self) -> bool:
+        return self.text is not None and not self.tool_calls
 
 
 class LLM(ABC):
@@ -90,6 +115,30 @@ class LLM(ABC):
         """
         logger.warning(f'Chat not implemented in {self.__class__.__name__}')
         return None
+
+    def predict_with_tools(
+            self,
+            messages: list[dict],
+            tools: list[dict],
+            parameters: dict = None,
+            system_message: str = None,
+    ) -> 'LLMResponse':
+        """Make a tool-calling prediction.
+
+        Args:
+            messages (list[dict]): list of OpenAI-style chat messages:
+                ``[{"role": "system|user|assistant|tool", "content": "...", ...}]``. Tool result messages must
+                include ``"tool_call_id"`` matching the call they answer.
+            tools (list[dict]): list of OpenAI-style tool schemas:
+                ``[{"type": "function", "function": {"name", "description", "parameters"}}]``.
+            parameters (dict): extra LLM parameters; merged with ``self.parameters``.
+            system_message (str): high-priority system message inserted before ``messages``.
+
+        Returns:
+            LLMResponse: either a final text response or a list of tool calls to execute.
+        """
+        logger.warning(f"predict_with_tools not implemented in {self.__class__.__name__}")
+        raise NotImplementedError(f"{self.__class__.__name__} does not support tool-calling.")
 
     def intent_classification(
             self,

@@ -73,6 +73,21 @@ class PayloadAction(Enum):
     (see :class:`baf.nlp.rag.rag.RAGMessage`).
     """
 
+    AGENT_REPLY_REASONING_STEP = 'agent_reply_reasoning_step'
+    """PayloadAction: Indicates that the payload's purpose is to send an intermediate step of a reasoning state — an
+    LLM text turn, a tool call, a tool result, a task list change, an orchestrator push-back, etc. The message is a
+    dict with the shape ``{"kind": str, "step": int, "summary": str, "details": dict}``. See
+    :func:`baf.library.state.reasoning_state_library.reasoning_body` for the full set of emitted kinds.
+    """
+
+    AGENT_REPLY_TASK_LIST_UPDATE = 'agent_reply_task_list_update'
+    """PayloadAction: Indicates that the payload's purpose is to send a snapshot of the reasoning state's task list.
+    Emitted on every task list mutation (add / complete / skip) alongside the corresponding reasoning step events,
+    so a UI can show the live task list as a separate panel without having to reconstruct it from the step stream.
+    The message is a list of dicts: ``[{"id": int, "description": str, "status": str, "result": str}, ...]``.
+    The reasoning_started / reasoning_finished events bracket the lifetime of this list.
+    """
+
     AGENT_REPLY_AUDIO = 'agent_reply_audio'
     """PayloadAction: Indicates that the payload's purpose is to send an agent reply containing an audio, which is a
     dictionary containing the audio data (as a base 64 String) and the metadata to reconstruct the audio array, composed

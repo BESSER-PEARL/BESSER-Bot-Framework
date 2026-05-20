@@ -19,7 +19,7 @@ from pandas import DataFrame
 from websockets.exceptions import ConnectionClosedError
 from websockets.sync.server import ServerConnection, WebSocketServer, serve
 
-from baf.core.gui import gui_to_json
+from baf.core.gui.gui_serializer import gui_to_json
 from baf.library.transition.events.base_events import ReceiveMessageEvent, ReceiveFileEvent
 from baf.core.message import Message, MessageType
 from baf.core.session import Session
@@ -159,13 +159,39 @@ class WebSocketPlatform(Platform):
                     elif payload.action == PayloadAction.FETCH_USER_MESSAGES.value:
                         try:
                             chat_history = session.get_chat_history(until_timestamp=current_time)
+                            reasoning_events = session.get_reasoning_events(until_timestamp=current_time)
+
+                            # Merge both streams in chronological order so the
+                            # UI's existing aggregation (reasoning_started /
+                            # reasoning_finished brackets, task panel updates)
+                            # rebuilds the trace exactly as it was streamed.
+                            timeline: list[tuple[datetime, str, object]] = []
                             for message in chat_history:
                                 action = message.get_action()
+                                if action is None:
+                                    # Defensive: skip rows whose MessageType
+                                    # has no PayloadAction mapping (would
+                                    # crash on .value below).
+                                    continue
+                                timeline.append((message.timestamp, 'chat',
+                                                 (action, message.content, message.timestamp)))
+                            for ev in reasoning_events:
+                                if ev['kind'] == 'reasoning_step':
+                                    action = PayloadAction.AGENT_REPLY_REASONING_STEP
+                                elif ev['kind'] == 'task_list_update':
+                                    action = PayloadAction.AGENT_REPLY_TASK_LIST_UPDATE
+                                else:
+                                    continue
+                                timeline.append((ev['timestamp'], 'reasoning',
+                                                 (action, ev['payload'], ev['timestamp'])))
+
+                            timeline.sort(key=lambda t: t[0])
+                            for _, _, item in timeline:
+                                action, message_content, ts = item
                                 history_payload = Payload(action=action,
-                                                          message=message.content,
+                                                          message=message_content,
                                                           history=True,
-                                                          timestamp=message.timestamp
-                                                          )
+                                                          timestamp=ts)
                                 self._send(session.id, history_payload)
                         except Exception as e:
                             logger.error(f"Error fetching chat history: {e}")
@@ -503,6 +529,71 @@ class WebSocketPlatform(Platform):
                           message=location_dict,
                           timestamp=message_obj.timestamp)
         payload.message = self._agent.process(session=session, message=payload.message, is_user_message=False)
+        self._send(session.id, payload)
+
+    def reply_task_list_update(self, session: Session, tasks: list) -> None:
+        """Send a snapshot of the reasoning state's task list to a specific user.
+
+        Emitted alongside (not in place of) the existing
+        ``task_added`` / ``task_completed`` / ``task_skipped`` reasoning step
+        events, so a client can render a live "task panel" without having to
+        reconstruct the list from the step stream. The
+        ``reasoning_started`` / ``reasoning_finished`` reasoning steps bracket
+        the lifetime of this panel.
+
+        Persisted in the dedicated ``reasoning_step`` table (kind=
+        ``task_list_update``) — not in the chat table — so it does not
+        pollute chat history retrieval.
+
+        Args:
+            session (Session): the user session.
+            tasks (list): the current task list as a list of dicts with shape
+                ``{"id": int, "description": str, "status": str, "result": str}``.
+                Each call carries the *full* current snapshot — the client
+                replaces its state rather than applying a diff.
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        timestamp = datetime.now()
+        session.save_reasoning_event('task_list_update', tasks)
+        payload = Payload(action=PayloadAction.AGENT_REPLY_TASK_LIST_UPDATE,
+                          message=tasks,
+                          timestamp=timestamp)
+        self._send(session.id, payload)
+
+    def reply_reasoning_step(self, session: Session, step: dict) -> None:
+        """Send an intermediate reasoning-state step to a specific user.
+
+        A *reasoning step* is any observable event the predefined reasoning
+        state body produces while it is working: the LLM emitting tool calls
+        or text, a tool returning a result, the task list being mutated
+        (planned / completed / skipped), the orchestrator pushing back a
+        premature final answer, or the step budget being exhausted. Sending
+        these to the client lets the UI show a live "thinking" trace before
+        the final reply arrives.
+
+        Persisted in the dedicated ``reasoning_step`` table (kind=
+        ``reasoning_step``) — not in the chat table — so it does not pollute
+        chat history retrieval.
+
+        Args:
+            session (Session): the user session.
+            step (dict): the step payload with the shape
+                ``{"kind": str, "step": int, "summary": str, "details": dict}``.
+                ``kind`` is one of ``llm_text``, ``llm_tool_calls``,
+                ``tool_result``, ``task_added``, ``task_completed``,
+                ``task_skipped``, ``pushback`` or ``max_steps``. ``summary``
+                is a short human-readable description suitable for direct
+                rendering; ``details`` is a kind-specific structured object
+                for richer client-side rendering.
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        timestamp = datetime.now()
+        session.save_reasoning_event('reasoning_step', step)
+        payload = Payload(action=PayloadAction.AGENT_REPLY_REASONING_STEP,
+                          message=step,
+                          timestamp=timestamp)
         self._send(session.id, payload)
 
     def reply_rag(self, session: Session, rag_message: RAGMessage) -> None:

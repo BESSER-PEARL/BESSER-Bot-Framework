@@ -1,0 +1,75 @@
+Version 4.4.0
+=============
+
+Released: April 30, 2026
+
+This release introduces the **reasoning extension**: an LLM-driven
+plan -> act -> observe state body, plus the primitives it consumes —
+tools, skills and workspaces. See the new :doc:`reasoning wiki
+section <../wiki/reasoning>` and the
+:doc:`reasoning_agent example <../examples/reasoning_agent>`.
+
+New Features
+------------
+
+Reasoning state
+~~~~~~~~~~~~~~~
+
+A predefined state whose body runs an LLM tool-calling loop. Register it
+with :func:`~baf.library.state.reasoning_state_library.new_reasoning_state`.
+Built-in *task planning* (``add_tasks`` / ``complete_task`` / ``skip_task``)
+keeps multi-step requests tracked: the loop only finalises when every
+planned task is resolved, otherwise the orchestrator pushes back.
+
+Tools
+~~~~~
+
+Plain Python callables registered via
+:meth:`~baf.core.agent.Agent.new_tool` (or :meth:`~baf.core.agent.Agent.load_tools`
+for bulk-load from a module/folder, or the ``@agent.tool`` decorator).
+Signatures, type hints and docstrings are auto-introspected into the
+OpenAI / Anthropic function-calling JSON schema — no schema written by
+hand. ``LLMOpenAI`` gains :meth:`~baf.nlp.llm.llm.LLM.predict_with_tools`
+for native tool-calling.
+
+Skills
+~~~~~~
+
+Named markdown playbooks injected into the system prompt of the reasoning
+state. Loaded from a file, a string, or a folder of ``.md`` files via
+:meth:`~baf.core.agent.Agent.new_skill` / :meth:`~baf.core.agent.Agent.load_skills`.
+YAML-style frontmatter (``name``, ``description``) supported.
+
+Workspaces
+~~~~~~~~~~
+
+Filesystem paths the LLM can browse and (optionally) modify on demand —
+a Claude Code-style alternative to RAG. Register with
+:meth:`~baf.core.agent.Agent.new_workspace`. Auto-registers universal
+``list_directory`` / ``read_file`` tools, plus ``write_file`` /
+``create_file`` / ``delete_file`` when at least one workspace is
+``writable=True``. Path traversal outside the workspace root is rejected.
+
+Streaming and persistence
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every observable reasoning event (LLM tool calls, tool results, task list
+mutations, push-back, max-steps) is streamed to the UI through the new
+:meth:`~baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_reasoning_step`
+method, with task-list snapshots flowing on the parallel
+:meth:`~baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_task_list_update`
+channel. Events bracketed by ``reasoning_started`` / ``reasoning_finished``.
+A dedicated ``reasoning_step`` database table stores them for session replay.
+
+Improvements
+------------
+
+- ``baf/library/tool/`` — new package collecting predefined tool families
+  (workspace tools, task tools).
+- ``Agent`` API now follows the ``add_X`` / ``new_X`` pattern uniformly:
+  :meth:`~baf.core.agent.Agent.add_tool` / :meth:`~baf.core.agent.Agent.new_tool`,
+  :meth:`~baf.core.agent.Agent.add_skill` / :meth:`~baf.core.agent.Agent.new_skill`,
+  :meth:`~baf.core.agent.Agent.add_workspace` / :meth:`~baf.core.agent.Agent.new_workspace`
+  — mirroring the existing :meth:`~baf.core.agent.Agent.add_intent` /
+  :meth:`~baf.core.agent.Agent.new_intent` pair.
+

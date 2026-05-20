@@ -9,4 +9,5 @@ API
    api/library
    api/nlp
    api/platforms
+   api/reasoning
    api/utils
