@@ -35,3 +35,9 @@ jobs:
 
       - name: Verify import
         run: python -c "import baf; print('baf imported successfully')"
+
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Run tests
+        run: python -m pytest baf/test/components baf/test/dependencies -q --tb=short
