@@ -14,12 +14,10 @@ import subprocess
 import threading
 from typing import TYPE_CHECKING
 
-from besser.BUML.metamodel.gui import GUIModel
 from pandas import DataFrame
 from websockets.exceptions import ConnectionClosedError
 from websockets.sync.server import ServerConnection, WebSocketServer, serve
 
-from baf.core.gui.gui_serializer import gui_to_json
 from baf.library.transition.events.base_events import ReceiveMessageEvent, ReceiveFileEvent
 from baf.core.message import Message, MessageType
 from baf.core.session import Session
@@ -39,6 +37,34 @@ from baf.platforms.websocket.streamlit_ui import (
     DB_STREAMLIT_PASSWORD,
     DB_STREAMLIT,
 )
+
+
+if TYPE_CHECKING:
+    from baf.core.agent import Agent
+
+try:
+    import cv2
+except ImportError:
+    logger.warning("cv2 dependencies in WebSocketPlatform could not be imported. You can install them from "
+                   "the requirements/requirements-extras.txt file")
+try:
+    import plotly
+except ImportError:
+    logger.warning("plotly dependencies in WebSocketPlatform could not be imported. You can install them from "
+                   "the requirements/requirements-extras.txt file")
+
+try:
+    import librosa
+except ImportError:
+    logger.warning("librosa dependencies in WebSocketPlatform could not be imported. You can install them from "
+                   "the requirements/requirements-extras.txt file")
+
+try:
+    from besser.BUML.metamodel.gui import GUIModel
+    from baf.core.gui.gui_serializer import gui_to_json
+except ImportError:
+    logger.warning("besser dependencies in WebSocketPlatform could not be imported. You can install them with "
+                   "'pip install --no-deps besser'")
 
 
 def _extract_parameter_from_request(parameter, request) -> str | None:
@@ -62,27 +88,6 @@ def _extract_parameter_from_request(parameter, request) -> str | None:
         if user_values:
             return user_values[0]
     return None
-
-
-if TYPE_CHECKING:
-    from baf.core.agent import Agent
-
-try:
-    import cv2
-except ImportError:
-    logger.warning("cv2 dependencies in WebSocketPlatform could not be imported. You can install them from "
-                   "the requirements/requirements-extras.txt file")
-try:
-    import plotly
-except ImportError:
-    logger.warning("plotly dependencies in WebSocketPlatform could not be imported. You can install them from "
-                   "the requirements/requirements-extras.txt file")
-
-try:
-    import librosa
-except ImportError:
-    logger.warning("librosa dependencies in WebSocketPlatform could not be imported. You can install them from "
-                   "the requirements/requirements-extras.txt file")
 
 
 class WebSocketPlatform(Platform):
@@ -685,6 +690,15 @@ class WebSocketPlatform(Platform):
         self._send(session.id, payload)
 
     def reply_ui(self, session: Session, ui: GUIModel) -> None:
+        """Send a GUI model reply to a specific user.
+
+        The GUI model is serialized to JSON before being sent. It can be used to dynamically
+        render a user interface on the client side.
+
+        Args:
+            session (Session): the user session
+            ui (GUIModel): the GUI model to send to the user
+        """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         ui_json = gui_to_json(ui)

@@ -123,6 +123,12 @@ After that, you can use the platform to send different kinds of messages to the 
     file = File(file_name="name", file_type="type", file_base64="file_base64")
     websocket_platform.reply_file(session, file)
 
+- Images (numpy arrays, e.g. an OpenCV / Pillow image):
+
+.. code:: python
+
+    websocket_platform.reply_image(session, img)
+
 - Locations:
 
 .. code:: python
@@ -137,7 +143,26 @@ After that, you can use the platform to send different kinds of messages to the 
     rag_message: RAGMessage = session.run_rag()
     websocket_platform.reply_rag(session, rag_message)
 
-⏳ We are working on other replies (files, media, charts...). They will be available soon, stay tuned!
+- Synthesised speech (the text is run through the agent's :doc:`../nlp/text2speech` pipeline before being sent as a Base64-encoded audio payload):
+
+.. code:: python
+
+    websocket_platform.reply_speech(session, 'Hello!')
+    # Optionally speed up / slow down the audio (1.0 = original speed)
+    websocket_platform.reply_speech(session, 'Hello!', audio_speed=1.25)
+
+- UI messages (a ``GUIModel`` instance — the client renders the UI based on the model):
+
+.. code:: python
+
+    websocket_platform.reply_ui(session, ui)
+
+- :doc:`Reasoning steps <../reasoning/reasoning_state>` and task list updates: emitted automatically by the predefined reasoning state body for every intermediate event (LLM tool calls, tool results, task add/complete/skip, push-back, max_steps) and every task list mutation. You normally do not call these methods yourself — the reasoning loop streams them to the client through the same WebSocket connection so the UI can render a live "thinking" trace and a task panel:
+
+.. code:: python
+
+    websocket_platform.reply_reasoning_step(session, step)
+    websocket_platform.reply_task_list_update(session, tasks)
 
 The WebSocket platform allows the following kinds of user messages:
 
@@ -202,6 +227,9 @@ If your UI client wants to request the chat history for a given session (for exa
 
 The websocket platform will start by sending the previous messages to the client with a flag "history" set to True, so the client can differentiate between historical messages and new incoming messages.
 
+
+.. _communication-between-agents:
+
 Communication between agents: Multi-agent systems
 -------------------------------------------------
 
@@ -256,9 +284,16 @@ API References
 - Session.send_message_to_websocket(): :meth:`baf.core.session.Session.send_message_to_websocket`
 - WebSocketPlatform: :class:`baf.platforms.websocket.websocket_platform.WebSocketPlatform`
 - WebSocketPlatform.reply(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply`
+- WebSocketPlatform.reply_markdown(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_markdown`
+- WebSocketPlatform.reply_html(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_html`
 - WebSocketPlatform.reply_dataframe(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_dataframe`
 - WebSocketPlatform.reply_file(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_file`
+- WebSocketPlatform.reply_image(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_image`
 - WebSocketPlatform.reply_location(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_location`
 - WebSocketPlatform.reply_options(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_options`
 - WebSocketPlatform.reply_plotly(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_plotly`
 - WebSocketPlatform.reply_rag(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_rag`
+- WebSocketPlatform.reply_reasoning_step(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_reasoning_step`
+- WebSocketPlatform.reply_speech(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_speech`
+- WebSocketPlatform.reply_task_list_update(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_task_list_update`
+- WebSocketPlatform.reply_ui(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_ui`

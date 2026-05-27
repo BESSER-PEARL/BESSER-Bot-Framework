@@ -2,18 +2,24 @@
 import json
 from types import SimpleNamespace
 
-from besser.BUML.metamodel.gui.graphical_ui import (
-    GUIModel, Module, Screen,
-    ViewElement, ViewContainer, ViewComponent,
-    Button, Text, Image, InputField, Form, Menu, MenuItem,
-    DataList, EmbeddedContent, Link,
-)
-from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
-from besser.BUML.metamodel.gui.dashboard import (
-    LineChart, BarChart, PieChart, RadarChart, RadialBarChart,
-    Table, MetricCard, AgentComponent, Series,
-    Column, FieldColumn, LookupColumn, ExpressionColumn,
-)
+from baf.exceptions.logger import logger
+
+try:
+    from besser.BUML.metamodel.gui.graphical_ui import (
+        GUIModel, Module, Screen,
+        ViewElement, ViewContainer, ViewComponent,
+        Button, Text, Image, InputField, Form, Menu, MenuItem,
+        DataList, EmbeddedContent, Link,
+    )
+    from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
+    from besser.BUML.metamodel.gui.dashboard import (
+        LineChart, BarChart, PieChart, RadarChart, RadialBarChart,
+        Table, MetricCard, AgentComponent, Series,
+        Column, FieldColumn, LookupColumn, ExpressionColumn,
+    )
+except ImportError:
+    logger.warning("besser dependencies in gui_deserializer.py could not be imported. You can install them with "
+                   "'pip install --no-deps besser'")
 
 # ─── Known parameter names for each style class ─────────────────────────────
 

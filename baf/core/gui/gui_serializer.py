@@ -2,20 +2,25 @@
 import json
 from enum import Enum
 
-from besser.BUML.metamodel.gui.graphical_ui import (
-    GUIModel, Screen, ViewElement, ViewContainer, ViewComponent,
-    Button, Text, Image, InputField, Form, Menu,
-    DataList, DataSource, DataSourceElement, File, Collection,
-    EmbeddedContent, Link,
-)
-from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
-from besser.BUML.metamodel.gui.binding import DataBinding
-from besser.BUML.metamodel.gui.dashboard import (
-    LineChart, BarChart, PieChart, RadarChart, RadialBarChart,
-    Table, MetricCard, AgentComponent, Series,
-    Column, FieldColumn, LookupColumn, ExpressionColumn,
-)
+from baf.exceptions.logger import logger
 
+try:
+    from besser.BUML.metamodel.gui.graphical_ui import (
+        GUIModel, Screen, ViewElement, ViewContainer, ViewComponent,
+        Button, Text, Image, InputField, Form, Menu,
+        DataList, DataSource, DataSourceElement, File, Collection,
+        EmbeddedContent, Link,
+    )
+    from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
+    from besser.BUML.metamodel.gui.binding import DataBinding
+    from besser.BUML.metamodel.gui.dashboard import (
+        LineChart, BarChart, PieChart, RadarChart, RadialBarChart,
+        Table, MetricCard, AgentComponent, Series,
+        Column, FieldColumn, LookupColumn, ExpressionColumn,
+    )
+except ImportError:
+    logger.warning("besser dependencies in gui_serializer.py could not be imported. You can install them with "
+                   "'pip install --no-deps besser'")
 
 def _enum_val(v):
     return v.value if isinstance(v, Enum) else v
