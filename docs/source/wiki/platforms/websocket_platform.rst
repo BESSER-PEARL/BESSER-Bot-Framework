@@ -10,7 +10,7 @@ bidirectional communication between server and client (i.e. sending and receivin
 The next figure shows how this connection works:
 
 .. figure:: ../../img/websocket_diagram.png
-   :alt: Intent diagram
+   :alt: WebSocket protocol diagram
 
    Figure illustrating the WebSocket protocol.
 
