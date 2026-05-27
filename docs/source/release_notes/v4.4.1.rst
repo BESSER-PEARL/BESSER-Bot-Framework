@@ -1,0 +1,6 @@
+Version 4.4.1
+=============
+
+Released: May 27th, 2026
+
+This is a hotfix release addressing dependency issues.

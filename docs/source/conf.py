@@ -87,7 +87,6 @@ paramlinks_hyperlink_param = "name"
 def generate_api_rst_files(preffix, dir, output_dir):
     api_excluded_files_toctree = [
         # Files that for which we won't automatically generate .rst files and WILL NOT appear in the toctree
-        'core/example_gui.py',  # auto-generated GUI example, uses constructor kwargs that no longer exist
         'db/db_connection.py',
         'db/flow_graph.py',
         'db/home.py',
