@@ -134,7 +134,7 @@ def write_message(message: Message, key_count: int, stream: bool = False):
                     for i, doc in enumerate(message.content['docs']):
                         st.write(f'**Document {i + 1}/{len(message.content["docs"])}**')
                         st.write(f'- **Source:** {doc["metadata"]["source"]}')
-                        st.write(f'- **Page:** {doc["metadata"]["page"]}')
+                        st.write(f'- **Page:** {doc["metadata"].get("page", "N/A")}')
                         st.write(f'- **Content:** {doc["content"]}')
 
         elif message.type == MessageType.REASONING_TRACE:
