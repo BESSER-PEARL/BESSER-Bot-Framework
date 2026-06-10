@@ -79,6 +79,7 @@ class RAG:
         k (int): number of chunks to retrieve from the vector store
         num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt context.
             Necessary a connection to :class:`~baf.db.monitoring_db.MonitoringDB`.
+        session_scoped (bool): True if each session should have its own RAG engine and vector store.
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the agent the RAG engine belongs to
@@ -103,7 +104,8 @@ class RAG:
             llm_name: str,
             llm_prompt: str = None,
             k: int = 4,
-            num_previous_messages: int = 0
+            num_previous_messages: int = 0,
+            session_scoped: bool = False
     ):
         self._nlp_engine: 'NLPEngine' = agent.nlp_engine
         self.vector_store: VectorStore = vector_store
@@ -114,7 +116,8 @@ class RAG:
         self.llm_prompt = llm_prompt
         self.k: int = k
         self.num_previous_messages: int = num_previous_messages
-        self._nlp_engine._rag = self
+        if not session_scoped:
+            self._nlp_engine._rag = self
 
     def load_pdfs(self, path: str) -> int:
         """Load PDF files from a given location into the RAG's vector store.
