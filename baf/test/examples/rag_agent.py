@@ -3,7 +3,9 @@
 # sys.path.append("/Path/to/directory/agentic-framework") # Replace with your directory path
 
 import logging
+import uuid
 
+from chromadb import EphemeralClient
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -17,6 +19,7 @@ from baf.nlp.llm.llm_huggingface_api import LLMHuggingFaceAPI
 from baf.nlp.llm.llm_openai_api import LLMOpenAI
 from baf.nlp.llm.llm_replicate_api import LLMReplicate
 from baf.nlp.rag.rag import RAGMessage, RAG
+from baf.library.transition.events.base_events import ReceiveTextEvent, ReceiveMessageEvent, ReceiveFileEvent
 
 # Configure the logging module (optional)
 logger.setLevel(logging.INFO)
@@ -28,11 +31,10 @@ agent.load_properties('config.yaml')
 # Define the platform your agent will use
 websocket_platform = agent.use_websocket_platform(use_ui=True)
 
-# Create Vector Store (RAG's DB)
-vector_store: Chroma = Chroma(
-    embedding_function=OpenAIEmbeddings(openai_api_key=agent.get_property(nlp.OPENAI_API_KEY)),
-    persist_directory='vector_store'
-)
+#To keep RAG as session scoped or not
+SESSION_SCOPED=True
+
+
 # Create text splitter (RAG creates a vector for each chunk)
 splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 # Create the LLM (for the answer generation)

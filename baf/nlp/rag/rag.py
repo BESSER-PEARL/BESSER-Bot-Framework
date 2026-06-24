@@ -83,7 +83,8 @@ class RAG:
             is provided, the :any:`default prompt <RAG.DEFAULT_LLM_PROMPT>` will be used
         k (int): number of chunks to retrieve from the vector store
         num_previous_messages (int): number of previous messages of the conversation to add to the LLM prompt context.
-            Necessary a connection to :class:`~baf.db.monitoring_db.MonitoringDB`
+            Necessary a connection to :class:`~baf.db.monitoring_db.MonitoringDB`.
+        session_scoped (bool): True if each session should have its own RAG engine and vector store.
 
     Attributes:
         _nlp_engine (NLPEngine): the NLPEngine that handles the NLP processes of the agent the RAG engine belongs to
@@ -109,7 +110,8 @@ class RAG:
             llm_name: str,
             llm_prompt: str = None,
             k: int = 4,
-            num_previous_messages: int = 0
+            num_previous_messages: int = 0,
+            session_scoped: bool = False
     ):
         self._nlp_engine: 'NLPEngine' = agent.nlp_engine
         if callable(vector_store) and not hasattr(vector_store, 'add_documents'):
@@ -122,7 +124,8 @@ class RAG:
         self.llm_prompt = llm_prompt
         self.k: int = k
         self.num_previous_messages: int = num_previous_messages
-        self._nlp_engine._rag = self
+        if not session_scoped:
+            self._nlp_engine._rag = self
     
     def load_documents_from_path(path: str, fmt: str) -> list['Document']:
         """Load raw (un-chunked) LangChain Documents from a file path.
