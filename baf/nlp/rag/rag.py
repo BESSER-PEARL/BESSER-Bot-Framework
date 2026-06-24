@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from baf.exceptions.logger import logger
+import base64
 import os
-from typing import TYPE_CHECKING
+import tempfile
+from typing import TYPE_CHECKING, Callable
 
 from baf.core.message import Message, MessageType
 from baf.nlp.llm.llm import LLM
 
 if TYPE_CHECKING:
     from baf.core.agent import Agent
+    from baf.core.file import File
     from baf.core.session import Session
     from baf.nlp.nlp_engine import NLPEngine
 
@@ -70,7 +73,9 @@ class RAG:
 
     Args:
         agent (Agent): the agent the RAG engine belongs to
-        vector_store (langchain_core.vectorstores.base.VectorStore): the vector store of the RAG engine
+        vector_store (langchain_core.vectorstores.base.VectorStore | Callable[[], VectorStore]): the vector store of the RAG engine, , or
+            a zero-arg factory that produces one. A factory is recommended when ``session_scoped=True`` so that each
+            session's RAG receives its own isolated store
         splitter (langchain_text_splitters.base.TextSplitter): the text splitter of the RAG engine
         llm_name (str): the name of the LLM of the RAG engine. It must have been previously created and assigned to the
             agent
@@ -95,11 +100,12 @@ class RAG:
     """
 
     DEFAULT_LLM_PROMPT = "You are an assistant for question-answering tasks. Based on the previous messages in the conversation (if provided), and additional context retrieved from a database (if provided), answer the user question. If you don't know the answer, just say that you don't know. Note that if the question refers to a previous message, you may have to ignore the context since it is retrieved from the database based only on the question (the retrieval does not take into account the previous messages). Use three sentences maximum and keep the answer concise"
+    SUPPORTED_FORMATS = ('pdf', 'docx', 'txt', 'md')
 
     def __init__(
             self,
             agent: 'Agent',
-            vector_store: VectorStore,
+            vector_store: VectorStore | Callable[[], VectorStore],
             splitter: TextSplitter,
             llm_name: str,
             llm_prompt: str = None,
@@ -108,6 +114,8 @@ class RAG:
             session_scoped: bool = False
     ):
         self._nlp_engine: 'NLPEngine' = agent.nlp_engine
+        if callable(vector_store) and not hasattr(vector_store, 'add_documents'):
+            vector_store = vector_store()
         self.vector_store: VectorStore = vector_store
         self.splitter: TextSplitter = splitter
         self.llm_name: str = llm_name
@@ -118,6 +126,41 @@ class RAG:
         self.num_previous_messages: int = num_previous_messages
         if not session_scoped:
             self._nlp_engine._rag = self
+    
+    def load_documents_from_path(path: str, fmt: str) -> list['Document']:
+        """Load raw (un-chunked) LangChain Documents from a file path.
+
+        Dispatches to the appropriate loader based on ``fmt``. Used internally by
+        :meth:`RAG.load_documents` and :meth:`RAG.add_file`.
+
+        Args:
+            path (str): path to the file on disk
+            fmt (str): lowercase file format
+
+        Returns:
+            list[Document]: raw LangChain Documents (not yet chunked)
+
+        Raises:
+            ValueError: if ``fmt`` is not in `RAG.SUPPORTED_FORMATS`
+            ImportError: if ``fmt`` is ``'docx'`` and python-docx is not installed
+        """
+        
+        if fmt not in RAG.SUPPORTED_FORMATS:
+            raise ValueError(f"Unsupported format '{fmt}'. Supported formats: {RAG.SUPPORTED_FORMATS}")
+        if fmt == 'pdf':
+            return PyPDFLoader(path).load()
+        elif fmt == 'docx':
+            try:
+                from docx import Document as DocxDocument
+            except ImportError:
+                raise ImportError('python-docx is required for DOCX support. Install with: pip install python-docx')
+            docx_doc = DocxDocument(path)
+            text = '\n'.join(p.text for p in docx_doc.paragraphs if p.text.strip())
+            return [Document(page_content=text, metadata={'source': os.path.basename(path)})]
+        elif fmt in ('txt', 'md'):
+            with open(path, 'r', encoding='utf-8') as f:
+                text = f.read()
+            return [Document(page_content=text, metadata={'source': os.path.basename(path)})]
 
     def load_pdfs(self, path: str) -> int:
         """Load PDF files from a given location into the RAG's vector store.
@@ -138,6 +181,92 @@ class RAG:
         n_chunks = len(chunked_documents)
         self.vector_store.add_documents(chunked_documents)
         logger.info(f'[RAG] Added {n_chunks} chunks to RAG\'s vector store. Total: {len(self.vector_store.get()["documents"])}')
+        return n_chunks
+    
+    def is_empty(self) -> bool:
+        """Return ``True`` if the vector store contains no documents.
+
+        Returns:
+            bool: ``True`` if the corpus is empty
+        """
+        return len(self.vector_store.get()['ids']) == 0
+
+    def clear(self) -> None:
+        """Remove all documents from the vector store."""
+        ids = self.vector_store.get()['ids']
+        if ids:
+            self.vector_store.delete(ids)
+        logger.info('[RAG] Vector store cleared')
+
+    def load_documents(self, path: str, formats: list[str] = None) -> int:
+        """Load documents from a directory into the RAG's vector store.
+
+        Supports multiple file formats. Use :meth:`load_pdfs` if only PDF loading is needed.
+
+        Args:
+            path (str): path to the directory containing the files
+            formats (list[str]): restrict loading to a subset of formats, e.g. ``['pdf', 'docx']``.
+                If ``None``, all `RAG.SUPPORTED_FORMATS` are loaded.
+
+        Returns:
+            int: the number of chunks added to the vector store
+        """
+        allowed = set(formats) if formats else set(RAG.SUPPORTED_FORMATS)
+        documents = []
+        for fname in os.listdir(path):
+            fmt = os.path.splitext(fname)[1].lower().lstrip('.')
+            if fmt in allowed:
+                documents.extend(RAG.load_documents_from_path(os.path.join(path, fname), fmt))
+        chunked_documents = self.splitter.split_documents(documents)
+        n_chunks = len(chunked_documents)
+        self.vector_store.add_documents(chunked_documents)
+        logger.info(f'[RAG] Added {n_chunks} chunks to RAG\'s vector store. Total: {len(self.vector_store.get()["documents"])}')
+        return n_chunks
+
+    def add_file(self, file: 'File') -> int:
+        """Extract text from a BAF :class:`~baf.core.file.File` object and add it to the RAG's vector store at runtime.
+
+        Args:
+            file (File): the BAF File object to load
+
+        Returns:
+            int: the number of chunks added to the vector store
+
+        Raises:
+            ValueError: if the file type is not in RAG.SUPPORTED_FORMATS`
+        """
+        fmt = (file.type or '').lower().lstrip('.')
+        if not fmt or '/' in fmt:  # MIME type (e.g. "application/pdf") — derive from filename
+            fmt = os.path.splitext(file.name or '')[1].lower().lstrip('.')
+        file_bytes = base64.b64decode(file.base64)
+        with tempfile.NamedTemporaryFile(suffix=f'.{fmt}', delete=False) as tmp:
+            tmp.write(file_bytes)
+            tmp_path = tmp.name
+        try:
+            documents = RAG.load_documents_from_path(tmp_path, fmt)
+        finally:
+            os.unlink(tmp_path)
+        chunked_documents = self.splitter.split_documents(documents)
+        n_chunks = len(chunked_documents)
+        self.vector_store.add_documents(chunked_documents)
+        logger.info(f'[RAG] Added {n_chunks} chunks from \'{file.name}\' to RAG\'s vector store.')
+        return n_chunks
+
+    def add_text(self, text: str, metadata: dict = None) -> int:
+        """Chunk a raw text string and add it to the RAG's vector store at runtime.
+
+        Args:
+            text (str): the raw text to add
+            metadata (dict): optional metadata to attach to each chunk
+
+        Returns:
+            int: the number of chunks added to the vector store
+        """
+        doc = Document(page_content=text, metadata=metadata or {})
+        chunked_documents = self.splitter.split_documents([doc])
+        n_chunks = len(chunked_documents)
+        self.vector_store.add_documents(chunked_documents)
+        logger.info(f'[RAG] Added {n_chunks} text chunks to RAG\'s vector store.')
         return n_chunks
 
     def run_retrieval(self, question: str, k: int = None) -> list[Document]:
