@@ -9,7 +9,7 @@ try:
         GUIModel, Screen, ViewElement, ViewContainer, ViewComponent,
         Button, Text, Image, InputField, Form, Menu,
         DataList, DataSource, DataSourceElement, File, Collection,
-        EmbeddedContent, Link,
+        EmbeddedContent, Link, Alert, AlertSeverity, SelectOption,
     )
     from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
     from besser.BUML.metamodel.gui.binding import DataBinding
@@ -346,12 +346,37 @@ def _serialize_view_element(el: ViewElement) -> dict:
     # Standard: InputField
     if isinstance(el, InputField):
         d = _base_fields(el)
-        d.update({k: v for k, v in {
-            "type": "InputField",
-            "field_type": _enum_val(el.field_type),
-            "validationRules": el.validationRules,
-            "data_binding": _serialize_data_binding(el.data_binding),
-        }.items() if v is not None})
+        d["type"] = "InputField"
+        d["field_type"] = _enum_val(el.field_type)
+        if el.label:
+            d["label"] = el.label
+        if el.placeholder:
+            d["placeholder"] = el.placeholder
+        if el.required:
+            d["required"] = el.required
+        if el.default_value is not None:
+            d["default_value"] = el.default_value
+        if el.options:
+            d["options"] = [{"label": o.label, "value": o.value} for o in el.options]
+        if el.min_value is not None:
+            d["min_value"] = el.min_value
+        if el.max_value is not None:
+            d["max_value"] = el.max_value
+        if el.step is not None:
+            d["step"] = el.step
+        if el.help_text:
+            d["help_text"] = el.help_text
+        if el.disabled:
+            d["disabled"] = el.disabled
+        if el.readonly:
+            d["readonly"] = el.readonly
+        if el.multiple:
+            d["multiple"] = el.multiple
+        if el.validationRules:
+            d["validationRules"] = el.validationRules
+        db = _serialize_data_binding(el.data_binding)
+        if db:
+            d["data_binding"] = db
         return d
 
     # Standard: Form
@@ -359,6 +384,13 @@ def _serialize_view_element(el: ViewElement) -> dict:
         d = _base_fields(el)
         d["type"] = "Form"
         d["inputFields"] = [_serialize_view_element(f) for f in _sorted_elements(el.inputFields)]
+        if el.title is not None:
+            d["title"] = el.title
+        d["submit_label"] = el.submit_label
+        if el.show_cancel:
+            d["show_cancel"] = el.show_cancel
+        d["cancel_label"] = el.cancel_label
+        d["columns"] = el.columns
         db = _serialize_data_binding(el.data_binding)
         if db:
             d["data_binding"] = db
@@ -383,6 +415,18 @@ def _serialize_view_element(el: ViewElement) -> dict:
         db = _serialize_data_binding(el.data_binding)
         if db:
             d["data_binding"] = db
+        return d
+
+    # Standard: Alert
+    if isinstance(el, Alert):
+        d = _base_fields(el)
+        d["type"] = "Alert"
+        d["content"] = el.content
+        d["severity"] = _enum_val(el.severity)
+        if el.title is not None:
+            d["title"] = el.title
+        if el.dismissible:
+            d["dismissible"] = el.dismissible
         return d
 
     # Standard: EmbeddedContent

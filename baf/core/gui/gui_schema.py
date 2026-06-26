@@ -220,8 +220,8 @@ def get_json_schema() -> dict:
                 **base_props,
                 "type": {"type": "string", "const": "Button"},
                 "label": {"type": "string"},
-                "buttonType": {"type": "string", "enum": ["Raised Button", "Flat Button", "Icon Button", "FAB", "Stroked Button", "Toggle Button"], "default": "Raised Button"},
-                "actionType": {"type": "string", "enum": ["navigate", "submit", "create", "update", "delete", "custom"], "default": "navigate"},
+                "buttonType": {"type": "string", "enum": ["Raised Button", "Text Button", "Outlined Button", "Icon Button", "FloatingActionButton", "Dropdown Button", "Toggle Buttons", "iOS-style Button", "Customizable Button"], "default": "Raised Button"},
+                "actionType": {"type": "string", "enum": ["navigate", "run-method", "create", "update", "delete", "Add", "Show List", "Open Form", "Submit Form", "Cancel", "Save", "Confirm", "Search", "Filter", "Sort", "Send", "Share", "Settings", "Back", "Next", "View", "Select", "Login", "Sign Out", "Help", "About", "Exit", "Edit"], "default": "navigate"},
                 "targetScreen": {"type": "string", "description": "Screen name to navigate to."},
                 "confirmation_required": {"type": "boolean", "default": False},
                 "confirmation_message": {"type": "string"},
@@ -257,8 +257,45 @@ def get_json_schema() -> dict:
             "properties": {
                 **base_props,
                 "type": {"type": "string", "const": "InputField"},
-                "field_type": {"type": "string", "enum": ["text", "number", "email", "password", "date", "datetime", "time", "tel", "url", "checkbox", "radio", "select", "textarea", "file", "color"], "default": "text"},
-                "validationRules": {"type": "object"},
+                "field_type": {
+                    "type": "string",
+                    "enum": [
+                        "Text", "TextArea", "RichText", "Password", "Search", "Tags", "OTP", "Hidden",
+                        "Email", "URL", "Tel",
+                        "Number", "Slider", "Spinner", "Rating", "Range",
+                        "Checkbox", "Toggle",
+                        "Dropdown", "RadioGroup", "CheckboxGroup", "MultiSelect",
+                        "Date", "Time", "DateTime", "DateRange",
+                        "File", "ImageUpload",
+                        "Color",
+                    ],
+                    "default": "Text",
+                },
+                "label": {"type": "string", "description": "Human-readable label shown above or beside the field."},
+                "placeholder": {"type": "string", "description": "Hint text shown inside the widget when empty."},
+                "required": {"type": "boolean", "default": False, "description": "Whether the field must be filled before form submission."},
+                "default_value": {"type": "string", "description": "Pre-filled value when the form loads."},
+                "options": {
+                    "type": "array",
+                    "description": "Selectable choices for Dropdown, RadioGroup, CheckboxGroup, or MultiSelect.",
+                    "items": {
+                        "type": "object",
+                        "required": ["label", "value"],
+                        "properties": {
+                            "label": {"type": "string", "description": "Display text shown to the user."},
+                            "value": {"type": "string", "description": "Submitted value for this option."},
+                        },
+                    },
+                },
+                "min_value": {"type": "number", "description": "Minimum value for numeric, Slider, or date fields."},
+                "max_value": {"type": "number", "description": "Maximum value for numeric, Slider, or date fields."},
+                "step": {"type": "number", "description": "Increment size for Slider and Spinner fields."},
+                "help_text": {"type": "string", "description": "Explanatory text rendered below the field."},
+                "disabled": {"type": "boolean", "default": False, "description": "Field is visible but non-interactive."},
+                "readonly": {"type": "boolean", "default": False, "description": "Field value is shown but cannot be edited."},
+                "multiple": {"type": "boolean", "default": False, "description": "Multiple values allowed (File / MultiSelect)."},
+                "validationRules": {"type": "string", "description": "Free-text validation rules (legacy)."},
+                "data_binding": {"type": "object", "description": "Data binding configuration."},
             },
         },
         "Form": {
@@ -269,6 +306,12 @@ def get_json_schema() -> dict:
                 **base_props,
                 "type": {"type": "string", "const": "Form"},
                 "inputFields": {"type": "array", "items": {"$ref": "#/$defs/ViewElement"}, "default": []},
+                "title": {"type": "string", "description": "Optional heading displayed above the form fields."},
+                "submit_label": {"type": "string", "default": "Submit", "description": "Text shown on the primary submit button."},
+                "show_cancel": {"type": "boolean", "default": False, "description": "Whether to render a secondary cancel button."},
+                "cancel_label": {"type": "string", "default": "Cancel", "description": "Text shown on the cancel button."},
+                "columns": {"type": "integer", "minimum": 1, "maximum": 4, "default": 1, "description": "Number of equal-width columns for the field grid layout."},
+                "data_binding": {"type": "object", "description": "Data binding configuration."},
             },
         },
         "Menu": {
@@ -435,6 +478,24 @@ def get_json_schema() -> dict:
                 "agent_title": {"type": "string", "description": "Display title shown in the UI."},
             },
         },
+        "Alert": {
+            "type": "object",
+            "description": "An inline message banner for status, feedback, or informational content.",
+            "required": ["type", "name", "content"],
+            "properties": {
+                **base_props,
+                "type": {"type": "string", "const": "Alert"},
+                "content": {"type": "string", "description": "Main message text displayed in the alert."},
+                "severity": {
+                    "type": "string",
+                    "enum": ["info", "success", "warning", "error"],
+                    "default": "info",
+                    "description": "Visual severity level of the alert.",
+                },
+                "title": {"type": "string", "description": "Optional bold heading shown above the content."},
+                "dismissible": {"type": "boolean", "default": False, "description": "Whether the user can close the alert."},
+            },
+        },
     }
 
     return {
@@ -504,7 +565,7 @@ def get_json_schema() -> dict:
                     "Any view element — discriminated by the required 'type' field. "
                     "Valid types: ViewContainer, Text, Button, Link, Image, InputField, "
                     "Form, Menu, DataList, EmbeddedContent, LineChart, BarChart, PieChart, "
-                    "RadarChart, RadialBarChart, Table, MetricCard, AgentComponent."
+                    "RadarChart, RadialBarChart, Table, MetricCard, AgentComponent, Alert."
                 ),
                 "oneOf": [{"$ref": f"#/$defs/{k}"} for k in element_defs],
             },

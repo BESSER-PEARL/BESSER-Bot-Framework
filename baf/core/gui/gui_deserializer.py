@@ -10,6 +10,7 @@ try:
         ViewElement, ViewContainer, ViewComponent,
         Button, Text, Image, InputField, Form, Menu, MenuItem,
         DataList, EmbeddedContent, Link,
+        Alert, AlertSeverity, SelectOption,
     )
     from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
     from besser.BUML.metamodel.gui.dashboard import (
@@ -302,8 +303,22 @@ def _deserialize_view_element(d: dict) -> ViewElement:
         )
 
     if t == "InputField":
+        options_data = d.get("options") or []
+        options = [SelectOption(label=o.get("label", ""), value=o.get("value", "")) for o in options_data]
         return InputField(
-            field_type=d.get("field_type", "text"),
+            field_type=d.get("field_type", "Text"),
+            label=d.get("label", ""),
+            placeholder=d.get("placeholder", ""),
+            required=d.get("required", False),
+            default_value=d.get("default_value"),
+            options=options if options else None,
+            min_value=d.get("min_value"),
+            max_value=d.get("max_value"),
+            step=d.get("step"),
+            help_text=d.get("help_text"),
+            disabled=d.get("disabled", False),
+            readonly=d.get("readonly", False),
+            multiple=d.get("multiple", False),
             validationRules=d.get("validationRules"),
             **base,
         )
@@ -311,6 +326,11 @@ def _deserialize_view_element(d: dict) -> ViewElement:
     if t == "Form":
         return Form(
             inputFields=set(_deserialize_view_element(f) for f in d.get("inputFields", [])),
+            title=d.get("title"),
+            submit_label=d.get("submit_label", "Submit"),
+            show_cancel=d.get("show_cancel", False),
+            cancel_label=d.get("cancel_label", "Cancel"),
+            columns=d.get("columns", 1),
             **base,
         )
 
@@ -328,6 +348,18 @@ def _deserialize_view_element(d: dict) -> ViewElement:
 
     if t == "DataList":
         return DataList(list_sources=set(), **base)
+
+    if t == "Alert":
+        severity_str = d.get("severity", "info")
+        _severity_map = {s.value: s for s in AlertSeverity}
+        severity = _severity_map.get(severity_str, AlertSeverity.Info)
+        return Alert(
+            content=d.get("content", ""),
+            severity=severity,
+            title=d.get("title"),
+            dismissible=d.get("dismissible", False),
+            **base,
+        )
 
     if t == "EmbeddedContent":
         return EmbeddedContent(
