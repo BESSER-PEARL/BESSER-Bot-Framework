@@ -1,0 +1,15 @@
+Version 4.4.2
+=============
+
+Released: June 30th, 2026
+
+
+Extending RAG to support reading .docx, .md and .txt
+
+- With this extension, the RAG agent can now accept .docx, .pdf, .md, and .txt files. This also includes support for
+reading all the files with a specific set of extensions present in a directory.
+
+Feature added to RAG - support for limiting RAG per session
+
+- With this feature, the RAG agent has session isolation. In other words, two RAG agents on the same host but in
+different sessions can read and answer questions from two different documents without their contents leaking to other sessions.
