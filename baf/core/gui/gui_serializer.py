@@ -29,25 +29,25 @@ def _enum_val(v):
 def _serialize_size(size: Size) -> dict:
     if size is None:
         return None
-    return {k: _enum_val(v) for k, v in vars(size).items()
-            if not k.startswith('_') and v is not None} or {
-        k: _enum_val(v) for k, v in {
-            "width": size.width, "height": size.height, "padding": size.padding,
-            "margin": size.margin, "font_size": size.font_size, "line_height": size.line_height,
-            "icon_size": size.icon_size, "unit_size": _enum_val(size.unit_size),
-            "font_weight": size.font_weight, "font_family": size.font_family,
-            "font_style": size.font_style, "text_decoration": size.text_decoration,
-            "text_transform": size.text_transform, "letter_spacing": size.letter_spacing,
-            "word_spacing": size.word_spacing, "white_space": size.white_space,
-            "word_break": size.word_break, "min_width": size.min_width,
-            "max_width": size.max_width, "min_height": size.min_height,
-            "max_height": size.max_height, "padding_top": size.padding_top,
-            "padding_right": size.padding_right, "padding_bottom": size.padding_bottom,
-            "padding_left": size.padding_left, "margin_top": size.margin_top,
-            "margin_right": size.margin_right, "margin_bottom": size.margin_bottom,
-            "margin_left": size.margin_left,
-        }.items() if v is not None
-    }
+    # Size stores width/height/padding/margin/line_height as @property with double-underscore
+    # (self.__width → _Size__width in vars()), which would be excluded by a startswith('_') filter.
+    # Always use the explicit property access to guarantee all fields are captured.
+    return {k: _enum_val(v) for k, v in {
+        "width": size.width, "height": size.height, "padding": size.padding,
+        "margin": size.margin, "font_size": size.font_size, "line_height": size.line_height,
+        "icon_size": size.icon_size, "unit_size": _enum_val(size.unit_size),
+        "font_weight": size.font_weight, "font_family": size.font_family,
+        "font_style": size.font_style, "text_decoration": size.text_decoration,
+        "text_transform": size.text_transform, "letter_spacing": size.letter_spacing,
+        "word_spacing": size.word_spacing, "white_space": size.white_space,
+        "word_break": size.word_break, "min_width": size.min_width,
+        "max_width": size.max_width, "min_height": size.min_height,
+        "max_height": size.max_height, "padding_top": size.padding_top,
+        "padding_right": size.padding_right, "padding_bottom": size.padding_bottom,
+        "padding_left": size.padding_left, "margin_top": size.margin_top,
+        "margin_right": size.margin_right, "margin_bottom": size.margin_bottom,
+        "margin_left": size.margin_left,
+    }.items() if v is not None}
 
 
 def _serialize_position(pos: Position) -> dict:
