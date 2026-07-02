@@ -253,7 +253,6 @@ class WebSocketPlatform(Platform):
                                 event_data = {'raw': event_data}
                         if not isinstance(event_data, dict):
                             event_data = {}
-                        logger.info(f'Received GUI event: {event_data}')
                         event: GUIEvent = GUIEvent(
                             event_data=event_data,
                             session_id=session.id)

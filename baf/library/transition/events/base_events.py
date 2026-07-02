@@ -210,3 +210,6 @@ class GUIEvent(Event):
     def __init__(self, event_data: dict = None, session_id: str = None):
         super().__init__(name='gui_event', session_id=session_id, timestamp=datetime.now())
         self.event_data: dict = event_data or {}
+
+    def log(self):
+        return f'{self._name} ({self.event_data})'

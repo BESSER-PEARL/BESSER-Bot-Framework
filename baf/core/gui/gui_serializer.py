@@ -488,17 +488,18 @@ def _serialize_screen(screen: Screen) -> dict:
     return d
 
 
-def gui_to_json(gui_model: 'AgentGUI') -> str:
+def gui_to_json(gui: 'AgentGUI') -> str:
     """Serialize an :class:`~baf.core.gui.agent_gui.AgentGUI` instance to a JSON string.
 
     Also accepts a raw :class:`~besser.BUML.metamodel.gui.GUIModel` directly.
 
     Args:
-        gui_model: The GUI model (or AgentGUI wrapper) to serialize.
+        gui (AgentGUI): The GUI to serialize.
 
     Returns:
         A JSON string representation of the model.
     """
+    gui_model = gui.model
     result = {
         "name": gui_model.name,
         "package": gui_model.package,

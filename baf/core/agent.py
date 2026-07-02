@@ -141,8 +141,8 @@ class Agent:
         return self._config
 
     @property
-    def gui(self) -> 'AgentGUI | None':
-        """AgentGUI or None: The GUI model template for this agent. Each new session receives a deep copy of it."""
+    def gui(self) -> 'AgentGUI':
+        """AgentGUI: The GUI model template for this agent. Each new session receives a deep copy of it."""
         return self._gui
 
     def set_gui(self, gui: AgentGUI) -> None:
