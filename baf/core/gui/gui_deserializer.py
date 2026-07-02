@@ -1,7 +1,8 @@
-"""Deserialization helpers: JSON string → GUIModel."""
+"""Deserialization helpers: JSON string → AgentGUI."""
 import json
 from types import SimpleNamespace
 
+from baf.core.gui.agent_gui import AgentGUI
 from baf.exceptions.logger import logger
 
 try:
@@ -399,14 +400,14 @@ def _deserialize_screen(d: dict) -> Screen:
     return Screen(**base)
 
 
-def json_to_gui(json_str: str) -> GUIModel:
-    """Deserialize a JSON string produced by :func:`gui_to_json` back into a :class:`GUIModel`.
+def json_to_gui(json_str: str) -> AgentGUI:
+    """Deserialize a JSON string produced by :func:`gui_to_json` back into an :class:`~baf.core.gui.agent_gui.AgentGUI`.
 
     Args:
         json_str: JSON string representing the GUI model.
 
     Returns:
-        A reconstructed :class:`GUIModel` instance.
+        A reconstructed :class:`~baf.core.gui.agent_gui.AgentGUI` instance wrapping the rebuilt model.
     """
     data = json.loads(json_str)
     modules = set()
@@ -424,7 +425,7 @@ def json_to_gui(json_str: str) -> GUIModel:
     style_entries = data.get("style_entries")
     if style_entries is not None:
         try:
-            return GUIModel(**gui_kwargs, style_entries=style_entries)
+            return AgentGUI(GUIModel(**gui_kwargs, style_entries=style_entries))
         except TypeError:
             pass
-    return GUIModel(**gui_kwargs)
+    return AgentGUI(GUIModel(**gui_kwargs))

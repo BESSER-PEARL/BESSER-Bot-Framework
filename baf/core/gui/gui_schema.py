@@ -1,9 +1,9 @@
-"""JSON Schema and validation utilities for the GUIModel format."""
+"""JSON Schema and validation utilities for the AgentGUI / GUIModel serialization format."""
 import json
 
 
 def validate_json(json_str: str) -> bool:
-    """Validate a JSON string against the GUIModel JSON Schema.
+    """Validate a JSON string against the AgentGUI JSON Schema.
 
     Requires the ``jsonschema`` package (``pip install jsonschema``).
 
@@ -23,7 +23,7 @@ def validate_json(json_str: str) -> bool:
 
 
 def get_json_schema() -> dict:
-    """Return the JSON Schema for a serialized :class:`~besser.BUML.metamodel.gui.graphical_ui.GUIModel`.
+    """Return the JSON Schema for a serialized :class:`~baf.core.gui.agent_gui.AgentGUI`.
 
     The schema is designed to be passed to an LLM as a generation constraint.
     All element types are discriminated by the ``"type"`` field.

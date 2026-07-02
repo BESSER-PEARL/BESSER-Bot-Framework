@@ -7,6 +7,7 @@ from collections import deque
 from typing import Any, TYPE_CHECKING
 from datetime import datetime
 
+from baf.core.gui.agent_gui import AgentGUI
 from pandas import DataFrame
 from websocket import WebSocketApp
 
@@ -59,6 +60,7 @@ class Session:
         _timer_handle (TimerHandle): Handler of scheduled calls on the event loop
         _agent_connections (dict[str, WebSocketApp]): WebSocket client connections to other agent's WebSocket platforms.
             These connections enable an agent to send messages to other agents.
+        _gui (AgentGUI): The GUI model for this session.
     """
 
     def __init__(
@@ -82,6 +84,7 @@ class Session:
         self._event_thread: threading.Thread or None = None
         self._timer_handle: TimerHandle = None
         self._agent_connections: dict[str, WebSocketApp] = {}
+        self._gui: AgentGUI = self._copy_agent_gui()
 
     @property
     def id(self):
@@ -121,6 +124,36 @@ class Session:
     def events(self):
         """dequeue[Event]: The queue of pending events for this session"""
         return self._events
+
+    @property
+    def gui(self) -> 'AgentGUI':
+        """AgentGUI or None: The current GUI model for this session."""
+        return self._gui
+
+    def _copy_agent_gui(self) -> 'AgentGUI':
+        """Return a deep copy of the agent's GUI model wrapper for this session, or None."""
+        agent_gui: AgentGUI = self._agent.gui
+        if agent_gui is None:
+            return None
+        return agent_gui.deep_copy()
+
+    def set_gui(self, gui: AgentGUI) -> None:
+        """Update the session's GUI model and push the full updated model to the client.
+
+        Accepts either a raw :class:`~besser.BUML.metamodel.gui.GUIModel` instance or an
+        existing :class:`~baf.core.gui.agent_gui.AgentGUI`.
+
+        Args:
+            gui: the new GUI model (or wrapper) for this session.
+        """
+        if gui is None:
+            self._gui = None
+        elif isinstance(gui, AgentGUI):
+            self._gui = gui
+        else:
+            self._gui = AgentGUI(gui)
+        if hasattr(self._platform, 'reply_gui_update'):
+            self._platform.reply_gui_update(self, self._gui)
 
     def call_manage_transition(self) -> None:
         """Schedule the next call to manage_transition as soon as possible (cancelling the previously scheduled

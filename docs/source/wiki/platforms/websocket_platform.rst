@@ -151,11 +151,11 @@ After that, you can use the platform to send different kinds of messages to the 
     # Optionally speed up / slow down the audio (1.0 = original speed)
     websocket_platform.reply_speech(session, 'Hello!', audio_speed=1.25)
 
-- UI messages (a ``GUIModel`` instance — the client renders the UI based on the model):
+- GUI messages (an :class:`~baf.core.gui.agent_gui.AgentGUI` instance — the client renders the UI based on the model):
 
 .. code:: python
 
-    websocket_platform.reply_ui(session, ui)
+    websocket_platform.reply_gui(session, ui)
 
 - :doc:`Reasoning steps <../reasoning/reasoning_state>` and task list updates: emitted automatically by the predefined reasoning state body for every intermediate event (LLM tool calls, tool results, task add/complete/skip, push-back, max_steps) and every task list mutation. You normally do not call these methods yourself — the reasoning loop streams them to the client through the same WebSocket connection so the UI can render a live "thinking" trace and a task panel:
 
@@ -296,4 +296,4 @@ API References
 - WebSocketPlatform.reply_reasoning_step(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_reasoning_step`
 - WebSocketPlatform.reply_speech(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_speech`
 - WebSocketPlatform.reply_task_list_update(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_task_list_update`
-- WebSocketPlatform.reply_ui(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_ui`
+- WebSocketPlatform.reply_gui(): :meth:`baf.platforms.websocket.websocket_platform.WebSocketPlatform.reply_gui`

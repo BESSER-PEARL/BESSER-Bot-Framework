@@ -1,7 +1,8 @@
-"""Serialization helpers: GUIModel → JSON string."""
+"""Serialization helpers: AgentGUI → JSON string."""
 import json
 from enum import Enum
 
+from baf.core.gui.agent_gui import AgentGUI
 from baf.exceptions.logger import logger
 
 try:
@@ -487,11 +488,13 @@ def _serialize_screen(screen: Screen) -> dict:
     return d
 
 
-def gui_to_json(gui_model: GUIModel) -> str:
-    """Serialize a :class:`GUIModel` instance to a JSON string.
+def gui_to_json(gui_model: 'AgentGUI') -> str:
+    """Serialize an :class:`~baf.core.gui.agent_gui.AgentGUI` instance to a JSON string.
+
+    Also accepts a raw :class:`~besser.BUML.metamodel.gui.GUIModel` directly.
 
     Args:
-        gui_model: The GUI model to serialize.
+        gui_model: The GUI model (or AgentGUI wrapper) to serialize.
 
     Returns:
         A JSON string representation of the model.
