@@ -34,8 +34,8 @@ class AgentGUI:
             no model has been set.
     """
 
-    def __init__(self, model=None):
-        object.__setattr__(self, '_model', model)
+    def __init__(self, model: GUIModel):
+        self._model: GUIModel = model
 
     # ------------------------------------------------------------------
     # Core proxy behaviour
@@ -44,11 +44,11 @@ class AgentGUI:
     @property
     def model(self):
         """The underlying GUIModel instance, or None."""
-        return object.__getattribute__(self, '_model')
+        return self._model
 
     def __getattr__(self, name: str):
         """Delegate attribute access to the inner GUIModel."""
-        model = object.__getattribute__(self, '_model')
+        model = self._model
         if model is None:
             if not _BESSER_AVAILABLE:
                 logger.warning(
@@ -63,16 +63,16 @@ class AgentGUI:
     def __setattr__(self, name: str, value):
         """Delegate attribute assignment to the inner GUIModel for non-private names."""
         if name.startswith('_'):
-            object.__setattr__(self, name, value)
+            super().__setattr__(name, value)
             return
-        model = object.__getattribute__(self, '_model')
+        model = self._model
         if model is None:
             logger.warning(f"Cannot set attribute '{name}': no GUI model set.")
             return
         setattr(model, name, value)
 
     def __bool__(self) -> bool:
-        return object.__getattribute__(self, '_model') is not None
+        return self._model is not None
 
     # ------------------------------------------------------------------
     # Helper: deep copy
@@ -84,7 +84,7 @@ class AgentGUI:
         Returns:
             AgentGUI: a new instance wrapping a deep-copied model.
         """
-        model = object.__getattribute__(self, '_model')
+        model = self._model
         if model is None:
             return AgentGUI(None)
         try:
@@ -108,7 +108,7 @@ class AgentGUI:
         Returns:
             The matching :class:`ViewElement`, or ``None`` if not found.
         """
-        model = object.__getattribute__(self, '_model')
+        model: GUIModel = self._model
         if model is None:
             logger.warning("Cannot find component: no GUI model set.")
             return None
@@ -145,7 +145,7 @@ class AgentGUI:
         Returns:
             The updated component if found, or ``None``.
         """
-        model = object.__getattribute__(self, '_model')
+        model = self._model
         if model is None:
             logger.warning("Cannot update component: no GUI model set.")
             return None
@@ -182,7 +182,7 @@ class AgentGUI:
         Returns:
             bool: ``True`` if the component was added, ``False`` otherwise.
         """
-        model = object.__getattribute__(self, '_model')
+        model = self._model
         if model is None:
             logger.warning("Cannot add component: no GUI model set.")
             return False
@@ -221,7 +221,7 @@ class AgentGUI:
         Returns:
             The :class:`Screen`, or ``None`` if not found.
         """
-        model = object.__getattribute__(self, '_model')
+        model = self._model
         if model is None:
             logger.warning("Cannot get screen: no GUI model set.")
             return None
