@@ -26,7 +26,7 @@ from baf.db.monitoring_db import MonitoringDB
 from baf.exceptions.exceptions import AgentNotTrainedError, DuplicatedEntityError, DuplicatedInitialStateError, \
     DuplicatedIntentError, DuplicatedStateError, InitialStateNotFound
 from baf.exceptions.logger import logger
-from baf.library.transition.events.base_events import ReceiveMessageEvent, ReceiveJSONEvent, ReceiveFileEvent
+from baf.library.transition.events.base_events import ReceiveMessageEvent, ReceiveJSONEvent, ReceiveFileEvent, GUIEvent
 from baf.nlp.intent_classifier.intent_classifier_configuration import IntentClassifierConfiguration, \
     SimpleIntentClassifierConfiguration
 from baf.nlp.intent_classifier.intent_classifier_prediction import IntentClassifierPrediction
@@ -841,6 +841,18 @@ class Agent:
             session.save_message(Message(t=t, content=event.message, is_user=True, timestamp=datetime.now()))
         if isinstance(event, ReceiveFileEvent):
             session.save_message(Message(t=MessageType.FILE, content=event.file.get_json_string(), is_user=True, timestamp=datetime.now()))
+        if isinstance(event, GUIEvent) and not event.is_broadcasted():
+            message_id = event.message_id
+            if message_id and message_id in session.gui_inputs:
+                action = event.event_data.get('action')
+                value = event.event_data.get('value')
+                if action == 'onChange':
+                    field_name = event.event_data.get('name')
+                    if field_name is not None:
+                        session.gui_inputs[message_id][field_name] = value
+                elif action == 'onSubmit':
+                    if isinstance(value, dict):
+                        session.gui_inputs[message_id].update(value)
 
         logger.info(f'Received event: {event.log()}')
 

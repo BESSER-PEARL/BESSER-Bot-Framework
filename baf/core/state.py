@@ -7,8 +7,8 @@ from baf.core.transition.event import Event
 from baf.core.transition.transition import Transition
 from baf.core.transition.transition_builder import TransitionBuilder
 from baf.library.intent.intent_library import fallback_intent
-from baf.library.transition.events.base_events import ReceiveTextEvent, ReceiveFileEvent, WildcardEvent, ReceiveJSONEvent
-from baf.library.transition.conditions import IntentMatcher, VariableOperationMatcher
+from baf.library.transition.events.base_events import ReceiveTextEvent, ReceiveFileEvent, WildcardEvent, ReceiveJSONEvent, GUIEvent
+from baf.library.transition.conditions import IntentMatcher, VariableOperationMatcher, FormSubmitMatcher
 from baf.core.transition.condition import Condition
 from baf.core.intent.intent import Intent
 from baf.core.session import Session
@@ -282,6 +282,26 @@ class State:
         transition_builder: TransitionBuilder = TransitionBuilder(source=self, event=event)
         transition_builder.with_condition(function=file_type, params=params)
         return transition_builder
+
+    def when_form_submitted(self, form_id: str = None) -> TransitionBuilder:
+        """Start the definition of a "form submitted" transition on this state.
+
+        Triggered when the user submits a GUI form. If ``form_id`` is provided, only submissions
+        from the GUI with that message id will trigger the transition; otherwise any form
+        submission will match.
+
+        Args:
+            form_id (str, optional): the message id of the :class:`~baf.core.gui.agent_gui.AgentGUI`
+                whose form submissions should trigger this transition. Use ``agent_gui.id`` to
+                obtain the id of a specific GUI. If None, any form submission triggers this
+                transition.
+
+        Returns:
+            TransitionBuilder: the transition builder
+        """
+        event: GUIEvent = GUIEvent()
+        condition: FormSubmitMatcher = FormSubmitMatcher(form_id)
+        return TransitionBuilder(source=self, event=event, condition=condition)
 
     def check_transitions(self, session: Session) -> None:
         """Check the state transitions and triggers the one that is satisfied.

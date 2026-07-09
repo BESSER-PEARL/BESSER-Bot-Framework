@@ -515,4 +515,6 @@ def gui_to_json(gui: 'AgentGUI') -> str:
             for module in sorted(gui_model.modules, key=lambda m: m.name)
         ],
     }
+    if getattr(gui, 'width', None) is not None:
+        result["width"] = gui.width
     return json.dumps(result, indent=2)

@@ -30,18 +30,22 @@ class AgentGUI:
     Args:
         model: the :class:`GUIModel` instance to wrap, or ``None``.
         gui_id: identifier for the AgentGUI.
+        persist: whether to store GUI updates in the session or not. Defaults to true
 
     Attributes:
         _model: the inner :class:`GUIModel`, or ``None`` when besser is not installed or
             no model has been set.
         _id: identifier for the AgentGUI.
+        _persist: whether to store GUI updates in the session or not. Defaults to true
     """
 
-    def __init__(self, model: GUIModel, gui_id: str | None = None):
+    def __init__(self, model: GUIModel, gui_id: str | None = None, persist: bool = True, width: str | None = None):
         self._model: GUIModel = model
         if gui_id is None:
             gui_id = str(uuid.uuid4())
         self._id: str = gui_id
+        self._persist: bool = persist
+        self._width: str | None = width
 
     # ------------------------------------------------------------------
     # Core proxy behaviour
@@ -56,6 +60,25 @@ class AgentGUI:
     def id(self) -> str:
         """Unique identifier for this GUI reply message."""
         return self._id
+
+    @property
+    def persist(self) -> bool:
+        """bool: If True, input values from GUI events for this component are persisted in the session's gui_inputs."""
+        return self._persist
+
+    @persist.setter
+    def persist(self, value: bool) -> None:
+        self._persist = value
+
+    @property
+    def width(self) -> str | None:
+        """str | None: CSS width applied to the GUI bubble in chat mode (e.g. '600px', '80%').
+        Overrides the default 78% max-width cap. None means use the default."""
+        return self._width
+
+    @width.setter
+    def width(self, value: str | None) -> None:
+        self._width = value
 
     def __getattr__(self, name: str):
         """Delegate attribute access to the inner GUIModel."""

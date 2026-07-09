@@ -61,6 +61,8 @@ class Session:
         _agent_connections (dict[str, WebSocketApp]): WebSocket client connections to other agent's WebSocket platforms.
             These connections enable an agent to send messages to other agents.
         _gui (AgentGUI): The GUI model for this session.
+        _gui_inputs (dict[str, dict]): persisted values of input fields of GUI agent replies.
+            Keys are message ids and values are dictionaries with field_name - value pairs.
     """
 
     def __init__(
@@ -85,6 +87,7 @@ class Session:
         self._timer_handle: TimerHandle = None
         self._agent_connections: dict[str, WebSocketApp] = {}
         self._gui: AgentGUI = self._copy_agent_gui()
+        self._gui_inputs: dict[str, dict] = {}
 
     @property
     def id(self):
@@ -129,6 +132,11 @@ class Session:
     def gui(self) -> 'AgentGUI':
         """AgentGUI or None: The current GUI model for this session."""
         return self._gui
+
+    @property
+    def gui_inputs(self) -> dict[str, dict]:
+        """dict[str, dict]: persisted values of input fields of GUI agent replies."""
+        return self._gui_inputs
 
     def _copy_agent_gui(self) -> 'AgentGUI':
         """Return a deep copy of the agent's GUI model wrapper for this session, or None."""

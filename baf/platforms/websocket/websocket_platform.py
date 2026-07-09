@@ -711,12 +711,18 @@ class WebSocketPlatform(Platform):
         The GUI model is serialized to JSON before being sent. It can be used to dynamically
         render a user interface on the client side.
 
+        If ``gui.persist`` is ``True``, an entry keyed by ``gui.id`` is created in the session's
+        ``gui_inputs`` dictionary so that subsequent GUI events from this component will have their
+        input values persisted automatically and remain accessible via ``session.gui_inputs``.
+
         Args:
             session (Session): the user session
             gui (AgentGUI): the GUI model to send to the user
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
+        if gui.persist:
+            session.gui_inputs[gui.id] = {}
         ui_json = gui_to_json(gui)
         message_obj: Message = Message(t=MessageType.GUI, content=ui_json, is_user=False, timestamp=datetime.now())
         session.save_message(message_obj)
