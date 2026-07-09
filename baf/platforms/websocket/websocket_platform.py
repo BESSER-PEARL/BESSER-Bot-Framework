@@ -255,7 +255,8 @@ class WebSocketPlatform(Platform):
                             event_data = {}
                         event: GUIEvent = GUIEvent(
                             event_data=event_data,
-                            session_id=session.id)
+                            session_id=session.id,
+                            message_id=event_data.get('messageId'))
                         self._agent.receive_event(event)
             except ConnectionClosedError:
                 logger.info('Client connection closed unexpectedly')
@@ -721,7 +722,8 @@ class WebSocketPlatform(Platform):
         session.save_message(message_obj)
         payload = Payload(action=PayloadAction.AGENT_REPLY_GUI,
                           message=ui_json,
-                          timestamp=message_obj.timestamp)
+                          timestamp=message_obj.timestamp,
+                          message_id=gui.id)
         payload.message = self._agent.process(session=session, message=payload.message, is_user_message=False)
         self._send(session.id, payload)
 

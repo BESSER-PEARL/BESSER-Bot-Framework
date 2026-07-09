@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import copy
+import uuid
 
 from baf.exceptions.logger import logger
 
@@ -28,14 +29,19 @@ class AgentGUI:
 
     Args:
         model: the :class:`GUIModel` instance to wrap, or ``None``.
+        gui_id: identifier for the AgentGUI.
 
     Attributes:
         _model: the inner :class:`GUIModel`, or ``None`` when besser is not installed or
             no model has been set.
+        _id: identifier for the AgentGUI.
     """
 
-    def __init__(self, model: GUIModel):
+    def __init__(self, model: GUIModel, gui_id: str | None = None):
         self._model: GUIModel = model
+        if gui_id is None:
+            gui_id = str(uuid.uuid4())
+        self._id: str = gui_id
 
     # ------------------------------------------------------------------
     # Core proxy behaviour
@@ -45,6 +51,11 @@ class AgentGUI:
     def model(self):
         """The underlying GUIModel instance, or None."""
         return self._model
+
+    @property
+    def id(self) -> str:
+        """Unique identifier for this GUI reply message."""
+        return self._id
 
     def __getattr__(self, name: str):
         """Delegate attribute access to the inner GUIModel."""

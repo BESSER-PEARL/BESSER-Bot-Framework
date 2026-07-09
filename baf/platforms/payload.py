@@ -130,16 +130,18 @@ class Payload:
         payload_message = payload_dict['message']
         history = payload_dict.get('history', False)
 
+        message_id = payload_dict.get('message_id', None)
         for action in PayloadAction:
             if action.value == payload_action:
-                return Payload(action, payload_message, history=history)
+                return Payload(action, payload_message, history=history, message_id=message_id)
         return None
 
-    def __init__(self, action: PayloadAction, message: str or dict = None, history: bool = False, timestamp: datetime = None):
+    def __init__(self, action: PayloadAction, message: str or dict = None, history: bool = False, timestamp: datetime = None, message_id: str = None):
         self.action: str = action.value
         self.message: str or dict = message
         self.history: bool = history
         self.timestamp: datetime = timestamp
+        self.message_id: str = message_id
 
 
 class PayloadEncoder(json.JSONEncoder):
@@ -170,7 +172,8 @@ class PayloadEncoder(json.JSONEncoder):
                 'action': obj.action,
                 'message': obj.message,
                 'history': getattr(obj, 'history', None),
-                'timestamp': timestamp
+                'timestamp': timestamp,
+                'message_id': getattr(obj, 'message_id', None),
             }
             return payload_dict
         return super().default(obj)

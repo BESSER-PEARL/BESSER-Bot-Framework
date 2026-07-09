@@ -400,7 +400,7 @@ def _deserialize_screen(d: dict) -> Screen:
     return Screen(**base)
 
 
-def json_to_gui(json_str: str) -> AgentGUI:
+def json_to_gui(json_str: str, gui_id: str | None = None) -> AgentGUI:
     """Deserialize a JSON string produced by :func:`gui_to_json` back into an :class:`~baf.core.gui.agent_gui.AgentGUI`.
 
     Args:
@@ -428,4 +428,4 @@ def json_to_gui(json_str: str) -> AgentGUI:
             return AgentGUI(GUIModel(**gui_kwargs, style_entries=style_entries))
         except TypeError:
             pass
-    return AgentGUI(GUIModel(**gui_kwargs))
+    return AgentGUI(GUIModel(**gui_kwargs), gui_id=gui_id)

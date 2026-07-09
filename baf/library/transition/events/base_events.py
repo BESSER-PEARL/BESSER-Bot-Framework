@@ -202,14 +202,17 @@ class GUIEvent(Event):
     Args:
         event_data (dict): the GUI interaction payload (at minimum ``elementId`` and ``action`` keys)
         session_id (str): the id of the session the event was sent to (can be None)
+        message_id (str): the id of the GUI chat message that originated this event (can be None)
 
     Attributes:
         event_data (dict): the GUI interaction payload
+        message_id (str): identifies the GUI message whose element triggered this event
     """
 
-    def __init__(self, event_data: dict = None, session_id: str = None):
+    def __init__(self, event_data: dict = None, session_id: str = None, message_id: str = None):
         super().__init__(name='gui_event', session_id=session_id, timestamp=datetime.now())
         self.event_data: dict = event_data or {}
+        self.message_id: str = message_id
 
     def log(self):
         return f'{self._name} ({self.event_data})'
