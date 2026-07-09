@@ -214,5 +214,11 @@ class GUIEvent(Event):
         self.event_data: dict = event_data or {}
         self.message_id: str = message_id
 
+    def get(self, field: str):
+        for k, v in self.event_data.items():
+            if k == field:
+                return v
+        return None
+
     def log(self):
         return f'{self._name} ({self.event_data})'
