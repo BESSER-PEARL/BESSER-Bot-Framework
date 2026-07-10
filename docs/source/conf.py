@@ -106,6 +106,7 @@ def generate_api_rst_files(preffix, dir, output_dir):
         'platforms/audio_queue.py',
         'platforms/chat_interface_style.py',
         'platforms/profile_selector.py',
+        'platforms/reasoning.py',
 
     ]
     api_excluded_files = [
