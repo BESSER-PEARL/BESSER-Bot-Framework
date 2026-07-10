@@ -21,10 +21,8 @@ There are two distinct ways to use GUI in BAF:
 Both modes rely on the same :class:`~baf.core.gui.agent_gui.AgentGUI` wrapper and
 the same underlying ``GUIModel`` from the BESSER BUML library.
 
-.. figure:: ../../img/gui_overview.png
-   :alt: Overview of GUI modes in BAF
-
-   Overview of the two GUI modes: inline chat reply (left) and full GUI mode (right).
+Table of contents
+-----------------
 
 .. toctree::
    :maxdepth: 1

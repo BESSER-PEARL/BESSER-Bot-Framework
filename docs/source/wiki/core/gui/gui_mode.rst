@@ -11,7 +11,7 @@ This is the right choice when you want the agent to drive an interactive applica
 — a data dashboard, a wizard, a configuration panel — rather than a purely
 conversational flow.
 
-.. figure:: ../../../img/gui_mode_demo.png
+.. figure:: ../../../img/gui_mode_example.jpg
    :alt: Example of an agent running in GUI mode
 
    An agent running in GUI mode: the GUI panel is displayed alongside the chat.

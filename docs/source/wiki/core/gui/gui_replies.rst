@@ -9,8 +9,9 @@ view element.
 This is useful when the conversation reaches a point where structured input or a rich
 visual is the best way to interact with the user.
 
-.. figure:: ../../../img/gui_reply_demo.png
+.. figure:: ../../../img/gui_replies_example.jpg
    :alt: Example of a form rendered as a GUI reply in the chat
+   :width: 80%
 
    A form rendered inline as a GUI reply inside the chat conversation.
 
