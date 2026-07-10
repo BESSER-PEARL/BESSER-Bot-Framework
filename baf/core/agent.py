@@ -150,9 +150,6 @@ class Agent:
 
         Each new session will receive a deep copy of this model as its initial GUI state.
 
-        Accepts either a raw :class:`~besser.BUML.metamodel.gui.GUIModel` instance or an
-        existing :class:`~baf.core.gui.agent_gui.AgentGUI`.
-
         Args:
             gui (AgentGUI): the GUI to use as the session template.
         """

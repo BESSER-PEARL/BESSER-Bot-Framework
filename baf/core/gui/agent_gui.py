@@ -131,39 +131,53 @@ class AgentGUI:
     # Helper: find
     # ------------------------------------------------------------------
 
-    def find_component_by_id(self, component_id: str):
-        """Find a component anywhere in the model by its ``component_id``.
+    def find_components(self, field: str, value) -> list:
+        """Find all components in the model where ``getattr(component, field) == value``.
 
         Recursively searches through all modules → screens → containers.
 
         Args:
-            component_id (str): the ``component_id`` to look for.
+            field (str): the attribute name to match (e.g. ``'component_id'``,
+                ``'name'``, ``'content'``).
+            value: the value to look for.
 
         Returns:
-            The matching :class:`ViewElement`, or ``None`` if not found.
+            list: all matching :class:`ViewElement` instances (empty list if none found).
         """
         model: GUIModel = self._model
         if model is None:
-            logger.warning("Cannot find component: no GUI model set.")
-            return None
+            logger.warning("Cannot find components: no GUI model set.")
+            return []
+        results = []
         for module in model.modules:
             for screen in module.screens:
-                result = self._find_in_elements(screen.view_elements, component_id)
-                if result is not None:
-                    return result
-        return None
+                self._collect_matching(screen.view_elements, field, value, results)
+        return results
 
-    def _find_in_elements(self, elements, component_id: str):
-        """Recursively search *elements* for a matching ``component_id``."""
+    def find_component(self, field: str, value):
+        """Find the first component in the model where ``getattr(component, field) == value``.
+
+        Recursively searches through all modules → screens → containers.
+
+        Args:
+            field (str): the attribute name to match (e.g. ``'component_id'``,
+                ``'name'``, ``'content'``).
+            value: the value to look for.
+
+        Returns:
+            The first matching :class:`ViewElement`, or ``None`` if not found.
+        """
+        results = self.find_components(field, value)
+        return results[0] if results else None
+
+    def _collect_matching(self, elements, field: str, value, results: list) -> None:
+        """Recursively collect into *results* every element where ``getattr(el, field) == value``."""
         for el in elements:
-            if getattr(el, 'component_id', None) == component_id:
-                return el
+            if getattr(el, field, None) == value:
+                results.append(el)
             child_elements = getattr(el, 'view_elements', None)
             if child_elements:
-                found = self._find_in_elements(child_elements, component_id)
-                if found is not None:
-                    return found
-        return None
+                self._collect_matching(child_elements, field, value, results)
 
     # ------------------------------------------------------------------
     # Helper: update
@@ -183,7 +197,7 @@ class AgentGUI:
         if model is None:
             logger.warning("Cannot update component: no GUI model set.")
             return None
-        component = self.find_component_by_id(component_id)
+        component = self.find_component('component_id', component_id)
         if component is None:
             logger.warning(f"Component with id '{component_id}' not found in GUI model.")
             return None
@@ -222,7 +236,7 @@ class AgentGUI:
             return False
 
         if parent_id is not None:
-            parent = self.find_component_by_id(parent_id)
+            parent = self.find_component('component_id', parent_id)
             if parent is None:
                 logger.warning(f"Parent container with id '{parent_id}' not found.")
                 return False
