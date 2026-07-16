@@ -27,7 +27,7 @@ def _enum_val(v):
     return v.value if isinstance(v, Enum) else v
 
 
-def _serialize_size(size: Size) -> dict:
+def _serialize_size(size: 'Size') -> dict:
     if size is None:
         return None
     # Size stores width/height/padding/margin/line_height as @property with double-underscore
@@ -51,7 +51,7 @@ def _serialize_size(size: Size) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_position(pos: Position) -> dict:
+def _serialize_position(pos: 'Position') -> dict:
     if pos is None:
         return None
     return {k: _enum_val(v) for k, v in {
@@ -64,7 +64,7 @@ def _serialize_position(pos: Position) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_color(color: Color) -> dict:
+def _serialize_color(color: 'Color') -> dict:
     if color is None:
         return None
     return {k: v for k, v in {
@@ -84,7 +84,7 @@ def _serialize_color(color: Color) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_layout(layout: Layout) -> dict:
+def _serialize_layout(layout: 'Layout') -> dict:
     if layout is None:
         return None
     return {k: _enum_val(v) for k, v in {
@@ -101,7 +101,7 @@ def _serialize_layout(layout: Layout) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_styling(styling: Styling) -> dict:
+def _serialize_styling(styling: 'Styling') -> dict:
     if styling is None:
         return None
     result = {}
@@ -116,7 +116,7 @@ def _serialize_styling(styling: Styling) -> dict:
     return result or None
 
 
-def _serialize_data_binding(db: DataBinding) -> dict:
+def _serialize_data_binding(db: 'DataBinding') -> dict:
     if db is None:
         return None
     return {k: v for k, v in {
@@ -131,7 +131,7 @@ def _serialize_data_binding(db: DataBinding) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_data_source(ds: DataSource) -> dict:
+def _serialize_data_source(ds: 'DataSource') -> dict:
     if ds is None:
         return None
     if isinstance(ds, DataSourceElement):
@@ -149,7 +149,7 @@ def _serialize_data_source(ds: DataSource) -> dict:
     return {"type": "DataSource", "name": ds.name}
 
 
-def _serialize_series(s: Series) -> dict:
+def _serialize_series(s: 'Series') -> dict:
     if s is None:
         return None
     return {k: v for k, v in {
@@ -159,7 +159,7 @@ def _serialize_series(s: Series) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_column(col: Column) -> dict:
+def _serialize_column(col: 'Column') -> dict:
     if isinstance(col, FieldColumn):
         return {"type": "FieldColumn", "label": col.label, "field": col.field.name}
     if isinstance(col, LookupColumn):
@@ -170,7 +170,7 @@ def _serialize_column(col: Column) -> dict:
     return {"type": "Column", "label": col.label}
 
 
-def _base_fields(el: ViewElement) -> dict:
+def _base_fields(el: 'ViewElement') -> dict:
     d = {"name": el.name}
     if getattr(el, "description", None):
         d["description"] = el.description
@@ -194,7 +194,7 @@ def _sorted_elements(elements):
     return sorted(elements, key=lambda x: (x.display_order if x.display_order is not None else float('inf'), x.name))
 
 
-def _serialize_view_element(el: ViewElement) -> dict:
+def _serialize_view_element(el: 'ViewElement') -> dict:
     # Dashboard: AgentComponent
     if isinstance(el, AgentComponent):
         d = _base_fields(el)
@@ -459,7 +459,7 @@ def _serialize_view_element(el: ViewElement) -> dict:
     return d
 
 
-def _serialize_screen(screen: Screen) -> dict:
+def _serialize_screen(screen: 'Screen') -> dict:
     d = {"type": "Screen", "name": screen.name}
     if screen.description:
         d["description"] = screen.description
