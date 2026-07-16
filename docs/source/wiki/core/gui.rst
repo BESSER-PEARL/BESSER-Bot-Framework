@@ -13,7 +13,7 @@ There are two distinct ways to use GUI in BAF:
   This is ideal for collecting structured input (e.g. a form) or displaying rich
   content at a specific point in the conversation flow.
 
-- **GUI mode** — the agent is configured with a persistent GUI model that the
+- **GUI mode (work in progress)** — the agent is configured with a persistent GUI model that the
   client displays as a full interface, separate from the chat area. This is suited
   for agents that drive a dedicated interactive application rather than a purely
   conversational experience.
@@ -28,4 +28,3 @@ Table of contents
    :maxdepth: 1
 
    gui/gui_replies
-   gui/gui_mode

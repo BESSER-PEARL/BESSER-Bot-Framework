@@ -86,7 +86,6 @@ class Session:
         self._event_thread: threading.Thread or None = None
         self._timer_handle: TimerHandle = None
         self._agent_connections: dict[str, WebSocketApp] = {}
-        self._gui: AgentGUI = self._copy_agent_gui()
         self._gui_inputs: dict[str, dict] = {}
 
     @property
@@ -129,39 +128,9 @@ class Session:
         return self._events
 
     @property
-    def gui(self) -> 'AgentGUI':
-        """AgentGUI or None: The current GUI model for this session."""
-        return self._gui
-
-    @property
     def gui_inputs(self) -> dict[str, dict]:
         """dict[str, dict]: persisted values of input fields of GUI agent replies."""
         return self._gui_inputs
-
-    def _copy_agent_gui(self) -> 'AgentGUI':
-        """Return a deep copy of the agent's GUI model wrapper for this session, or None."""
-        agent_gui: AgentGUI = self._agent.gui
-        if agent_gui is None:
-            return None
-        return agent_gui.deep_copy()
-
-    def set_gui(self, gui: AgentGUI) -> None:
-        """Update the session's GUI model and push the full updated model to the client.
-
-        Accepts either a raw :class:`~besser.BUML.metamodel.gui.GUIModel` instance or an
-        existing :class:`~baf.core.gui.agent_gui.AgentGUI`.
-
-        Args:
-            gui: the new GUI model (or wrapper) for this session.
-        """
-        if gui is None:
-            self._gui = None
-        elif isinstance(gui, AgentGUI):
-            self._gui = gui
-        else:
-            self._gui = AgentGUI(gui)
-        if hasattr(self._platform, 'reply_gui_update'):
-            self._platform.reply_gui_update(self, self._gui)
 
     def call_manage_transition(self) -> None:
         """Schedule the next call to manage_transition as soon as possible (cancelling the previously scheduled

@@ -85,7 +85,6 @@ class Agent:
             can browse and (when ``writable=True``) modify through the
             universal workspace tools. Keyed by workspace name. Populated
             by :meth:`add_workspace` / :meth:`new_workspace`.
-        _gui (AgentGUI): The GUI model template for this agent. Each new session receives a deep copy of it
     """
 
     def __init__(
@@ -117,7 +116,6 @@ class Agent:
         self._tools: dict[str, Tool] = {}
         self._skills: dict[str, Skill] = {}
         self._workspaces: dict[str, Workspace] = {}
-        self._gui: AgentGUI = None
 
         if user_profiles_path:
             self.load_user_profiles(user_profiles_path)
@@ -140,23 +138,6 @@ class Agent:
         """dict[str, Any]: The agent configuration parameters."""
         return self._config
 
-    @property
-    def gui(self) -> 'AgentGUI':
-        """AgentGUI: The GUI model template for this agent. Each new session receives a deep copy of it."""
-        return self._gui
-
-    def set_gui(self, gui: AgentGUI) -> None:
-        """Set the GUI model template for this agent.
-
-        Each new session will receive a deep copy of this model as its initial GUI state.
-
-        Args:
-            gui (AgentGUI): the GUI to use as the session template.
-        """
-        if gui is None:
-            self._gui = None
-        else:
-            self._gui = gui
 
     def load_properties(self, path: str) -> None:
         """Read a properties file and store its properties in the agent configuration.
