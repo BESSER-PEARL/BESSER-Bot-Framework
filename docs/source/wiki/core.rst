@@ -19,8 +19,9 @@ Table of contents
    core/states
    core/intents
    core/entities
+   core/sessions
    core/events
    core/transitions
-   core/sessions
+   core/gui
    core/processors
    core/files

@@ -18,7 +18,9 @@ from pandas import DataFrame
 from websockets.exceptions import ConnectionClosedError
 from websockets.sync.server import ServerConnection, WebSocketServer, serve
 
-from baf.library.transition.events.base_events import ReceiveMessageEvent, ReceiveFileEvent
+from baf.core.gui.agent_gui import AgentGUI
+from baf.core.gui.gui_serializer import gui_to_json
+from baf.library.transition.events.base_events import ReceiveMessageEvent, ReceiveFileEvent, GUIEvent
 from baf.core.message import Message, MessageType
 from baf.core.session import Session
 from baf.exceptions.exceptions import PlatformMismatchError, StreamlitDatabaseException
@@ -58,13 +60,6 @@ try:
 except ImportError:
     logger.warning("librosa dependencies in WebSocketPlatform could not be imported. You can install them from "
                    "the requirements/requirements-extras.txt file")
-
-try:
-    from besser.BUML.metamodel.gui import GUIModel
-    from baf.core.gui.gui_serializer import gui_to_json
-except ImportError:
-    logger.warning("besser dependencies in WebSocketPlatform could not be imported. You can install them with "
-                   "'pip install --no-deps besser'")
 
 
 def _extract_parameter_from_request(parameter, request) -> str | None:
@@ -159,9 +154,7 @@ class WebSocketPlatform(Platform):
                     if not self.running:
                         raise ConnectionClosedError(None, None)
                     payload: Payload = Payload.decode(payload_str)
-                    if payload.action == PayloadAction.USER_UPDATE_UI.value:
-                        logger.info(f'Received event: {payload_str}')  # TODO: Not implemented
-                    elif payload.action == PayloadAction.FETCH_USER_MESSAGES.value:
+                    if payload.action == PayloadAction.FETCH_USER_MESSAGES.value:
                         try:
                             chat_history = session.get_chat_history(until_timestamp=current_time)
                             reasoning_events = session.get_reasoning_events(until_timestamp=current_time)
@@ -241,6 +234,20 @@ class WebSocketPlatform(Platform):
                         for key, value in payload.message.items():
                             session.set(key, value)
                             logger.info(f"Session variable {key} set to {value}.")
+                    elif payload.action == PayloadAction.USER_GUI_EVENT.value:
+                        event_data = payload.message
+                        if isinstance(event_data, str):
+                            try:
+                                event_data = json.loads(event_data)
+                            except Exception:
+                                event_data = {'raw': event_data}
+                        if not isinstance(event_data, dict):
+                            event_data = {}
+                        event: GUIEvent = GUIEvent(
+                            event_data=event_data,
+                            session_id=session.id,
+                            message_id=event_data.get('messageId'))
+                        self._agent.receive_event(event)
             except ConnectionClosedError:
                 logger.info('Client connection closed unexpectedly')
             except Exception as e:
@@ -611,7 +618,6 @@ class WebSocketPlatform(Platform):
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
         rag_message_dict = rag_message.to_dict()
-        print(rag_message_dict)
         message_obj: Message = Message(t=MessageType.RAG_ANSWER, content=rag_message_dict, is_user=False, timestamp=datetime.now())
         session.save_message(message_obj)
         payload = Payload(action=PayloadAction.AGENT_REPLY_RAG,
@@ -689,23 +695,51 @@ class WebSocketPlatform(Platform):
         payload.message = self._agent.process(session=session, message=payload.message, is_user_message=False)
         self._send(session.id, payload)
 
-    def reply_ui(self, session: Session, ui: GUIModel) -> None:
+    def reply_gui(self, session: Session, gui: 'AgentGUI') -> None:
         """Send a GUI model reply to a specific user.
 
         The GUI model is serialized to JSON before being sent. It can be used to dynamically
         render a user interface on the client side.
 
+        If ``gui.persist`` is ``True``, an entry keyed by ``gui.id`` is created in the session's
+        ``gui_inputs`` dictionary so that subsequent GUI events from this component will have their
+        input values persisted automatically and remain accessible via ``session.gui_inputs``.
+
         Args:
             session (Session): the user session
-            ui (GUIModel): the GUI model to send to the user
+            gui (AgentGUI): the GUI model to send to the user
         """
         if session.platform is not self:
             raise PlatformMismatchError(self, session)
-        ui_json = gui_to_json(ui)
-        message_obj: Message = Message(t=MessageType.UI, content=ui_json, is_user=False, timestamp=datetime.now())
+        if gui.persist:
+            session.gui_inputs[gui.id] = {}
+        ui_json = gui_to_json(gui)
+        message_obj: Message = Message(t=MessageType.GUI, content=ui_json, is_user=False, timestamp=datetime.now())
         session.save_message(message_obj)
-        payload = Payload(action=PayloadAction.AGENT_REPLY_UI,
+        payload = Payload(action=PayloadAction.AGENT_REPLY_GUI,
                           message=ui_json,
-                          timestamp=message_obj.timestamp)
+                          timestamp=message_obj.timestamp,
+                          message_id=gui.id)
         payload.message = self._agent.process(session=session, message=payload.message, is_user_message=False)
+        self._send(session.id, payload)
+
+    def reply_gui_update(self, session: Session, gui: 'AgentGUI') -> None:
+        """Push an updated GUI model to the client.
+
+        Used when the session's GUI model changes during interaction (e.g. via
+        :meth:`~baf.core.session.Session.set_gui`). Clients should replace their current GUI
+        state with the received model.
+
+        Unlike :meth:`reply_gui`, this method does **not** persist the message to the chat history.
+
+        Args:
+            session (Session): the user session
+            gui (AgentGUI): the updated GUI model to send to the user
+        """
+        if session.platform is not self:
+            raise PlatformMismatchError(self, session)
+        ui_json = gui_to_json(gui)
+        payload = Payload(action=PayloadAction.AGENT_REPLY_GUI_UPDATE,
+                          message=ui_json,
+                          timestamp=datetime.now())
         self._send(session.id, payload)

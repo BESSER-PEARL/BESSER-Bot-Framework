@@ -20,7 +20,7 @@ class MessageType(Enum):
     OPTIONS = 'options'
     AUDIO = 'audio'
     RAG_ANSWER = 'rag_answer'
-    UI = 'ui'
+    GUI = 'gui'
     REASONING_TRACE = 'reasoning_trace'  # UI-internal synthetic type aggregating streamed reasoning_step / task_list_update events
 
 
@@ -83,7 +83,7 @@ class Message:
                     return PayloadAction.USER_VOICE
                 case MessageType.RAG_ANSWER:
                     return PayloadAction.USER_MESSAGE  # TODO: Not implemented
-                case MessageType.UI:
+                case MessageType.GUI:
                     return PayloadAction.USER_MESSAGE  # TODO: Not implemented
         else:
             match self.type:
@@ -111,5 +111,5 @@ class Message:
                     return PayloadAction.AGENT_REPLY_AUDIO
                 case MessageType.RAG_ANSWER:
                     return PayloadAction.AGENT_REPLY_RAG
-                case MessageType.UI:
-                    return PayloadAction.AGENT_REPLY_UI
+                case MessageType.GUI:
+                    return PayloadAction.AGENT_REPLY_GUI
