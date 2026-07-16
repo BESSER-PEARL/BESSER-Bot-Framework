@@ -110,3 +110,113 @@ type: ``str``
 
 default value: ``None``
 """
+
+MISTRAL_API_KEY = Property('nlp.mistral.api_key', str, None)
+"""
+The Mistral AI API key, necessary to use a Mistral LLM.
+
+name: ``nlp.mistral.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+DEEPSEEK_API_KEY = Property('nlp.deepseek.api_key', str, None)
+"""
+The DeepSeek API key, necessary to use a DeepSeek LLM.
+
+name: ``nlp.deepseek.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+GOOGLE_API_KEY = Property('nlp.google.api_key', str, None)
+"""
+The Google AI (Gemini) API key, necessary to use a Google LLM.
+
+name: ``nlp.google.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+META_API_KEY = Property('nlp.meta.api_key', str, None)
+"""
+The Meta AI API key, necessary to use a Meta Llama LLM via Meta's hosted API.
+
+name: ``nlp.meta.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+ANTHROPIC_API_KEY = Property('nlp.anthropic.api_key', str, None)
+"""
+The Anthropic API key, necessary to use an Anthropic Claude LLM.
+
+name: ``nlp.anthropic.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+QWEN_API_KEY = Property('nlp.qwen.api_key', str, None)
+"""
+The Alibaba DashScope API key, necessary to use a Qwen LLM.
+
+name: ``nlp.qwen.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+XAI_API_KEY = Property('nlp.xai.api_key', str, None)
+"""
+The xAI API key, necessary to use an xAI Grok LLM.
+
+name: ``nlp.xai.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+GROQ_API_KEY = Property('nlp.groq.api_key', str, None)
+"""
+The Groq API key, necessary to use a Groq-hosted LLM.
+
+name: ``nlp.groq.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+TOGETHER_API_KEY = Property('nlp.together.api_key', str, None)
+"""
+The Together AI API key, necessary to use a Together AI-hosted LLM.
+
+name: ``nlp.together.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
+
+OPENROUTER_API_KEY = Property('nlp.openrouter.api_key', str, None)
+"""
+The OpenRouter API key, necessary to use an OpenRouter-proxied LLM.
+
+name: ``nlp.openrouter.api_key``
+
+type: ``str``
+
+default value: ``None``
+"""
