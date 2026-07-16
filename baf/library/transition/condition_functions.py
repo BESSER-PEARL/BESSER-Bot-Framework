@@ -8,6 +8,7 @@ value, trigger the transitions.
 from typing import Any, Callable, TYPE_CHECKING
 
 from baf.core.intent.intent import Intent
+from baf.library.transition.events.base_events import GUIEvent
 
 if TYPE_CHECKING:
     from baf.core.session import Session
@@ -64,4 +65,29 @@ def file_type(session: 'Session', params: dict) -> bool:
         if session.event.file.type in params["allowed_types"] or session.event.file.type == params["allowed_types"]:
             return True
         return False
+    return True
+
+
+def form_submitted(session: 'Session', params: dict) -> bool:
+    """This function returns True when the current event is a GUI form submission.
+
+    Optionally, only submissions from a specific GUI (identified by ``form_id``) are matched.
+    If no ``form_id`` is given, any form submission triggers the transition.
+
+    Args:
+        session (Session): the current user session
+        params (dict): the function parameters. May contain ``'form_id'`` (str) to filter by a
+            specific GUI message id.
+
+    Returns:
+        bool: True if the event is a form submission (and matches the optional form_id)
+    """
+    event = session.event
+    if not isinstance(event, GUIEvent):
+        return False
+    if event.event_data.get('action') != 'onSubmit':
+        return False
+    form_id = params.get('form_id')
+    if form_id is not None:
+        return event.message_id == form_id
     return True

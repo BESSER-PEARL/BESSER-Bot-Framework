@@ -191,3 +191,34 @@ class ReceiveFileEvent(Event):
         super().__init__(name='receive_file', session_id=session_id, timestamp=datetime.now())
         self.file: File = file
         self.human: bool = human
+
+
+class GUIEvent(Event):
+    """Event for receiving GUI interaction events from the frontend.
+
+    Dispatched when the GUI frontend sends a :attr:`~baf.platforms.payload.PayloadAction.USER_GUI_EVENT` payload,
+    typically triggered by user interactions with rendered GUI elements (button clicks, form submissions, etc.).
+
+    Args:
+        event_data (dict): the GUI interaction payload (at minimum ``elementId`` and ``action`` keys)
+        session_id (str): the id of the session the event was sent to (can be None)
+        message_id (str): the id of the GUI chat message that originated this event (can be None)
+
+    Attributes:
+        event_data (dict): the GUI interaction payload
+        message_id (str): identifies the GUI message whose element triggered this event
+    """
+
+    def __init__(self, event_data: dict = None, session_id: str = None, message_id: str = None):
+        super().__init__(name='gui_event', session_id=session_id, timestamp=datetime.now())
+        self.event_data: dict = event_data or {}
+        self.message_id: str = message_id
+
+    def get(self, field: str):
+        for k, v in self.event_data.items():
+            if k == field:
+                return v
+        return None
+
+    def log(self):
+        return f'{self._name} ({self.event_data})'

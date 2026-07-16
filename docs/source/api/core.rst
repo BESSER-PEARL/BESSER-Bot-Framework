@@ -12,7 +12,9 @@ core
    core/state
    core/entity
    core/entity_entry
+   core/agent_gui
    core/gui_deserializer
+   core/gui_llm
    core/gui_schema
    core/gui_serializer
    core/intent

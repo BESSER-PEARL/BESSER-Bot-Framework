@@ -7,6 +7,7 @@ from collections import deque
 from typing import Any, TYPE_CHECKING
 from datetime import datetime
 
+from baf.core.gui.agent_gui import AgentGUI
 from pandas import DataFrame
 from websocket import WebSocketApp
 
@@ -59,6 +60,9 @@ class Session:
         _timer_handle (TimerHandle): Handler of scheduled calls on the event loop
         _agent_connections (dict[str, WebSocketApp]): WebSocket client connections to other agent's WebSocket platforms.
             These connections enable an agent to send messages to other agents.
+        _gui (AgentGUI): The GUI model for this session.
+        _gui_inputs (dict[str, dict]): persisted values of input fields of GUI agent replies.
+            Keys are message ids and values are dictionaries with field_name - value pairs.
     """
 
     def __init__(
@@ -82,6 +86,7 @@ class Session:
         self._event_thread: threading.Thread or None = None
         self._timer_handle: TimerHandle = None
         self._agent_connections: dict[str, WebSocketApp] = {}
+        self._gui_inputs: dict[str, dict] = {}
 
     @property
     def id(self):
@@ -121,6 +126,11 @@ class Session:
     def events(self):
         """dequeue[Event]: The queue of pending events for this session"""
         return self._events
+
+    @property
+    def gui_inputs(self) -> dict[str, dict]:
+        """dict[str, dict]: persisted values of input fields of GUI agent replies."""
+        return self._gui_inputs
 
     def call_manage_transition(self) -> None:
         """Schedule the next call to manage_transition as soon as possible (cancelling the previously scheduled

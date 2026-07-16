@@ -10,7 +10,7 @@ from typing import Callable, Any
 
 from baf.core.intent.intent import Intent
 from baf.core.transition.condition import Condition
-from baf.library.transition.condition_functions import intent_matched, variable_matches_operation
+from baf.library.transition.condition_functions import intent_matched, variable_matches_operation, form_submitted
 
 
 class IntentMatcher(Condition):
@@ -70,3 +70,26 @@ class VariableOperationMatcher(Condition):
         return f"{self._var_name} " \
                f"{self._operation.__name__} " \
                f"{self._target}"
+
+
+class FormSubmitMatcher(Condition):
+    """A condition that checks if the current event is a GUI form submission.
+
+    Optionally filters by a specific GUI message id (``form_id``).
+
+    Args:
+        form_id (str or None): the message id of the GUI whose form submissions should trigger the
+            transition. If None, any form submission matches.
+
+    Attributes:
+        _form_id (str or None): the target form id, or None to match any form submission
+    """
+
+    def __init__(self, form_id: str = None):
+        super().__init__(partial(form_submitted, params={'form_id': form_id}))
+        self._form_id: str = form_id
+
+    def __str__(self):
+        if self._form_id:
+            return f"Form Submit Matching - {self._form_id}"
+        return "Form Submit Matching"

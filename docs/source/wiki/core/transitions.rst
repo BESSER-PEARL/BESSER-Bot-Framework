@@ -246,6 +246,42 @@ Note that it is also possible to define a list of allowed file types, so we can 
 restrictions to what can be sent by users to avoid unwanted file types to be processed. Don't add this parameter if you
 want to receive any kind of file.
 
+Form submitted
+~~~~~~~~~~~~~~
+
+When the agent sends a :doc:`GUI reply <gui/gui_replies>` that contains a form, it
+can listen for the user submitting that form using ``when_form_submitted``.
+
+It uses the :class:`~baf.library.transition.events.base_events.GUIEvent` and the
+:class:`~baf.library.transition.conditions.FormSubmitMatcher` condition.
+
+.. code:: python
+
+   # Triggered by a submission from any form
+   state1.when_form_submitted().go_to(state2)
+
+Optionally, pass ``form_id`` to restrict the transition to submissions coming from a
+specific GUI. The id to use is :attr:`~baf.core.gui.agent_gui.AgentGUI.id` of the
+:class:`~baf.core.gui.agent_gui.AgentGUI` that was sent to the user:
+
+.. code:: python
+
+   # Triggered only when the registration form is submitted
+   state1.when_form_submitted(form_id=registration_gui.id).go_to(state2)
+
+When the transition fires, the submitted field values are available in
+``session.gui_inputs`` **if** the ``AgentGUI`` was created with ``persist=True``:
+
+.. code:: python
+
+   def process_form_body(session: Session):
+       data  = session.gui_inputs.get(registration_gui.id, {})
+       name  = data.get('full_name', '')
+       email = data.get('email', '')
+       session.reply(f'Hello {name}, we will contact you at {email}.')
+
+See :doc:`gui/gui_replies` for a full walkthrough of GUI replies and form handling.
+
 Automatic transitions
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -280,6 +316,12 @@ API References
 - State.when_intent_matched(): :meth:`baf.core.state.State.when_intent_matched`
 - State.when_no_intent_matched(): :meth:`baf.core.state.State.when_no_intent_matched`
 - State.when_variable_matches_operation(): :meth:`baf.core.state.State.when_variable_matches_operation`
+- State.when_form_submitted(): :meth:`baf.core.state.State.when_form_submitted`
 - TransitionBuilder: :class:`baf.core.transition.transition_builder.TransitionBuilder`
 - TransitionBuilder.go_to(): :meth:`baf.core.transition.transition_builder.TransitionBuilder.go_to`
 - TransitionBuilder.with_condition(): :meth:`baf.core.transition.transition_builder.TransitionBuilder.with_condition`
+- AgentGUI: :class:`baf.core.gui.agent_gui.AgentGUI`
+- AgentGUI.id: :attr:`baf.core.gui.agent_gui.AgentGUI.id`
+- FormSubmitMatcher: :class:`baf.library.transition.conditions.FormSubmitMatcher`
+- GUIEvent: :class:`baf.library.transition.events.base_events.GUIEvent`
+- Session.gui_inputs: :attr:`baf.core.session.Session.gui_inputs`
