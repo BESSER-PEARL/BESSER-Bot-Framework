@@ -139,6 +139,24 @@ class State:
             raise BodySignatureError(self._agent, self, body, body_template_signature, body_signature)
         self._body = body
 
+    def body(self, func: Callable[[Session], None]) -> Callable[[Session], None]:
+        """Decorator to set the state body.
+
+        Usage::
+
+            @state.body
+            def my_body(session: Session):
+                ...
+
+        Args:
+            func (Callable[[Session], None]): the body function
+
+        Returns:
+            Callable[[Session], None]: the body function unchanged
+        """
+        self.set_body(func)
+        return func
+
     def set_fallback_body(self, body: Callable[[Session], None]):
         """Set the state fallback body.
 
