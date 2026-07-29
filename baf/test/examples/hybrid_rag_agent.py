@@ -1,6 +1,6 @@
 # You may need to add your working directory to the Python path. To do so, uncomment the following lines of code
-import sys
-sys.path.insert(0, "C:\\Users\\chidambaram\\Downloads\\GitHub\\BAF") # Replace with your directory path
+# import sys
+# sys.path.insert("path/to/baf") # Replace with your directory path
 
 import logging
 import os
