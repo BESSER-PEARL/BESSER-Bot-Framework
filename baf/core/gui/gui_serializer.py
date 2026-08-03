@@ -1,7 +1,8 @@
-"""Serialization helpers: GUIModel → JSON string."""
+"""Serialization helpers: AgentGUI → JSON string."""
 import json
 from enum import Enum
 
+from baf.core.gui.agent_gui import AgentGUI
 from baf.exceptions.logger import logger
 
 try:
@@ -9,7 +10,7 @@ try:
         GUIModel, Screen, ViewElement, ViewContainer, ViewComponent,
         Button, Text, Image, InputField, Form, Menu,
         DataList, DataSource, DataSourceElement, File, Collection,
-        EmbeddedContent, Link,
+        EmbeddedContent, Link, Alert, AlertSeverity, SelectOption,
     )
     from besser.BUML.metamodel.gui.style import Styling, Size, Position, Color, Layout
     from besser.BUML.metamodel.gui.binding import DataBinding
@@ -26,31 +27,31 @@ def _enum_val(v):
     return v.value if isinstance(v, Enum) else v
 
 
-def _serialize_size(size: Size) -> dict:
+def _serialize_size(size: 'Size') -> dict:
     if size is None:
         return None
-    return {k: _enum_val(v) for k, v in vars(size).items()
-            if not k.startswith('_') and v is not None} or {
-        k: _enum_val(v) for k, v in {
-            "width": size.width, "height": size.height, "padding": size.padding,
-            "margin": size.margin, "font_size": size.font_size, "line_height": size.line_height,
-            "icon_size": size.icon_size, "unit_size": _enum_val(size.unit_size),
-            "font_weight": size.font_weight, "font_family": size.font_family,
-            "font_style": size.font_style, "text_decoration": size.text_decoration,
-            "text_transform": size.text_transform, "letter_spacing": size.letter_spacing,
-            "word_spacing": size.word_spacing, "white_space": size.white_space,
-            "word_break": size.word_break, "min_width": size.min_width,
-            "max_width": size.max_width, "min_height": size.min_height,
-            "max_height": size.max_height, "padding_top": size.padding_top,
-            "padding_right": size.padding_right, "padding_bottom": size.padding_bottom,
-            "padding_left": size.padding_left, "margin_top": size.margin_top,
-            "margin_right": size.margin_right, "margin_bottom": size.margin_bottom,
-            "margin_left": size.margin_left,
-        }.items() if v is not None
-    }
+    # Size stores width/height/padding/margin/line_height as @property with double-underscore
+    # (self.__width → _Size__width in vars()), which would be excluded by a startswith('_') filter.
+    # Always use the explicit property access to guarantee all fields are captured.
+    return {k: _enum_val(v) for k, v in {
+        "width": size.width, "height": size.height, "padding": size.padding,
+        "margin": size.margin, "font_size": size.font_size, "line_height": size.line_height,
+        "icon_size": size.icon_size, "unit_size": _enum_val(size.unit_size),
+        "font_weight": size.font_weight, "font_family": size.font_family,
+        "font_style": size.font_style, "text_decoration": size.text_decoration,
+        "text_transform": size.text_transform, "letter_spacing": size.letter_spacing,
+        "word_spacing": size.word_spacing, "white_space": size.white_space,
+        "word_break": size.word_break, "min_width": size.min_width,
+        "max_width": size.max_width, "min_height": size.min_height,
+        "max_height": size.max_height, "padding_top": size.padding_top,
+        "padding_right": size.padding_right, "padding_bottom": size.padding_bottom,
+        "padding_left": size.padding_left, "margin_top": size.margin_top,
+        "margin_right": size.margin_right, "margin_bottom": size.margin_bottom,
+        "margin_left": size.margin_left,
+    }.items() if v is not None}
 
 
-def _serialize_position(pos: Position) -> dict:
+def _serialize_position(pos: 'Position') -> dict:
     if pos is None:
         return None
     return {k: _enum_val(v) for k, v in {
@@ -63,7 +64,7 @@ def _serialize_position(pos: Position) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_color(color: Color) -> dict:
+def _serialize_color(color: 'Color') -> dict:
     if color is None:
         return None
     return {k: v for k, v in {
@@ -83,7 +84,7 @@ def _serialize_color(color: Color) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_layout(layout: Layout) -> dict:
+def _serialize_layout(layout: 'Layout') -> dict:
     if layout is None:
         return None
     return {k: _enum_val(v) for k, v in {
@@ -100,7 +101,7 @@ def _serialize_layout(layout: Layout) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_styling(styling: Styling) -> dict:
+def _serialize_styling(styling: 'Styling') -> dict:
     if styling is None:
         return None
     result = {}
@@ -115,7 +116,7 @@ def _serialize_styling(styling: Styling) -> dict:
     return result or None
 
 
-def _serialize_data_binding(db: DataBinding) -> dict:
+def _serialize_data_binding(db: 'DataBinding') -> dict:
     if db is None:
         return None
     return {k: v for k, v in {
@@ -130,7 +131,7 @@ def _serialize_data_binding(db: DataBinding) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_data_source(ds: DataSource) -> dict:
+def _serialize_data_source(ds: 'DataSource') -> dict:
     if ds is None:
         return None
     if isinstance(ds, DataSourceElement):
@@ -148,7 +149,7 @@ def _serialize_data_source(ds: DataSource) -> dict:
     return {"type": "DataSource", "name": ds.name}
 
 
-def _serialize_series(s: Series) -> dict:
+def _serialize_series(s: 'Series') -> dict:
     if s is None:
         return None
     return {k: v for k, v in {
@@ -158,7 +159,7 @@ def _serialize_series(s: Series) -> dict:
     }.items() if v is not None}
 
 
-def _serialize_column(col: Column) -> dict:
+def _serialize_column(col: 'Column') -> dict:
     if isinstance(col, FieldColumn):
         return {"type": "FieldColumn", "label": col.label, "field": col.field.name}
     if isinstance(col, LookupColumn):
@@ -169,7 +170,7 @@ def _serialize_column(col: Column) -> dict:
     return {"type": "Column", "label": col.label}
 
 
-def _base_fields(el: ViewElement) -> dict:
+def _base_fields(el: 'ViewElement') -> dict:
     d = {"name": el.name}
     if getattr(el, "description", None):
         d["description"] = el.description
@@ -193,7 +194,7 @@ def _sorted_elements(elements):
     return sorted(elements, key=lambda x: (x.display_order if x.display_order is not None else float('inf'), x.name))
 
 
-def _serialize_view_element(el: ViewElement) -> dict:
+def _serialize_view_element(el: 'ViewElement') -> dict:
     # Dashboard: AgentComponent
     if isinstance(el, AgentComponent):
         d = _base_fields(el)
@@ -346,12 +347,37 @@ def _serialize_view_element(el: ViewElement) -> dict:
     # Standard: InputField
     if isinstance(el, InputField):
         d = _base_fields(el)
-        d.update({k: v for k, v in {
-            "type": "InputField",
-            "field_type": _enum_val(el.field_type),
-            "validationRules": el.validationRules,
-            "data_binding": _serialize_data_binding(el.data_binding),
-        }.items() if v is not None})
+        d["type"] = "InputField"
+        d["field_type"] = _enum_val(el.field_type)
+        if el.label:
+            d["label"] = el.label
+        if el.placeholder:
+            d["placeholder"] = el.placeholder
+        if el.required:
+            d["required"] = el.required
+        if el.default_value is not None:
+            d["default_value"] = el.default_value
+        if el.options:
+            d["options"] = [{"label": o.label, "value": o.value} for o in el.options]
+        if el.min_value is not None:
+            d["min_value"] = el.min_value
+        if el.max_value is not None:
+            d["max_value"] = el.max_value
+        if el.step is not None:
+            d["step"] = el.step
+        if el.help_text:
+            d["help_text"] = el.help_text
+        if el.disabled:
+            d["disabled"] = el.disabled
+        if el.readonly:
+            d["readonly"] = el.readonly
+        if el.multiple:
+            d["multiple"] = el.multiple
+        if el.validationRules:
+            d["validationRules"] = el.validationRules
+        db = _serialize_data_binding(el.data_binding)
+        if db:
+            d["data_binding"] = db
         return d
 
     # Standard: Form
@@ -359,6 +385,13 @@ def _serialize_view_element(el: ViewElement) -> dict:
         d = _base_fields(el)
         d["type"] = "Form"
         d["inputFields"] = [_serialize_view_element(f) for f in _sorted_elements(el.inputFields)]
+        if el.title is not None:
+            d["title"] = el.title
+        d["submit_label"] = el.submit_label
+        if el.show_cancel:
+            d["show_cancel"] = el.show_cancel
+        d["cancel_label"] = el.cancel_label
+        d["columns"] = el.columns
         db = _serialize_data_binding(el.data_binding)
         if db:
             d["data_binding"] = db
@@ -383,6 +416,18 @@ def _serialize_view_element(el: ViewElement) -> dict:
         db = _serialize_data_binding(el.data_binding)
         if db:
             d["data_binding"] = db
+        return d
+
+    # Standard: Alert
+    if isinstance(el, Alert):
+        d = _base_fields(el)
+        d["type"] = "Alert"
+        d["content"] = el.content
+        d["severity"] = _enum_val(el.severity)
+        if el.title is not None:
+            d["title"] = el.title
+        if el.dismissible:
+            d["dismissible"] = el.dismissible
         return d
 
     # Standard: EmbeddedContent
@@ -414,7 +459,7 @@ def _serialize_view_element(el: ViewElement) -> dict:
     return d
 
 
-def _serialize_screen(screen: Screen) -> dict:
+def _serialize_screen(screen: 'Screen') -> dict:
     d = {"type": "Screen", "name": screen.name}
     if screen.description:
         d["description"] = screen.description
@@ -443,15 +488,18 @@ def _serialize_screen(screen: Screen) -> dict:
     return d
 
 
-def gui_to_json(gui_model: GUIModel) -> str:
-    """Serialize a :class:`GUIModel` instance to a JSON string.
+def gui_to_json(gui: 'AgentGUI') -> str:
+    """Serialize an :class:`~baf.core.gui.agent_gui.AgentGUI` instance to a JSON string.
+
+    Also accepts a raw :class:`~besser.BUML.metamodel.gui.GUIModel` directly.
 
     Args:
-        gui_model: The GUI model to serialize.
+        gui (AgentGUI): The GUI to serialize.
 
     Returns:
         A JSON string representation of the model.
     """
+    gui_model = gui.model
     result = {
         "name": gui_model.name,
         "package": gui_model.package,
@@ -467,4 +515,6 @@ def gui_to_json(gui_model: GUIModel) -> str:
             for module in sorted(gui_model.modules, key=lambda m: m.name)
         ],
     }
+    if getattr(gui, 'width', None) is not None:
+        result["width"] = gui.width
     return json.dumps(result, indent=2)

@@ -20,8 +20,11 @@ class PayloadAction(Enum):
     """PayloadAction: Indicates that the user intends to set a session variable. The payload must include a dictionary containing the variable name and its value, sent as a Payload message.
     """
 
-    USER_UPDATE_UI = 'user_update_ui'
-    """PayloadAction: Indicates that the payload's purpose is to send a UI update from the user."""
+    USER_GUI_EVENT = 'user_gui_event'
+    """PayloadAction: Indicates a user interaction event sent from the GUI frontend. The message is a dict with at
+    minimum an ``elementId`` field and an ``action`` field
+    (e.g. ``{"elementId": "btn1", "action": "onClick"}``).
+    """
 
     RESET = 'reset'
     """PayloadAction: Use the :class:`~baf.platforms.websocket.websocket_platform.WebSocketPlatform` on this
@@ -93,9 +96,14 @@ class PayloadAction(Enum):
     dictionary containing the audio data (as a base 64 String) and the metadata to reconstruct the audio array, composed
     of sample_rate, dtype and shape."""
 
-    AGENT_REPLY_UI = 'agent_reply_ui'
-    """PayloadAction: Indicates that the payload's purpose is to send an agent reply containing a UI, which is based on
+    AGENT_REPLY_GUI = 'agent_reply_gui'
+    """PayloadAction: Indicates that the payload's purpose is to send an agent reply containing a GUI, which is based on
     the GUI metamodel in :class:`besser.BUML.metamodel.gui.graphical_ui.GUIModel`.
+    """
+
+    AGENT_REPLY_GUI_UPDATE = 'agent_reply_gui_update'
+    """PayloadAction: Indicates that the payload's purpose is to push an update to the session's current GUI model.
+    The message is the full updated GUI JSON. Clients should replace their current GUI state with the new one.
     """
 
     FETCH_USER_MESSAGES = 'fetch_user_messages'
@@ -122,16 +130,18 @@ class Payload:
         payload_message = payload_dict['message']
         history = payload_dict.get('history', False)
 
+        message_id = payload_dict.get('message_id', None)
         for action in PayloadAction:
             if action.value == payload_action:
-                return Payload(action, payload_message, history=history)
+                return Payload(action, payload_message, history=history, message_id=message_id)
         return None
 
-    def __init__(self, action: PayloadAction, message: str or dict = None, history: bool = False, timestamp: datetime = None):
+    def __init__(self, action: PayloadAction, message: str or dict = None, history: bool = False, timestamp: datetime = None, message_id: str = None):
         self.action: str = action.value
         self.message: str or dict = message
         self.history: bool = history
         self.timestamp: datetime = timestamp
+        self.message_id: str = message_id
 
 
 class PayloadEncoder(json.JSONEncoder):
@@ -162,7 +172,8 @@ class PayloadEncoder(json.JSONEncoder):
                 'action': obj.action,
                 'message': obj.message,
                 'history': getattr(obj, 'history', None),
-                'timestamp': timestamp
+                'timestamp': timestamp,
+                'message_id': getattr(obj, 'message_id', None),
             }
             return payload_dict
         return super().default(obj)

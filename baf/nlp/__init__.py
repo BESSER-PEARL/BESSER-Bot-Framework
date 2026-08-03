@@ -220,3 +220,14 @@ type: ``str``
 
 default value: ``None``
 """
+
+OLLAMA_BASE_URL = Property('nlp.ollama.base_url', str, 'http://localhost:11434')
+"""
+The base URL for a locally hosted Ollama server.
+
+name: ``nlp.ollama.base_url``
+
+type: ``str``
+
+default value: ``http://localhost:11434``
+"""

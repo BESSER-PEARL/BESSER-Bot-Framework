@@ -20,6 +20,8 @@ try:
     from langchain_core.documents.base import Document
     from langchain_core.vectorstores.base import VectorStore, VectorStoreRetriever
     from langchain_text_splitters.base import TextSplitter
+    from langchain.retrievers import EnsembleRetriever
+    from langchain_community.retrievers import BM25Retriever
 except ImportError:
     logger.warning("langchain dependencies in RAG could not be imported. You can install them from the "
                    "requirements/requirements-extras.txt file")
@@ -360,3 +362,108 @@ class RAG:
         llm: LLM = self._nlp_engine._llms[llm_name]
         llm_response: str = llm.predict(prompt)
         return RAGMessage(llm_name=llm_name, question=message, answer=llm_response, docs=docs)
+
+
+class HybridRAG(RAG):
+    """RAG subclass combining BM25 keyword search with vector search (hybrid retrieval).
+
+    BM25 catches exact keyword matches that vector search misses due to semantic distance —
+    version numbers, class names, and domain-specific identifiers. Both retrievers run locally
+    at zero extra API cost.
+
+    Supports two usage patterns:
+
+    - **Pre-indexed corpus** (pass ``bm25_docs``): BM25 is built at startup from existing splits.
+      Any subsequent runtime additions (via :meth:`add_file`, :meth:`add_text`, etc.) automatically
+      update the BM25 index.
+    - **Runtime uploads only** (omit ``bm25_docs``): BM25 is activated automatically after the
+      first document is added at runtime.
+
+    In both cases, rebuilding BM25 is O(n) in corpus size — acceptable for most corpora. For
+    very large corpora where upload latency matters, use the base :class:`RAG` class instead.
+
+    Args:
+        agent (Agent): the agent the RAG engine belongs to
+        vector_store (VectorStore | Callable[[], VectorStore]): the vector store of the RAG engine
+        splitter (TextSplitter): the text splitter of the RAG engine
+        llm_name (str): the name of the LLM of the RAG engine
+        bm25_docs (list[Document]): optional document splits to seed the BM25 index. Pass the
+            same splits used to populate the vector store. If omitted, BM25 activates after the
+            first runtime document addition. Requires ``rank_bm25`` (``pip install rank_bm25``).
+        bm25_weight (float): weight for BM25 results (0–1); vector weight = 1 − bm25_weight.
+            Defaults to 0.6 — BM25 slightly dominant, better for keyword-heavy technical domains.
+
+    Attributes:
+        _ensemble (EnsembleRetriever | None): the combined BM25 + vector retriever;
+            ``None`` until the corpus is non-empty.
+    """
+
+    def __init__(
+            self,
+            *args,
+            bm25_docs: list['Document'] = None,
+            bm25_weight: float = 0.6,
+            **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self._bm25_weight: float = bm25_weight
+        self._bm25_docs: list[Document] = list(bm25_docs) if bm25_docs else []
+        self._ensemble: EnsembleRetriever | None = self._build_ensemble() if self._bm25_docs else None
+
+    def _build_ensemble(self) -> 'EnsembleRetriever':
+        bm25 = BM25Retriever.from_documents(self._bm25_docs, k=self.k)
+        chroma_retriever = self.vector_store.as_retriever(search_kwargs={'k': self.k})
+        return EnsembleRetriever(
+            retrievers=[chroma_retriever, bm25],
+            weights=[1 - self._bm25_weight, self._bm25_weight],
+        )
+
+    def _sync_bm25(self) -> None:
+        """Rebuild the BM25 index from the current vector store contents."""
+        try:
+            data = self.vector_store.get()
+            texts = data.get('documents') or []
+            metas = data.get('metadatas') or []
+        except Exception:
+            return
+        if texts:
+            self._bm25_docs = [Document(page_content=t, metadata=m) for t, m in zip(texts, metas)]
+            self._ensemble = self._build_ensemble()
+
+    def run_retrieval(self, question: str, k: int = None) -> list['Document']:
+        """Run hybrid retrieval combining BM25 keyword search and vector similarity search.
+
+        Falls back to vector-only retrieval when the corpus is empty (e.g. before the first
+        runtime document upload).
+
+        Args:
+            question (str): the input query
+            k (int): the number of top documents to return. If none is provided, the RAG's default value will be used
+
+        Returns:
+            list[Document]: the retrieved documents
+        """
+        if self._ensemble is None:
+            return super().run_retrieval(question, k)
+        docs = self._ensemble.invoke(question)
+        return docs[:(k or self.k)]
+
+    def add_text(self, text: str, metadata: dict = None) -> int:
+        n = super().add_text(text, metadata)
+        self._sync_bm25()
+        return n
+
+    def add_file(self, file: 'File') -> int:
+        n = super().add_file(file)
+        self._sync_bm25()
+        return n
+
+    def load_documents(self, path: str, formats: list[str] = None) -> int:
+        n = super().load_documents(path, formats)
+        self._sync_bm25()
+        return n
+
+    def load_pdfs(self, path: str) -> int:
+        n = super().load_pdfs(path)
+        self._sync_bm25()
+        return n
