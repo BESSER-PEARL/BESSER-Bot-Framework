@@ -103,10 +103,27 @@ BAF comes with LLM wrappers that provide the necessary methods to use them. All 
 
 These are the currently available LLM wrappers in BAF:
 
-- :class:`~baf.nlp.llm.llm_openai_api.LLMOpenAI`: For `OpenAI <https://platform.openai.com/docs/models>`_ LLMs
-- :class:`~baf.nlp.llm.llm_huggingface.LLMHuggingFace`: For `HuggingFace <https://huggingface.co/>`_ LLMs locally deployed
-- :class:`~baf.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`: For HuggingFace LLMs, through its `Inference API <https://huggingface.co/docs/api-inference>`_
-- :class:`~baf.nlp.llm.llm_replicate_api.LLMReplicate`: For `Replicate <https://replicate.com/>`_ LLMs, through its API
+**OpenAI-compatible providers** (all inherit from
+:class:`~baf.nlp.llm.llm_openai_compatible.LLMOpenAICompatible`; only the ``openai``
+SDK is required):
+
+- :class:`~baf.nlp.llm.llm_openai_api.LLMOpenAI`: `OpenAI <https://platform.openai.com/docs/models>`_ (GPT-4o, GPT-4o-mini, …)
+- :class:`~baf.nlp.llm.llm_mistral.LLMMistral`: `Mistral AI <https://docs.mistral.ai/>`_ (mistral-small, mistral-large, …)
+- :class:`~baf.nlp.llm.llm_deepseek.LLMDeepSeek`: `DeepSeek <https://api-docs.deepseek.com/>`_ (deepseek-chat, deepseek-reasoner)
+- :class:`~baf.nlp.llm.llm_google.LLMGoogle`: `Google Gemini <https://ai.google.dev/gemini-api/docs>`_ via the OpenAI-compatible endpoint
+- :class:`~baf.nlp.llm.llm_meta.LLMMeta`: `Meta Llama <https://llama.meta.com/>`_ via Meta's hosted API
+- :class:`~baf.nlp.llm.llm_qwen.LLMQwen`: `Alibaba Qwen <https://www.alibabacloud.com/help/en/dashscope/>`_ (qwen-max, qwen-plus, …)
+- :class:`~baf.nlp.llm.llm_xai.LLMxAI`: `xAI Grok <https://docs.x.ai/>`_ (grok-3, grok-3-mini, …)
+- :class:`~baf.nlp.llm.llm_groq.LLMGroq`: `Groq <https://console.groq.com/>`_ (llama-3.3-70b-versatile, mixtral-8x7b-32768, …)
+- :class:`~baf.nlp.llm.llm_together.LLMTogether`: `Together AI <https://www.together.ai/>`_ (many open-weight models)
+- :class:`~baf.nlp.llm.llm_openrouter.LLMOpenRouter`: `OpenRouter <https://openrouter.ai/>`_ (unified gateway to hundreds of models)
+
+**Native SDK providers:**
+
+- :class:`~baf.nlp.llm.llm_anthropic.LLMAnthropic`: `Anthropic Claude <https://docs.anthropic.com/>`_ (claude-opus-4, claude-sonnet-4, …) — uses the ``anthropic`` SDK
+- :class:`~baf.nlp.llm.llm_huggingface.LLMHuggingFace`: `HuggingFace <https://huggingface.co/>`_ models locally deployed
+- :class:`~baf.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`: HuggingFace models via the `Inference API <https://huggingface.co/docs/api-inference>`_
+- :class:`~baf.nlp.llm.llm_replicate_api.LLMReplicate`: `Replicate <https://replicate.com/>`_ models via the Replicate API
 
 .. note::
 
@@ -121,9 +138,20 @@ API References
 - LLM.predict(): :meth:`baf.nlp.llm.llm.LLM.predict`
 - LLM.add_user_context(): :meth:`baf.nlp.llm.llm.LLM.add_user_context`
 - LLM.remove_user_context(): :meth:`baf.nlp.llm.llm.LLM.remove_user_context`
+- LLMOpenAICompatible: :class:`baf.nlp.llm.llm_openai_compatible.LLMOpenAICompatible`
+- LLMOpenAI: :class:`baf.nlp.llm.llm_openai_api.LLMOpenAI`
+- LLMMistral: :class:`baf.nlp.llm.llm_mistral.LLMMistral`
+- LLMDeepSeek: :class:`baf.nlp.llm.llm_deepseek.LLMDeepSeek`
+- LLMGoogle: :class:`baf.nlp.llm.llm_google.LLMGoogle`
+- LLMMeta: :class:`baf.nlp.llm.llm_meta.LLMMeta`
+- LLMAnthropic: :class:`baf.nlp.llm.llm_anthropic.LLMAnthropic`
+- LLMQwen: :class:`baf.nlp.llm.llm_qwen.LLMQwen`
+- LLMxAI: :class:`baf.nlp.llm.llm_xai.LLMxAI`
+- LLMGroq: :class:`baf.nlp.llm.llm_groq.LLMGroq`
+- LLMTogether: :class:`baf.nlp.llm.llm_together.LLMTogether`
+- LLMOpenRouter: :class:`baf.nlp.llm.llm_openrouter.LLMOpenRouter`
 - LLMHuggingFace: :class:`baf.nlp.llm.llm_huggingface.LLMHuggingFace`:
 - LLMHuggingFaceAPI: :class:`baf.nlp.llm.llm_huggingface_api.LLMHuggingFaceAPI`:
-- LLMOpenAI: :class:`baf.nlp.llm.llm_openai_api.LLMOpenAI`
 - LLMReplicate: :class:`baf.nlp.llm.llm_replicate_api.LLMReplicate`:
 - Session: :class:`baf.core.session.Session`
 - Session.reply(): :meth:`baf.core.session.Session.reply`

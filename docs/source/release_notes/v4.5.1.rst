@@ -1,0 +1,65 @@
+Version 4.5.1
+=============
+
+Released: August 11th, 2026
+
+This release expands LLM provider coverage with nine new provider classes and
+a native Anthropic integration, adds hybrid retrieval to the RAG engine, and
+introduces a decorator syntax for state bodies.
+
+New Features
+------------
+
+Multi-family LLM support
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A new :class:`~baf.nlp.llm.llm_openai_compatible.LLMOpenAICompatible`
+intermediate base class holds a single shared implementation of ``predict``,
+``chat``, ``predict_with_tools``, and intent classification for every provider
+that exposes an OpenAI-compatible chat-completions endpoint.
+:class:`~baf.nlp.llm.llm_openai.LLMOpenAI` is refactored on top of it.
+
+Nine thin provider subclasses are introduced — each requires only a model name
+and the corresponding API key in the agent configuration:
+
+- :class:`~baf.nlp.llm.llm_mistral.LLMMistral` (Mistral AI)
+- :class:`~baf.nlp.llm.llm_deepseek.LLMDeepSeek` (DeepSeek)
+- :class:`~baf.nlp.llm.llm_google.LLMGoogle` (Google Gemini)
+- :class:`~baf.nlp.llm.llm_meta.LLMMeta` (Meta Llama)
+- :class:`~baf.nlp.llm.llm_qwen.LLMQwen` (Alibaba Qwen)
+- :class:`~baf.nlp.llm.llm_xai.LLMxAI` (xAI Grok)
+- :class:`~baf.nlp.llm.llm_groq.LLMGroq` (Groq)
+- :class:`~baf.nlp.llm.llm_together.LLMTogether` (Together AI)
+- :class:`~baf.nlp.llm.llm_openrouter.LLMOpenRouter` (OpenRouter)
+
+:class:`~baf.nlp.llm.llm_anthropic.LLMAnthropic` is also added using the
+native ``anthropic`` SDK. It handles system-prompt placement, the required
+``max_tokens`` parameter, and tool-schema conversion automatically.
+Ten new ``baf.nlp`` :class:`~baf.core.property.Property` constants are
+provided for all new providers.
+
+Hybrid RAG
+~~~~~~~~~~
+
+:class:`~baf.nlp.rag.rag.HybridRAG` is a new subclass of
+:class:`~baf.nlp.rag.rag.RAG` that combines BM25 keyword search with vector
+similarity search through LangChain's ``EnsembleRetriever``. BM25 catches
+exact keyword matches — version numbers, class names, domain-specific
+identifiers — that semantic search misses due to embedding distance, reducing
+answer drift on large corpora.
+
+The ``bm25_weight`` parameter (default ``0.6``) controls the blend between
+keyword and vector results. The BM25 index is rebuilt automatically whenever
+documents are added at runtime via :meth:`~baf.nlp.rag.rag.RAG.add_file` or
+:meth:`~baf.nlp.rag.rag.RAG.add_text`.
+
+State body decorator
+~~~~~~~~~~~~~~~~~~~~~
+
+:meth:`~baf.core.state.State.body` can now be used as a decorator to register
+the body function of a state, as a more ergonomic alternative to calling
+:meth:`~baf.core.state.State.set_body` explicitly::
+
+    @state.body
+    def my_body(session: Session):
+        ...

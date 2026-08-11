@@ -90,3 +90,14 @@ def test_tiktoken():
     enc = tiktoken.get_encoding("cl100k_base")
     tokens = enc.encode("hello world")
     assert enc.decode(tokens) == "hello world"
+
+
+def test_rank_bm25():
+    rank_bm25 = pytest.importorskip("rank_bm25")
+    assert rank_bm25.BM25Okapi
+
+
+def test_hybrid_rag():
+    pytest.importorskip("rank_bm25")
+    from baf.nlp.rag.rag import HybridRAG
+    assert HybridRAG
