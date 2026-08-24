@@ -209,14 +209,30 @@ class MonitoringDB:
     def store_session_variables(self, session: Session) -> None:
         """
         Stores the current session variables (dictionary) as a JSON string in the monitoring database,
-        replacing the old value for the given session.
+        replacing the old value for the given session. Session variables whose values are not JSON serializable are
+        omitted from the stored snapshot.
 
         Args:
             session (Session): The session whose variables should be stored.
         """
         table = Table(TABLE_SESSION, MetaData(), autoload_with=self.conn)
         session_dict = session.get_dictionary()
-        json_variables = json.dumps(session_dict)
+        serializable_variables = {}
+        for key, value in session_dict.items():
+            try:
+                json.dumps({key: value})
+            except (TypeError, ValueError) as error:
+                logger.warning(
+                    "Session variable %r for session %s was not persisted because its value of type %s is not "
+                    "JSON serializable: %s",
+                    key,
+                    session.id,
+                    type(value).__name__,
+                    error,
+                )
+            else:
+                serializable_variables[key] = value
+        json_variables = json.dumps(serializable_variables)
         stmt = (
             table.update()
             .where(
