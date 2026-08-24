@@ -17,6 +17,11 @@ As a result, when the agent boots it:
 * Session variables set through ``Session.set`` are not lost and remain available
 	through ``Session.get``.
 
+Session variables must contain JSON-serializable values to be persisted. If a variable contains an unsupported value,
+the variable remains available in the current in-memory session, but it is omitted from the persisted snapshot and a
+warning is logged. Other JSON-compatible session variables are still persisted. For nested lists or dictionaries, the
+whole top-level session variable is omitted rather than storing partial data.
+
 
 As a reminder, BAF takes care of the logic to restore sessions, but the platform is responsible for identifying users correctly.
 Thus, depending on the platform you are using, you need to set the correct configuration to enable user authentication (more on that in :doc:`../../platforms`).
