@@ -50,6 +50,35 @@ def _strip_optional(annotation: Any) -> Any:
     return non_none[0] if non_none else annotation
 
 
+def _is_session_type(annotation: Any) -> bool:
+    """Return True if ``annotation`` is the Session class.
+
+    Uses name/module matching instead of a direct import to avoid circular dependencies.
+    """
+    stripped = _strip_optional(annotation)
+    return (
+        isinstance(stripped, type)
+        and getattr(stripped, "__name__", "") == "Session"
+        and getattr(stripped, "__module__", "").startswith("baf")
+    )
+
+
+def _get_session_params(fn: Callable) -> list[str]:
+    """Return the names of parameters annotated with Session in ``fn``."""
+    sig = inspect.signature(fn)
+    try:
+        hints = get_type_hints(fn)
+    except Exception:
+        hints = {}
+    return [
+        name
+        for name, param in sig.parameters.items()
+        if name != "self"
+        and param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        and _is_session_type(hints.get(name, param.annotation))
+    ]
+
+
 def _annotation_to_schema(annotation: Any, param_name: str = "") -> dict:
     """Map a Python annotation to a minimal JSONSchema property.
 
@@ -186,6 +215,9 @@ def _build_schema(fn: Callable) -> dict:
             continue
 
         annotation = hints.get(name, param.annotation)
+        if _is_session_type(annotation):
+            # Session params are injected at call time — excluded from the LLM schema.
+            continue
         prop = _annotation_to_schema(annotation, param_name=name)
         if name in arg_docs:
             prop["description"] = arg_docs[name]
@@ -290,6 +322,7 @@ class Tool:
         self.name: str = name or getattr(fn, "__name__", "tool")
         self.description: str = description or _first_non_empty_line(inspect.getdoc(fn)) or self.name
         self.schema: dict = _build_schema(fn)
+        self._session_params: list[str] = _get_session_params(fn)
 
     @property
     def openai_schema(self) -> dict:
@@ -326,6 +359,10 @@ class Tool:
         if not isinstance(args, dict):
             raise ToolError(f"Tool '{self.name}' expects a dict of arguments, got {type(args).__name__}")
 
+        # Strip session-injected params in case the LLM accidentally included them.
+        if self._session_params:
+            args = {k: v for k, v in args.items() if k not in self._session_params}
+
         properties: dict = self.schema.get("properties", {})
         required: list = self.schema.get("required", [])
 
@@ -345,7 +382,7 @@ class Tool:
             validated[arg_name] = _coerce_value(value, json_type, arg_name)
         return validated
 
-    def call(self, args: dict) -> str:
+    def call(self, args: dict, session=None) -> str:
         """Validate ``args``, invoke the wrapped callable, and stringify the result.
 
         Any exception raised either by validation or by the callable itself is
@@ -355,6 +392,8 @@ class Tool:
 
         Args:
             args (dict): the LLM-supplied arguments.
+            session: the current Session object, injected into any parameters
+                annotated with ``Session`` instead of being sourced from the LLM.
 
         Returns:
             str: the stringified result (``"OK"`` for ``None``), or an
@@ -365,6 +404,9 @@ class Tool:
         except Exception as e:
             logger.debug(f"[Tool] '{self.name}' argument validation failed: {e}")
             return f"ERROR: {type(e).__name__}: {e}"
+
+        for param_name in self._session_params:
+            validated[param_name] = session
 
         try:
             result = self.fn(**validated)

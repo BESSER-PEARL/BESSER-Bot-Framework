@@ -388,7 +388,7 @@ def _execute_tool_calls(
             content = f"ERROR: tool '{call.name}' is not registered"
             logger.warning(f"[Reasoning] LLM requested unknown tool: {call.name}")
         else:
-            content = tool.call(call.arguments)
+            content = tool.call(call.arguments, session=session)
         logger.debug(f"[Reasoning] <- tool '{call.name}' result "
                      f"({len(content)} chars):\n{_truncate_for_log(content)}")
         if session is not None and call.name not in _TASK_TOOL_NAMES:
