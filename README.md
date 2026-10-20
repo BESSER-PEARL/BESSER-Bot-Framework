@@ -11,6 +11,8 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/besser-pearl/besser-agentic-framework?style=social)](https://star-history.com/#besser-pearl/besser-agentic-framework)
 [![SWH](https://archive.softwareheritage.org/badge/origin/https://github.com/BESSER-PEARL/BESSER-Agentic-Framework/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/BESSER-PEARL/BESSER-Agentic-Framework)
 
+> ⭐ **Part of [BESSER](https://github.com/BESSER-PEARL/BESSER)**, the open-source low-code platform that turns models into working apps. If this project is useful to you, please [star the main repo](https://github.com/BESSER-PEARL/BESSER) too.
+
 The BESSER Agentic Framework (BAF) is part of the [BESSER](https://modeling-languages.com/a-smart-low-code-platform-for-smart-software-in-luxembourg-goodbye-barcelona/) (Building Better Smart Software Faster) project. It aims
 to make the design and implementation of agents, bots and chatbots easier and accessible for everyone.
 
