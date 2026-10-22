@@ -1,0 +1,46 @@
+Version 4.5.3
+=============
+
+Released: October 22nd, 2026
+
+This release moves dependencies that were pinned to exact versions with
+published security advisories to ranges starting at the patched release. It
+does not change BAF's behaviour.
+
+Dependencies
+------------
+
+Core
+~~~~
+
+- ``aiohttp``: ``==3.11.12`` → ``>=3.14.4,<4``
+- ``nltk``: ``==3.9.1`` → ``>=3.10.3,<4``
+- ``requests``: ``==2.31.0`` → ``>=2.33.0,<3``
+- ``streamlit``: ``==1.40.0`` → ``>=1.54.0,<2``
+
+Extras
+~~~~~~
+
+- ``pypdf``: ``==4.3.1`` → ``>=6.21.1,<7``
+- ``chromadb``: ``>=1.0.0,<2`` on every Python version
+- ``langchain``: ``>=0.3.30,<0.4`` on every Python version
+- ``langchain-community``: ``>=0.3.27,<0.4`` on every Python version
+- ``langchain-core`` (``>=0.3.85,<0.4``) and ``langchain-text-splitters``
+  (``>=0.3.9,<0.4``) are now declared explicitly, since BAF imports them
+  directly.
+
+The RAG stack previously used langchain 0.2 and chromadb 0.5 below Python 3.13.
+It now uses the langchain 0.3 / chromadb 1.x path that Python 3.13 already ran
+on.
+
+TensorFlow
+~~~~~~~~~~
+
+- ``keras``: ``==3.12.0`` → ``>=3.15.0,<4`` (Python 3.10: ``>=3.12.3,<3.13``,
+  the newest release that supports it)
+
+A ``pip-audit`` of ``besser-agentic-framework[extras,llms,tensorflow]`` on
+Python 3.11 goes from 229 known advisories in 14 packages to 46 in 7. The
+remaining ones need major-version migrations (``websockets``, ``transformers``,
+``langchain`` 1.x) or have no fixed release yet (``chromadb``). They are tracked
+in `#203 <https://github.com/BESSER-PEARL/BESSER-Agentic-Framework/issues/203>`_.
